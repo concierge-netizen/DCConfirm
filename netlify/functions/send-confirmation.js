@@ -4,7 +4,7 @@
 // Fetches Monday → renders HTML → sends via Resend → marks Monday
 // ============================================================
 
-const { fetchItem, extractFields, buildEmail, markSent } = require('./_email-builder');
+const { fetchItem, extractFields, buildEmail, markSent, sanitizeEmailList } = require('./_email-builder');
 
 const RESEND_API_KEY = 're_Xi5en35b_9XFtdPxMhPrZ2bLfSE2jtRwD';
 const FROM_ADDRESS   = 'HANDS Logistics <concierge@handslogistics.com>';
@@ -30,6 +30,7 @@ exports.handler = async function(event) {
 
   const itemId = body.itemId;
   const extraBcc = Array.isArray(body.bcc) ? body.bcc : [];
+  const ccInput = body.ccEmails;
 
   if (!itemId) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing itemId' }) };
@@ -52,6 +53,9 @@ exports.handler = async function(event) {
       };
     }
 
+    // Validate + dedupe CCs, excluding the primary client email
+    const ccExtras = sanitizeEmailList(ccInput, fields.clientEmail, 10);
+
     // 2. Render email
     const { subject, html } = buildEmail(fields);
 
@@ -65,6 +69,7 @@ exports.handler = async function(event) {
       body: JSON.stringify({
         from: FROM_ADDRESS,
         to: [fields.clientEmail],
+        cc: ccExtras.length ? ccExtras : undefined,
         bcc: DEFAULT_BCC.concat(extraBcc),
         subject: subject,
         html: html
@@ -96,6 +101,7 @@ exports.handler = async function(event) {
         success: true,
         emailId: resendBody.id,
         sentTo: fields.clientEmail,
+        ccSentTo: ccExtras,
         itemId: itemId,
         writeBackError: writeBackError
       })
