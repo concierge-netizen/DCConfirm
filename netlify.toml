@@ -1,0 +1,21 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/send-confirmation"
+  to = "/.netlify/functions/send-confirmation"
+  status = 200
+
+[[redirects]]
+  from = "/api/monday-webhook"
+  to = "/.netlify/functions/monday-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/preview"
+  to = "/.netlify/functions/preview"
+  status = 200
