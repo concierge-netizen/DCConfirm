@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HANDS — Delivery Confirmation</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#0a0a0a; color:#e8e8e8; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:40px; max-width:560px; width:100%; }
+  .logo { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:#a0d6b4; }
+  .brand { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a0d6b4; }
+  h1 { font-size:24px; font-weight:800; margin-bottom:8px; letter-spacing:-0.5px; }
+  .sub { color:#888; font-size:14px; margin-bottom:32px; line-height:1.5; }
+  label { display:block; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#a0d6b4; margin-bottom:8px; }
+  input { width:100%; background:#1a1a1a; border:1px solid #2a2a2a; color:#fff; padding:14px 16px; border-radius:8px; font-size:16px; font-family:inherit; }
+  input:focus { outline:none; border-color:#a0d6b4; }
+  .row { display:flex; gap:12px; margin-top:16px; }
+  button { flex:1; background:#a0d6b4; border:none; color:#0a0a0a; padding:14px; border-radius:8px; font-weight:700; font-size:14px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+  button:hover { background:#8cc4a1; }
+  button.ghost { background:transparent; color:#a0d6b4; border:1px solid #a0d6b4; }
+  button.ghost:hover { background:rgba(160,214,180,0.1); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .result { margin-top:24px; padding:16px; border-radius:8px; font-size:13px; line-height:1.6; display:none; }
+  .result.show { display:block; }
+  .result.ok { background:rgba(160,214,180,0.1); border:1px solid #a0d6b4; color:#a0d6b4; }
+  .result.err { background:rgba(255,100,100,0.1); border:1px solid #d84040; color:#ff8080; }
+  .result pre { font-family:ui-monospace, monospace; font-size:11px; margin-top:8px; white-space:pre-wrap; word-break:break-all; color:#aaa; }
+  .endpoints { margin-top:32px; padding-top:24px; border-top:1px solid #2a2a2a; font-size:12px; color:#666; line-height:1.8; }
+  .endpoints code { background:#1a1a1a; padding:2px 6px; border-radius:4px; color:#a0d6b4; font-family:ui-monospace, monospace; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><span class="dot"></span><span class="brand">HANDS Logistics</span></div>
+    <h1>Delivery Confirmation</h1>
+    <p class="sub">Send the branded confirmation email for any Monday PO. Monday auto-fires when SEND DC flips to Yes — use this for manual sends.</p>
+
+    <label for="po">Monday Item ID (PO#)</label>
+    <input id="po" type="text" placeholder="e.g. 1234567890" autocomplete="off" />
+
+    <div class="row">
+      <button class="ghost" id="previewBtn">Preview</button>
+      <button id="sendBtn">Send confirmation</button>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="endpoints">
+      Endpoints:<br>
+      POST <code>/api/send-confirmation</code> — body: <code>{"itemId":"..."}</code><br>
+      POST <code>/api/monday-webhook</code> — Monday trigger<br>
+      GET <code>/api/preview?po=...</code> — render without sending
+    </div>
+  </div>
+
+<script>
+  const poInput = document.getElementById('po');
+  const sendBtn = document.getElementById('sendBtn');
+  const previewBtn = document.getElementById('previewBtn');
+  const result = document.getElementById('result');
+
+  function show(ok, msg, detail) {
+    result.className = 'result show ' + (ok ? 'ok' : 'err');
+    result.innerHTML = msg + (detail ? '<pre>' + JSON.stringify(detail, null, 2) + '</pre>' : '');
+  }
+
+  previewBtn.onclick = () => {
+    const po = poInput.value.trim();
+    if (!po) { poInput.focus(); return; }
+    window.open('/api/preview?po=' + encodeURIComponent(po), '_blank');
+  };
+
+  sendBtn.onclick = async () => {
+    const po = poInput.value.trim();
+    if (!po) { poInput.focus(); return; }
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+    result.className = 'result';
+    try {
+      const r = await fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: po })
+      });
+      const j = await r.json();
+      if (r.ok && j.success) {
+        show(true, 'Sent to ' + j.sentTo + ' ✓', { emailId: j.emailId, itemId: j.itemId, writeBackError: j.writeBackError });
+      } else {
+        show(false, 'Failed: ' + (j.error || r.status), j);
+      }
+    } catch (err) {
+      show(false, 'Network error: ' + err.message);
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send confirmation';
+    }
+  };
+
+  poInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+</script>
+</body>
+</html>
