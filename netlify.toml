@@ -29,3 +29,30 @@
   from = "/api/claude-chat"
   to = "/.netlify/functions/claude-chat"
   status = 200
+
+[[redirects]]
+  from = "/api/create-paypal-link"
+  to = "/.netlify/functions/create-paypal-link"
+  status = 200
+
+[[redirects]]
+  from = "/api/paypal-webhook"
+  to = "/.netlify/functions/paypal-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-io-notice"
+  to = "/.netlify/functions/send-io-notice"
+  status = 200
+
+[[redirects]]
+  from = "/api/assign-purpose"
+  to = "/.netlify/functions/assign-purpose"
+  status = 200
+
+# Clean URL for the assign-purpose form
+# Netlify query strings pass through automatically on redirects
+[[redirects]]
+  from = "/assign-purpose"
+  to = "/assign-purpose.html"
+  status = 200
