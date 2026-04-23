@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HANDS Logistics — Assign Purpose</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#a0d6b4;--green-hover:#7fc49e;
+    --bg:#0a0a0a;--card:#161616;--card2:#1e1e1e;
+    --border:#2a2a2a;--muted:#555;--label:#888;--body:#e8e8e8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--body);font-family:'DM Sans',Helvetica,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 16px 60px;}
+  h1,h2,.bebas{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-weight:400;}
+
+  .shell{width:100%;max-width:560px;}
+
+  /* HEADER */
+  .logo-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0;}
+  .brand{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:24px;letter-spacing:2px;color:var(--green);}
+  .po-tag{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+
+  .accent-bar{height:4px;margin:16px 0 0;display:flex;}
+  .accent-bar .a1{flex:0.68;background:#1a1a1a;}
+  .accent-bar .a2{flex:0.32;background:var(--green);}
+
+  .page-title{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:34px;letter-spacing:2px;color:var(--body);margin:20px 0 4px;line-height:1;}
+  .page-sub{font-size:13px;font-weight:300;color:var(--muted);line-height:1.65;margin-bottom:24px;}
+
+  /* SHIPMENT SUMMARY */
+  .summary-card{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:16px 20px;margin-bottom:24px;}
+  .summary-card .sc-title{font-size:10px;font-weight:600;color:var(--label);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;}
+  .sg-item .sg-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+  .sg-item .sg-val{font-size:13px;font-weight:500;color:var(--body);}
+  .sg-item.full{grid-column:1/-1;}
+
+  /* FORM */
+  .form-card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:24px 22px;}
+  .form-card .fc-title{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:13px;letter-spacing:3px;color:var(--green);margin-bottom:20px;}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:10px;font-weight:600;color:var(--label);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+  .field input[type=text],
+  .field input[type=email],
+  .field textarea,
+  .field select{
+    width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:3px;
+    color:var(--body);font-family:'DM Sans',Helvetica,Arial,sans-serif;
+    font-size:13px;font-weight:400;padding:10px 13px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus{border-color:#444;}
+  .field textarea{resize:vertical;min-height:90px;line-height:1.6;}
+  .field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23555' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;}
+
+  /* PURPOSE CHIPS */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+  .chip{padding:8px 16px;border-radius:3px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;transition:all 0.15s;font-family:'DM Sans',Helvetica,Arial,sans-serif;}
+  .chip:hover{border-color:#555;color:var(--body);}
+  .chip.selected{border-color:var(--green);color:var(--green);background:#a0d6b415;}
+
+  /* DIVIDER */
+  .divider{height:1px;background:var(--border);margin:20px 0;}
+
+  /* SUBMIT */
+  .submit-btn{width:100%;padding:13px;background:var(--green);color:#0a0a0a;border:none;border-radius:3px;font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:16px;letter-spacing:2.5px;cursor:pointer;transition:background 0.15s;}
+  .submit-btn:hover{background:var(--green-hover);}
+  .submit-btn:disabled{background:#2a4a38;color:#555;cursor:not-allowed;}
+
+  /* SUCCESS STATE */
+  .success{display:none;text-align:center;padding:40px 20px;}
+  .success .check{width:60px;height:60px;border-radius:50%;background:#a0d6b422;border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;}
+  .success h2{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:28px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
+  .success p{font-size:13px;font-weight:300;color:var(--muted);line-height:1.7;}
+
+  /* ERROR */
+  .error-msg{display:none;background:#df2f4a22;border:1px solid #df2f4a55;color:#df2f4a;padding:10px 14px;border-radius:3px;font-size:12px;margin-top:12px;line-height:1.5;}
+
+  .footer-note{margin-top:28px;text-align:center;font-size:11px;color:#333;line-height:1.8;}
+  .footer-note a{color:var(--green);text-decoration:none;}
+
+  .accent-bar-rev{height:3px;margin:20px 0;display:flex;}
+  .accent-bar-rev .a1{flex:0.32;background:var(--green);}
+  .accent-bar-rev .a2{flex:0.68;background:#1a1a1a;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="logo-row">
+    <div class="brand">HANDS LOGISTICS</div>
+    <div class="po-tag">PO&nbsp;#<span id="h-po">—</span></div>
+  </div>
+  <div class="accent-bar"><div class="a1"></div><div class="a2"></div></div>
+
+  <h1 class="page-title">Assign Purpose</h1>
+  <p class="page-sub">Let us know where these materials are headed or what you need next. Your response updates our operations record immediately.</p>
+
+  <!-- SHIPMENT SUMMARY -->
+  <div class="summary-card">
+    <div class="sc-title">Your Shipment</div>
+    <div class="summary-grid">
+      <div class="sg-item">
+        <div class="sg-label">Account</div>
+        <div class="sg-val" id="s-account">—</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-label">Direction</div>
+        <div class="sg-val" id="s-direction">—</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-label">Date</div>
+        <div class="sg-val" id="s-date">—</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-label">Carrier / Tracking</div>
+        <div class="sg-val" id="s-carrier">—</div>
+      </div>
+      <div class="sg-item full">
+        <div class="sg-label">Contents</div>
+        <div class="sg-val" id="s-contents" style="font-weight:300;color:var(--muted);">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card" id="form-panel">
+    <div class="fc-title">Your Response</div>
+
+    <!-- NAME + EMAIL (pre-filled from URL, editable) -->
+    <div class="field">
+      <label>Your Name</label>
+      <input type="text" id="f-name" placeholder="First Last">
+    </div>
+    <div class="field">
+      <label>Your Email</label>
+      <input type="email" id="f-email" placeholder="you@brand.com">
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- PURPOSE CHIPS -->
+    <div class="field">
+      <label>Material Purpose</label>
+      <div class="chips" id="purpose-chips">
+        <button class="chip" data-val="Event / Activation">Event / Activation</button>
+        <button class="chip" data-val="Market Distribution">Market Distribution</button>
+        <button class="chip" data-val="Storage / Hold">Storage / Hold</button>
+        <button class="chip" data-val="Return / Recall">Return / Recall</button>
+        <button class="chip" data-val="Other">Other</button>
+      </div>
+    </div>
+
+    <!-- EVENT NAME (shown when Event chip selected) -->
+    <div class="field" id="event-field" style="display:none;">
+      <label>Event / Project Name</label>
+      <input type="text" id="f-event" placeholder="e.g. MAGIC Trade Show, Q2 Promo Drop">
+    </div>
+
+    <!-- EVENT DATE (shown when Event chip selected) -->
+    <div class="field" id="event-date-field" style="display:none;">
+      <label>Event Date</label>
+      <input type="date" id="f-event-date" style="color-scheme:dark;">
+    </div>
+
+    <!-- DELIVERY SCHEDULE BLOCK (shown when Market Distribution chip selected) -->
+    <div id="delivery-block" style="display:none;">
+      <div class="field">
+        <label>Distribution / Ship-To Address</label>
+        <input type="text" id="f-shipto" placeholder="Full street address, suite, city, state, zip">
+      </div>
+      <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <input type="checkbox" id="f-schedule-delivery" style="width:auto;accent-color:var(--green);transform:scale(1.2);cursor:pointer;">
+        <label for="f-schedule-delivery" style="margin:0;cursor:pointer;color:var(--body);font-size:12px;letter-spacing:1px;">Schedule a HANDS delivery for these materials</label>
+      </div>
+      <div id="schedule-fields" style="display:none;padding:16px 16px 4px;background:#0d0d0d;border:1px solid var(--border);border-radius:3px;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field" style="margin-bottom:14px;">
+            <label>Delivery Date</label>
+            <input type="date" id="f-delivery-date" style="color-scheme:dark;">
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label>Delivery Time</label>
+            <input type="time" id="f-delivery-time" style="color-scheme:dark;">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>On-Site Contact Name</label>
+          <input type="text" id="f-delivery-contact" placeholder="Who will receive the delivery?">
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>On-Site Contact Phone</label>
+          <input type="text" id="f-delivery-phone" placeholder="e.g. 702-555-0100" inputmode="tel">
+        </div>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Delivery Instructions <span style="color:#555;font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <textarea id="f-delivery-instructions" placeholder="Loading dock access, gate codes, window of arrival, etc." style="min-height:70px;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- REQUEST / INSTRUCTIONS -->
+    <div class="field">
+      <label>Next Steps or Special Request</label>
+      <textarea id="f-request" placeholder="e.g. Please hold until April 10. Ship to Las Vegas Convention Center — Booth 412. Contact vendor directly for pickup. etc."></textarea>
+    </div>
+
+    <!-- URGENCY -->
+    <div class="field">
+      <label>Urgency</label>
+      <select id="f-urgency">
+        <option value="Standard">Standard — no rush</option>
+        <option value="Priority">Priority — within the week</option>
+        <option value="Urgent">Urgent — ASAP</option>
+      </select>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">SUBMIT RESPONSE</button>
+    <div class="error-msg" id="error-msg">Something went wrong. Please email us directly at <strong>concierge@handslogistics.com</strong> with your PO number.</div>
+
+  </div><!-- /form-card -->
+
+  <!-- SUCCESS STATE -->
+  <div class="success" id="success-panel">
+    <div class="check">✓</div>
+    <h2>Response Recorded</h2>
+    <p id="success-msg">Your assignment has been logged in our operations system.<br>A member of the HANDS team will follow up if any action is needed.</p>
+    <p style="margin-top:16px;color:#444;">PO&nbsp;#<span id="success-po"></span></p>
+  </div>
+
+  <div class="accent-bar-rev"></div>
+
+  <div class="footer-note">
+    Concierge Desk &bull; HANDS Logistics<br>
+    <a href="mailto:concierge@handslogistics.com">concierge@handslogistics.com</a> &bull; 8540 Dean Martin Drive, Suite 160, Las Vegas NV 89139<br>
+    <span style="font-style:italic;">Your logistics are in better HANDS.</span>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// Hits the DCConfirm Netlify function which:
+//   - Updates the NV I/O item (purpose, event/project, client notes)
+//   - If a delivery is scheduled, creates an item on Ops Board (Unconfirmed)
+//   - Notifies concierge@ + inbound@
+//   - Sends the client a confirmation email
+const API_ENDPOINT = '/api/assign-purpose';
+
+// ─── LOAD DATA FROM URL ──────────────────────────────────────────────────────
+// Supports two URL shapes:
+//   1. ?data=BASE64JSON  (preferred — richer payload from ops side)
+//   2. ?po=...&name=...&email=...&account=...&dir=...&date=...&carrier=...&tracking=...&contents=...
+function loadParams() {
+  const p = new URLSearchParams(window.location.search);
+  const d = p.get('data');
+  if (d) {
+    try { return JSON.parse(atob(d)); }
+    catch(e){}
+  }
+  return {
+    itemId:      p.get('po')        || '',
+    po:          p.get('po')        || '—',
+    clientName:  p.get('name')      || '',
+    clientEmail: p.get('email')     || '',
+    account:     p.get('account')   || '—',
+    direction:   p.get('dir')       || '—',
+    date:        p.get('date')      || '—',
+    carrier:     p.get('carrier')   || '—',
+    tracking:    p.get('tracking')  || '',
+    contents:    p.get('contents')  || '—',
+  };
+}
+
+const REC = loadParams();
+
+// ─── POPULATE UI ─────────────────────────────────────────────────────────────
+function $ (id) { return document.getElementById(id); }
+
+$('h-po').textContent        = REC.po;
+$('s-account').textContent   = REC.account;
+$('s-direction').textContent = REC.direction;
+$('s-date').textContent      = REC.date;
+$('s-carrier').textContent   = REC.carrier + (REC.tracking ? ' · ' + REC.tracking : '');
+$('s-contents').textContent  = REC.contents;
+$('f-name').value            = REC.clientName  || '';
+$('f-email').value           = REC.clientEmail || '';
+
+// ─── CHIP SELECTION ──────────────────────────────────────────────────────────
+let selectedPurpose = '';
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    selectedPurpose = chip.dataset.val;
+
+    // Conditional fields
+    const isEvent = selectedPurpose === 'Event / Activation';
+    const isDist  = selectedPurpose === 'Market Distribution';
+    $('event-field').style.display      = isEvent ? 'block' : 'none';
+    $('event-date-field').style.display = isEvent ? 'block' : 'none';
+    $('delivery-block').style.display   = isDist  ? 'block' : 'none';
+  });
+});
+
+// ─── DELIVERY-SCHEDULE TOGGLE ────────────────────────────────────────────────
+$('f-schedule-delivery').addEventListener('change', function() {
+  $('schedule-fields').style.display = this.checked ? 'block' : 'none';
+});
+
+// ─── SUBMIT ──────────────────────────────────────────────────────────────────
+async function submitForm() {
+  const name    = $('f-name').value.trim();
+  const email   = $('f-email').value.trim();
+  const request = $('f-request').value.trim();
+  const urgency = $('f-urgency').value;
+
+  const errEl = $('error-msg');
+  errEl.style.display = 'none';
+
+  if (!name || !email) {
+    errEl.textContent = 'Please enter your name and email.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!selectedPurpose) {
+    errEl.textContent = 'Please select a purpose.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'That email doesn\u2019t look right. Please check and try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const isDist = selectedPurpose === 'Market Distribution';
+  const scheduleDelivery = isDist && $('f-schedule-delivery').checked;
+  const deliveryDate = scheduleDelivery ? $('f-delivery-date').value : '';
+  const deliveryTime = scheduleDelivery ? $('f-delivery-time').value : '';
+  const shipTo       = isDist ? $('f-shipto').value.trim() : '';
+
+  if (scheduleDelivery) {
+    if (!shipTo) { errEl.textContent = 'Please enter a ship-to address for the delivery.'; errEl.style.display = 'block'; return; }
+    if (!deliveryDate) { errEl.textContent = 'Please select a delivery date.'; errEl.style.display = 'block'; return; }
+    if (!deliveryTime) { errEl.textContent = 'Please select a delivery time.'; errEl.style.display = 'block'; return; }
+  }
+
+  const btn = $('submit-btn');
+  btn.textContent = 'SUBMITTING…';
+  btn.disabled = true;
+
+  const payload = {
+    itemId:              REC.itemId,
+    po:                  REC.po,
+    clientName:          name,
+    clientEmail:         email,
+    account:             REC.account,
+    purpose:             selectedPurpose,
+    eventName:           $('f-event').value.trim()      || '',
+    eventDate:           $('f-event-date').value.trim() || '',
+    shipTo:              shipTo,
+    scheduleDelivery:    scheduleDelivery,
+    deliveryDate:        deliveryDate,
+    deliveryTime:        deliveryTime,
+    deliveryContact:     scheduleDelivery ? $('f-delivery-contact').value.trim()      : '',
+    deliveryPhone:       scheduleDelivery ? $('f-delivery-phone').value.trim()        : '',
+    deliveryInstructions:scheduleDelivery ? $('f-delivery-instructions').value.trim() : '',
+    request:             request,
+    urgency:             urgency,
+    submittedAt:         new Date().toISOString(),
+    source:              'client-reply-portal'
+  };
+
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+
+    // 200 = full success; 207 = partial (main Monday write worked, some side-effect didn't)
+    if (res.status === 200 || res.status === 207) {
+      $('form-panel').style.display = 'none';
+      $('success-panel').style.display = 'block';
+      $('success-po').textContent = REC.po;
+      if (data.scheduled && data.opsItemId) {
+        $('success-msg').innerHTML = 'Your assignment has been logged and a HANDS delivery has been scheduled.<br>You\u2019ll receive a Delivery Confirmation from our concierge team shortly. Your confirmation email is also on its way.';
+      } else {
+        $('success-msg').innerHTML = 'Your assignment has been logged in our operations system.<br>A member of the HANDS team will follow up if any action is needed. A confirmation email is on its way.';
+      }
+      return;
+    }
+
+    throw new Error(data.error || ('Server returned ' + res.status));
+  } catch (err) {
+    // Fallback: mailto with the submission so nothing is lost
+    const subject = encodeURIComponent('RE: PO #' + REC.po + ' — Purpose Assignment');
+    const lines = [
+      'Hi HANDS Team,',
+      '',
+      'Our form submission ran into a problem — please record the following manually:',
+      '',
+      'PO #: ' + REC.po,
+      'Account: ' + REC.account,
+      'Purpose: ' + selectedPurpose,
+      $('f-event').value.trim()      ? 'Event: ' + $('f-event').value.trim() : '',
+      $('f-event-date').value.trim() ? 'Event Date: ' + $('f-event-date').value.trim() : '',
+      shipTo ? 'Ship-To: ' + shipTo : '',
+      scheduleDelivery ? 'Delivery requested: ' + deliveryDate + ' at ' + deliveryTime : '',
+      scheduleDelivery && payload.deliveryContact ? 'On-site contact: ' + payload.deliveryContact : '',
+      scheduleDelivery && payload.deliveryPhone   ? 'On-site phone: '   + payload.deliveryPhone   : '',
+      scheduleDelivery && payload.deliveryInstructions ? 'Instructions: ' + payload.deliveryInstructions : '',
+      request ? 'Notes: ' + request : '',
+      'Urgency: ' + urgency,
+      '',
+      'Thanks,',
+      name
+    ].filter(Boolean).join('\n');
+    const mailto = 'mailto:concierge@handslogistics.com?subject=' + subject + '&body=' + encodeURIComponent(lines);
+
+    errEl.innerHTML = 'We couldn\u2019t reach our server (' + (err.message || 'network error') +
+      '). <a href="' + mailto + '" style="color:var(--green);text-decoration:underline;">Click here to email your response instead.</a>';
+    errEl.style.display = 'block';
+    btn.textContent = 'SUBMIT RESPONSE';
+    btn.disabled = false;
+  }
+}
+</script>
+}
+</script>
+
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║  ZAPIER SETUP — CLIENT REPLY PORTAL WRITE-BACK                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Trigger: Webhooks Catch Hook (new Zapier webhook URL)          ║
+║                                                                  ║
+║  Payload fields received from portal:                           ║
+║    itemId, po, clientName, clientEmail, account                 ║
+║    purpose, eventName, eventDate, shipTo                        ║
+║    request, urgency, submittedAt                                ║
+║                                                                  ║
+║  monday.com write-back columns:                                 ║
+║    color_mm1th2fd  ← purpose  (Material Purpose status)        ║
+║    text_mm1t684g   ← eventName (Event / Project Name)          ║
+║    long_text_mm1t2fc ← combined notes block:                   ║
+║      "Purpose: {purpose}\n                                      ║
+║       Event: {eventName} on {eventDate}\n                       ║
+║       Ship-To: {shipTo}\n                                       ║
+║       Request: {request}\n                                      ║
+║       Urgency: {urgency}\n                                      ║
+║       Submitted: {submittedAt}"                                 ║
+║                                                                  ║
+║  Portal URL format (generated in email Zapier step):           ║
+║    https://handslogistics.netlify.app/assign?                   ║
+║      po={ITEM_ID}&name={CLIENT_NAME}&email={CLIENT_EMAIL}       ║
+║      &account={ACCOUNT}&dir={DIRECTION}&date={DATE}            ║
+║      &carrier={CARRIER}&tracking={TRACKING}                    ║
+║      &contents={CONTENTS_ENCODED}                               ║
+║                                                                  ║
+║  Or as base64 data param for longer payloads:                   ║
+║    ?data=btoa(JSON.stringify({...all fields...}))               ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
