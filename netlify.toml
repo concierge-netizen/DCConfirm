@@ -11,6 +11,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/send-pod"
+  to = "/.netlify/functions/send-pod"
+  status = 200
+
+[[redirects]]
   from = "/api/monday-webhook"
   to = "/.netlify/functions/monday-webhook"
   status = 200
@@ -18,4 +23,9 @@
 [[redirects]]
   from = "/api/preview"
   to = "/.netlify/functions/preview"
+  status = 200
+
+[[redirects]]
+  from = "/api/claude-chat"
+  to = "/.netlify/functions/claude-chat"
   status = 200
