@@ -61,3 +61,14 @@
   from = "/api/lookup-po"
   to = "/.netlify/functions/lookup-po"
   status = 200
+
+# ── Phase 1: Schedule Delivery migration ──
+[[redirects]]
+  from = "/schedule"
+  to = "/schedule.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/schedule-delivery"
+  to = "/.netlify/functions/schedule-delivery"
+  status = 200
