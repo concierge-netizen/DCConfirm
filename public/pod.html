@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HANDS Logistics — Proof of Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --black:#0a0a0a;--dark:#111111;--card:#161616;--border:#2a2a2a;
+  --green:#a0d6b4;--green2:#7fc49e;--muted:#555555;--label:#888888;
+  --text:#e8e8e8;--white:#ffffff;--red:#e07070;--radius:6px;
+  --font-heading:'Bebas Neue',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;padding-bottom:60px;}
+.site-header{background:var(--black);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:100;}
+.header-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.header-logo img{height:28px;display:block;}
+.driver-badge{background:rgba(160,214,180,0.10);border:1px solid rgba(160,214,180,0.25);border-radius:20px;padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);}
+.accent-bar{display:flex;height:3px;width:100%;}
+.accent-bar .dark{flex:0 0 68%;background:#1a1a1a;}
+.accent-bar .grn{flex:0 0 32%;background:var(--green);}
+.hero{background:var(--green);padding:12px 24px;text-align:center;}
+.hero p{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--black);}
+.page{max-width:480px;margin:0 auto;padding:32px 20px 0;}
+.intro{margin-bottom:28px;animation:fadeUp 0.4s ease both;}
+.intro h1{font-family:var(--font-heading);font-size:38px;letter-spacing:1px;color:var(--white);line-height:1;margin-bottom:8px;}
+.intro p{font-size:13px;color:var(--label);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.po-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;animation:fadeUp 0.4s ease 0.05s both;}
+.po-dot{width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.8);}}
+.po-info{flex:1;min-width:0;}
+.po-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+.po-meta-item{min-width:0;}
+.po-meta-full{grid-column:1/-1;}
+.po-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.po-value{font-size:15px;font-weight:600;color:var(--green);letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.po-value--secondary{font-size:13px;color:var(--text);font-weight:500;letter-spacing:0;}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;animation:fadeUp 0.4s ease both;}
+.card-header{background:#1e1e1e;padding:10px 18px;border-bottom:1px solid var(--border);}
+.card-header p{font-size:9.5px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green);}
+.card-body{padding:20px 18px;}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.photo-zone{position:relative;background:#0f0f0f;border:2px dashed var(--border);border-radius:var(--radius);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color 0.25s,background 0.25s;padding:20px 12px;text-align:center;user-select:none;-webkit-user-select:none;}
+.photo-zone:hover{border-color:var(--green);background:rgba(160,214,180,0.04);}
+.photo-zone.has-photo{border-style:solid;border-color:var(--green);}
+.photo-zone input[type="file"]{display:none;}
+.zone-icon{font-size:26px;margin-bottom:8px;display:block;transition:transform 0.2s;}
+.photo-zone:hover .zone-icon{transform:scale(1.1);}
+.zone-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.zone-hint{font-size:10px;color:var(--muted);}
+.photo-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;display:none;}
+.photo-preview.show{display:block;}
+.check-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;background:var(--green);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:11px;color:var(--black);font-weight:700;}
+.has-photo .check-badge{display:flex;}
+.has-photo .zone-icon,.has-photo .zone-name,.has-photo .zone-hint{display:none;}
+.field{margin-bottom:16px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--label);margin-bottom:8px;}
+.field .req{color:var(--green);}
+.field input[type="text"]{width:100%;background:#0f0f0f;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-body);font-size:14px;padding:10px 14px;outline:none;transition:border-color 0.2s;}
+.field input[type="text"]:focus{border-color:var(--green);}
+.field.has-error input[type="text"]{border-color:var(--red);}
+.progress-wrap{display:none;margin-bottom:16px;}
+.progress-wrap.show{display:block;}
+.progress-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.progress-fill{height:100%;background:var(--green);border-radius:2px;width:0;transition:width 0.3s ease;}
+.progress-text{font-size:11px;color:var(--label);text-align:center;}
+.error-box{display:none;background:rgba(224,112,112,0.10);border:1px solid rgba(224,112,112,0.30);border-radius:var(--radius);padding:12px 16px;color:var(--red);font-size:13px;margin-bottom:16px;}
+.error-box.show{display:block;}
+.btn-submit{width:100%;background:var(--green);color:var(--black);border:none;border-radius:var(--radius);padding:16px 24px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s,opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-submit:hover{background:var(--green2);}
+.btn-submit:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-preview{width:100%;background:transparent;color:var(--green);border:1px solid var(--green);border-radius:var(--radius);padding:14px 24px;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s,opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;}
+.btn-preview:hover{background:rgba(160,214,180,0.10);}
+.btn-preview:disabled{opacity:0.4;cursor:not-allowed;}
+.preview-sent{display:none;background:rgba(160,214,180,0.10);border:1px solid rgba(160,214,180,0.30);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--green);margin-bottom:12px;text-align:center;}
+.preview-sent.show{display:block;}
+.step-actions{display:none;flex-direction:column;gap:0;}
+.step-actions.show{display:flex;}
+.btn-arrow{font-size:18px;}
+.success-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 24px;animation:fadeUp 0.5s ease both;}
+.success-screen.show{display:flex;}
+.success-icon{width:72px;height:72px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--black);margin-bottom:24px;}
+.success-screen h2{font-family:var(--font-heading);font-size:36px;color:var(--white);margin-bottom:12px;letter-spacing:1px;}
+.success-screen p{color:var(--label);font-size:14px;max-width:320px;}
+.site-footer{background:#0f0f0f;border-top:1px solid var(--border);padding:20px 24px;}
+.footer-inner{max-width:480px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;font-size:11px;color:var(--muted);}
+.footer-left p{line-height:1.6;}
+.brand-sub{color:var(--green);font-weight:600;}
+.footer-right{text-align:right;}
+.footer-right a{color:var(--muted);text-decoration:none;}
+.footer-tagline{max-width:480px;margin:12px auto 0;font-size:10px;color:#333;text-align:center;letter-spacing:2px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics" width="145">
+    </div>
+    <div class="driver-badge">Driver Portal</div>
+  </div>
+</header>
+
+<div class="accent-bar"><div class="dark"></div><div class="grn"></div></div>
+<div class="hero"><p>Proof of Delivery</p></div>
+
+<main class="page">
+  <div class="intro">
+    <h1>Delivery Upload</h1>
+    <p>Submit your delivery photos and confirm the recipient below.</p>
+  </div>
+
+  <div id="mainForm">
+
+    <div class="po-card">
+      <div class="po-dot"></div>
+      <div class="po-info">
+        <div class="po-meta-grid">
+          <div class="po-meta-item">
+            <div class="po-label">PO Number</div>
+            <div class="po-value" id="poDisplay">—</div>
+          </div>
+          <div class="po-meta-item">
+            <div class="po-label">Account</div>
+            <div class="po-value po-value--secondary" id="accountDisplay">—</div>
+          </div>
+          <div class="po-meta-item po-meta-full">
+            <div class="po-label">Project Name</div>
+            <div class="po-value po-value--secondary" id="projectDisplay">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="card-header"><p>01 &mdash; Delivery Photos</p></div>
+      <div class="card-body">
+        <div class="photo-grid">
+          <label class="photo-zone" id="zone1" for="file1">
+            <input type="file" id="file1" accept="image/*" onchange="previewPhoto(1)">
+            <span class="zone-icon">&#128247;</span>
+            <div class="zone-name">Photo 1</div><div class="zone-hint">Required</div>
+            <img class="photo-preview" id="preview1" alt=""><div class="check-badge">&#10003;</div>
+          </label>
+          <label class="photo-zone" id="zone2" for="file2">
+            <input type="file" id="file2" accept="image/*" onchange="previewPhoto(2)">
+            <span class="zone-icon">&#128247;</span>
+            <div class="zone-name">Photo 2</div><div class="zone-hint">Optional</div>
+            <img class="photo-preview" id="preview2" alt=""><div class="check-badge">&#10003;</div>
+          </label>
+          <label class="photo-zone" id="zone3" for="file3">
+            <input type="file" id="file3" accept="image/*" onchange="previewPhoto(3)">
+            <span class="zone-icon">&#128247;</span>
+            <div class="zone-name">Photo 3</div><div class="zone-hint">Optional</div>
+            <img class="photo-preview" id="preview3" alt=""><div class="check-badge">&#10003;</div>
+          </label>
+          <label class="photo-zone" id="zone4" for="file4">
+            <input type="file" id="file4" accept="image/*" onchange="previewPhoto(4)">
+            <span class="zone-icon">&#128247;</span>
+            <div class="zone-name">Photo 4</div><div class="zone-hint">Optional</div>
+            <img class="photo-preview" id="preview4" alt=""><div class="check-badge">&#10003;</div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="card-header"><p>02 &mdash; Delivery Confirmation</p></div>
+      <div class="card-body">
+        <div class="field" id="field-receivedBy">
+          <label>Received By <span class="req">*</span></label>
+          <input type="text" id="receivedBy" placeholder="Full name of person who received the delivery" autocomplete="name">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Date Delivered <span class="req">*</span></label>
+            <input type="date" id="deliveredDate" style="color-scheme:dark;">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Time Delivered <span class="req">*</span></label>
+            <input type="time" id="deliveredTime" style="color-scheme:dark;">
+          </div>
+        </div>
+        <div class="field" id="field-ccEmails" style="margin-top:14px;">
+          <label>CC Additional Recipients <span style="opacity:0.5;font-weight:normal;">(optional)</span></label>
+          <input type="text" id="ccEmails" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email">
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Uploading...</div>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <button class="btn-preview" id="previewBtn" onclick="startPreview()">
+      &#128064; Preview Email Before Sending
+    </button>
+
+    <div class="preview-sent" id="previewSent"></div>
+    <div class="step-actions" id="stepActions">
+      <button class="btn-submit" id="submitBtn" onclick="startUpload()">
+        Confirm &amp; Send to Client <span class="btn-arrow">&#8594;</span>
+      </button>
+      <button class="btn-preview" id="previewAgainBtn" onclick="startPreview()" style="margin-top:8px;font-size:12px;padding:10px 20px;">
+        &#8635; Send Preview Again
+      </button>
+    </div>
+
+  </div>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">&#10003;</div>
+    <h2>Delivery Confirmed</h2>
+    <p id="successMessage">Photos saved to the Operations Board and the POD email has been sent to the client. You can close this page.</p>
+  </div>
+</main>
+
+<div class="accent-bar"><div class="dark"></div><div class="grn"></div></div>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-left"><p>Concierge Desk</p><p class="brand-sub">HANDS Logistics</p></div>
+    <div class="footer-right">
+      <a href="mailto:concierge@handslogistics.com">concierge&#64;handslogistics.com</a><br>
+      Las Vegas, NV 89139
+    </div>
+  </div>
+  <div class="footer-tagline">"Your logistics are in better HANDS."</div>
+</footer>
+
+<script>
+var CLOUDINARY_CLOUD  = 'dxkpbjicu';
+var CLOUDINARY_PRESET = 'hands_pod_photos';
+var LOOKUP_ENDPOINT   = '/api/lookup-item';
+var SUBMIT_ENDPOINT   = '/api/submit-pod';
+var PREVIEW_ENDPOINT  = '/api/preview-pod';
+var uploadedUrls      = null;
+
+// Parse PO from URL
+var poNumber = '';
+try { poNumber = new URLSearchParams(window.location.search).get('po') || ''; } catch(e) {}
+
+// Show PO immediately
+if (poNumber) {
+  document.getElementById('poDisplay').textContent = poNumber;
+}
+
+// Default Date Delivered / Time Delivered to "right now" — driver can adjust.
+// These are the ACTUAL delivered values (not the scheduled ones in Monday).
+(function defaultDateTimeToNow() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('deliveredDate').value = y + '-' + m + '-' + d;
+  document.getElementById('deliveredTime').value = hh + ':' + mm;
+})();
+
+// Fetch order details for display (Account, Project) — no longer pre-fills date/time
+function fetchItem() {
+  if (!poNumber) return;
+  fetch(LOOKUP_ENDPOINT + '?po=' + poNumber)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      document.getElementById('poDisplay').textContent      = d.itemId      || poNumber;
+      document.getElementById('accountDisplay').textContent = d.account     || '—';
+      document.getElementById('projectDisplay').textContent = d.projectName || '—';
+    })
+    .catch(function(err) { console.warn('lookup failed:', err); });
+}
+
+// Run after page is fully loaded
+window.addEventListener('load', fetchItem);
+
+function previewPhoto(n) {
+  var input = document.getElementById('file'+n);
+  var f = input.files[0];
+  if (!f) return;
+  // Guard large uploads — HEIC/phone photos sometimes exceed Cloudinary's free tier easily
+  var MAX_BYTES = 15 * 1024 * 1024; // 15 MB
+  if (f.size > MAX_BYTES) {
+    input.value = '';
+    showError('Photo ' + n + ' is too large (' + (f.size/1024/1024).toFixed(1) + ' MB). Please use a photo under 15 MB.');
+    return;
+  }
+  hideError();
+  var r = new FileReader();
+  r.onload = function(e) {
+    var img = document.getElementById('preview'+n);
+    img.src = e.target.result;
+    img.classList.add('show');
+    document.getElementById('zone'+n).classList.add('has-photo');
+  };
+  r.readAsDataURL(f);
+}
+
+function showError(m) { var e=document.getElementById('errorBox'); e.textContent=m; e.classList.add('show'); }
+function hideError()  { document.getElementById('errorBox').classList.remove('show'); }
+function setProgress(p,m) { document.getElementById('progressFill').style.width=p+'%'; document.getElementById('progressText').textContent=m; }
+
+// Simple email regex — good enough for a catch-most validator
+var EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function parseCCs(raw) {
+  // Split on commas OR semicolons (people type both), trim, drop empties
+  if (!raw) return { valid: [], invalid: [] };
+  var parts = raw.split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean);
+  var valid = [], invalid = [];
+  parts.forEach(function(p) { (EMAIL_REGEX.test(p) ? valid : invalid).push(p); });
+  // Cap at 10
+  if (valid.length > 10) valid = valid.slice(0, 10);
+  return { valid: valid, invalid: invalid };
+}
+
+function validateForm() {
+  var f1 = document.getElementById('file1').files[0];
+  var rb = document.getElementById('receivedBy').value.trim();
+  var dd = document.getElementById('deliveredDate').value;
+  var dt = document.getElementById('deliveredTime').value;
+  var ccRaw = document.getElementById('ccEmails').value.trim();
+  var cc = parseCCs(ccRaw);
+
+  if (!f1) { showError('Please add at least one photo before submitting.'); return null; }
+  if (!rb) { document.getElementById('field-receivedBy').classList.add('has-error'); showError('Please enter the name of the person who received the delivery.'); return null; }
+  if (!dd) { showError('Please fill in the Date Delivered.'); return null; }
+  if (!dt) { showError('Please fill in the Time Delivered.'); return null; }
+  if (cc.invalid.length) {
+    document.getElementById('field-ccEmails').classList.add('has-error');
+    showError('CC field has invalid email(s): ' + cc.invalid.join(', ') + '. Please fix or remove them.');
+    return null;
+  }
+  document.getElementById('field-receivedBy').classList.remove('has-error');
+  document.getElementById('field-ccEmails').classList.remove('has-error');
+  hideError();
+  return { receivedBy: rb, deliveredDate: dd, deliveredTime: dt, ccEmails: cc.valid };
+}
+
+function uploadFile(file, idx, total) {
+  return new Promise(function(resolve, reject) {
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'hands-pod/' + poNumber);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload');
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) {
+        var p = ((idx-1)/total*100) + (e.loaded/e.total/total*80);
+        setProgress(Math.round(p), 'Uploading photo ' + idx + ' of ' + total + '...');
+      }
+    };
+    xhr.onload  = function() { xhr.status===200 ? resolve(JSON.parse(xhr.responseText).secure_url) : reject(new Error('Upload error: '+xhr.status)); };
+    xhr.onerror = function() { reject(new Error('Network error — check connection')); };
+    xhr.send(fd);
+  });
+}
+
+function startPreview() {
+  var form = validateForm();
+  if (!form) return;
+  var btn = document.getElementById('previewBtn');
+  var btn2 = document.getElementById('previewAgainBtn');
+  var active = (btn2 && btn2.offsetParent) ? btn2 : btn;
+  active.disabled = true;
+  active.textContent = 'Sending preview...';
+
+  function sendPreview(urls) {
+    fetch(PREVIEW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        itemId: poNumber,
+        photoUrl:  urls[0] || '',
+        photoUrl2: urls[1] || '',
+        receivedBy: form.receivedBy,
+        deliveredDate: form.deliveredDate,
+        deliveredTime: form.deliveredTime,
+        ccEmails: form.ccEmails
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      active.disabled = false;
+      active.innerHTML = '&#8635; Send Preview Again';
+      var banner = document.getElementById('previewSent');
+      var clientMsg = d.clientEmail ? ' &mdash; will send to <strong>' + d.clientEmail + '</strong>' : ' &mdash; no client email on file';
+      var ccMsg = form.ccEmails.length ? '<br><span style="opacity:0.8;font-size:11px;">CC on real send: ' + form.ccEmails.join(', ') + '</span>' : '';
+      banner.innerHTML = '&#10003; Preview sent to jon&#64; &amp; charles&#64;handslogistics.com' + clientMsg + ccMsg;
+      banner.classList.add('show');
+      document.getElementById('previewBtn').style.display = 'none';
+      document.getElementById('stepActions').classList.add('show');
+    })
+    .catch(function(err) {
+      active.disabled = false;
+      active.innerHTML = '&#128064; Preview Email Before Sending';
+      showError('Preview failed: ' + err.message);
+    });
+  }
+
+  if (uploadedUrls) { sendPreview(uploadedUrls); return; }
+
+  var f1=document.getElementById('file1').files[0], f2=document.getElementById('file2').files[0],
+      f3=document.getElementById('file3').files[0], f4=document.getElementById('file4').files[0];
+  var files = [f1,f2,f3,f4].filter(Boolean);
+  document.getElementById('progressWrap').classList.add('show');
+  setProgress(0, 'Uploading photos...');
+  Promise.all(files.map(function(f,i) { return uploadFile(f, i+1, files.length); }))
+    .then(function(urls) {
+      uploadedUrls = urls;
+      setProgress(100, 'Photos uploaded.');
+      setTimeout(function() { document.getElementById('progressWrap').classList.remove('show'); }, 800);
+      sendPreview(urls);
+    })
+    .catch(function(err) {
+      active.disabled = false;
+      active.innerHTML = '&#128064; Preview Email Before Sending';
+      showError('Upload failed: ' + err.message);
+      document.getElementById('progressWrap').classList.remove('show');
+    });
+}
+
+function startUpload() {
+  var form = validateForm();
+  if (!form) return;
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Sending... <span class="btn-arrow">&#8635;</span>';
+  document.getElementById('progressWrap').classList.add('show');
+
+  function submit(urls) {
+    setProgress(80, 'Saving to Operations Board...');
+    fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        itemId: poNumber,
+        photoUrl:  urls[0]||'', photoUrl2: urls[1]||'',
+        photoUrl3: urls[2]||'', photoUrl4: urls[3]||'',
+        receivedBy: form.receivedBy,
+        deliveredDate: form.deliveredDate,
+        deliveredTime: form.deliveredTime,
+        ccEmails: form.ccEmails,
+        submittedAt: new Date().toISOString()
+      })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Server error ' + r.status);
+      return r.json();
+    })
+    .then(function(d) {
+      if (d && d.success === false) throw new Error(d.error || 'Submission failed');
+      setProgress(100, 'Done!');
+      // Tailor the success message to what actually happened
+      var msgEl = document.getElementById('successMessage');
+      var ccSuffix = (d && d.ccSentTo && d.ccSentTo.length)
+        ? ' (cc: ' + d.ccSentTo.join(', ') + ')'
+        : '';
+      if (d && d.emailSent && d.sentTo) {
+        msgEl.innerHTML = 'Photos saved to the Operations Board and the POD email has been sent to <strong>' + d.sentTo + '</strong>' + ccSuffix + '. You can close this page.';
+      } else if (d && d.emailSent) {
+        msgEl.textContent = 'Photos saved to the Operations Board and the POD email has been sent' + ccSuffix + '. You can close this page.';
+      } else {
+        // Submission succeeded but email didn't — still a win, but flag it
+        msgEl.innerHTML = 'Photos saved to the Operations Board. <strong>The POD email did not send</strong> — please notify concierge@handslogistics.com to resend manually.';
+      }
+      setTimeout(function() {
+        document.getElementById('mainForm').style.display = 'none';
+        document.getElementById('successScreen').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 500);
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = 'Confirm &amp; Send to Client <span class="btn-arrow">&#8594;</span>';
+      showError('Submission failed: ' + err.message + '. Please try again or contact concierge@handslogistics.com');
+      document.getElementById('progressWrap').classList.remove('show');
+    });
+  }
+
+  if (uploadedUrls) { submit(uploadedUrls); return; }
+
+  var f1=document.getElementById('file1').files[0], f2=document.getElementById('file2').files[0],
+      f3=document.getElementById('file3').files[0], f4=document.getElementById('file4').files[0];
+  var files = [f1,f2,f3,f4].filter(Boolean);
+  setProgress(0, 'Uploading photos...');
+  Promise.all(files.map(function(f,i) { return uploadFile(f, i+1, files.length); }))
+    .then(function(urls) { uploadedUrls = urls; submit(urls); })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = 'Confirm &amp; Send to Client <span class="btn-arrow">&#8594;</span>';
+      showError('Upload failed: ' + err.message);
+      document.getElementById('progressWrap').classList.remove('show');
+    });
+}
+</script>
+</body>
+</html>
