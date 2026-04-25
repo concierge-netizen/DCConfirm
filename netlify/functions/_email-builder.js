@@ -432,4 +432,178 @@ function sanitizeEmailList(input, excludeEmail, cap) {
   return out;
 }
 
-module.exports = { fetchItem, extractFields, extractPodFields, buildEmail, buildPodEmail, markSent, markPodSent, sanitizeEmailList, BOARD_ID };
+// ── I/O NOTICE HTML RENDERER ──
+// Used by send-io-notice.js to render branded inbound/outbound warehouse emails.
+function renderIoNoticeHtml(f) {
+  const e = escapeHtml;
+  const isInbound = f.direction === 'Inbound';
+  const headlineMsg = isInbound
+    ? 'Your inbound shipment has been received at the HANDS warehouse.'
+    : 'Your outbound shipment has been processed and is on its way.';
+  const bannerText = isInbound ? 'Inbound Receipt' : 'Outbound Shipment';
+
+  // Build the package stats row — only show what's present
+  const stats = [];
+  if (f.cartons) stats.push({ label: 'Cartons', value: f.cartons });
+  if (f.pallets) stats.push({ label: 'Pallets', value: f.pallets });
+  if (f.weight)  stats.push({ label: 'Weight', value: f.weight + ' lbs' });
+  const statsHtml = stats.length
+    ? '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;"><tr>' +
+        stats.map(s =>
+          '<td align="center" style="background:#f4f4f4;border:1px solid #d0d0d0;border-radius:6px;padding:14px 8px;' + (stats.indexOf(s) < stats.length-1 ? 'margin-right:4px;' : '') + '">' +
+            '<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:4px;">'+e(s.label)+'</div>' +
+            '<div style="font-size:20px;font-weight:800;color:#0a0a0a;">'+e(s.value)+'</div>' +
+          '</td>' +
+          (stats.indexOf(s) < stats.length-1 ? '<td width="6" style="font-size:0;line-height:0;">&nbsp;</td>' : '')
+        ).join('') +
+      '</tr></table>'
+    : '';
+
+  // Photo buttons (only if present)
+  const p1 = f.photoUrl1 || '';
+  const p2 = f.photoUrl2 || '';
+  const photoButtons = (p1 || p2)
+    ? '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:36px;"><tr><td align="center">' +
+        '<table cellpadding="0" cellspacing="0" border="0"><tr>' +
+          (p1 ? '<td style="padding-right:8px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#a0d6b4;border-radius:8px;text-align:center;"><a href="'+e(p1)+'" target="_blank" style="display:inline-block;padding:14px 28px;font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">View Photo 1</a></td></tr></table></td>' : '') +
+          (p2 ? '<td style="padding-left:8px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#a0d6b4;border-radius:8px;text-align:center;"><a href="'+e(p2)+'" target="_blank" style="display:inline-block;padding:14px 28px;font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">View Photo 2</a></td></tr></table></td>' : '') +
+        '</tr></table>' +
+      '</td></tr></table>'
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${e(bannerText)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f2f2f2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#e0e0e0;padding:32px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+
+      <!-- HEADER -->
+      <tr><td style="background-color:#0a0a0a;padding:32px 40px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td style="vertical-align:middle;">
+            <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics" width="145" style="display:block;border:0;max-width:145px;">
+          </td>
+          <td align="right" style="vertical-align:middle;">
+            <p style="margin:0;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555555;">Warehouse<br>Operations</p>
+          </td>
+        </tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;"><tr>
+          <td width="68%" height="3" style="background-color:#1a1a1a;font-size:0;line-height:0;">&nbsp;</td>
+          <td width="32%" height="3" style="background-color:#a0d6b4;font-size:0;line-height:0;">&nbsp;</td>
+        </tr></table>
+      </td></tr>
+
+      <!-- BANNER -->
+      <tr><td style="background-color:#a0d6b4;padding:14px 40px;">
+        <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#0a0a0a;text-align:center;">${e(bannerText)}</p>
+      </td></tr>
+
+      <!-- BODY -->
+      <tr><td style="padding:36px 40px 0;">
+        <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#0a0a0a;letter-spacing:-0.5px;">${e(headlineMsg)}</p>
+        <p style="margin:0 0 28px 0;font-size:14px;color:#444444;line-height:1.6;">Below are the details of record. Please reply to <a href="mailto:concierge&#64;handslogistics.com" style="color:#0a0a0a;">concierge&#64;handslogistics.com</a> if anything is incorrect.</p>
+
+        <!-- 01 SHIPMENT INFORMATION -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border:1px solid #d0d0d0;border-radius:6px;overflow:hidden;">
+          <tr><td colspan="2" style="background-color:#e2e2e2;padding:10px 18px;border-bottom:1px solid #d0d0d0;"><p style="margin:0;font-size:9.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#a0d6b4;">01 &mdash; Shipment Information</p></td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;width:38%;text-transform:uppercase;letter-spacing:0.5px;">Client</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;">${e(f.clientName)}</td></tr>
+          ${f.account ? `<tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.5px;">Account</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;">${e(f.account)}</td></tr>` : ''}
+          ${f.project ? `<tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.5px;">Project</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;">${e(f.project)}</td></tr>` : ''}
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.5px;">PO Number</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;">${e(f.itemId)}</td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.5px;">Direction</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;"><strong>${e(f.direction)}</strong></td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:0.5px;">Purpose</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;">${e(f.purpose)}</td></tr>
+        </table>
+
+        <!-- 02 CONTENTS -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border:1px solid #d0d0d0;border-radius:6px;overflow:hidden;">
+          <tr><td style="background-color:#e2e2e2;padding:10px 18px;border-bottom:1px solid #d0d0d0;"><p style="margin:0;font-size:9.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#a0d6b4;">02 &mdash; Contents</p></td></tr>
+          <tr><td style="padding:16px 18px;"><p style="margin:0;font-size:13px;color:#0a0a0a;line-height:1.9;white-space:pre-line;">${e(f.contents)}</p></td></tr>
+        </table>
+
+        ${statsHtml}
+
+        <!-- 03 CARRIER & TRACKING -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border:1px solid #d0d0d0;border-radius:6px;overflow:hidden;">
+          <tr><td colspan="2" style="background-color:#e2e2e2;padding:10px 18px;border-bottom:1px solid #d0d0d0;"><p style="margin:0;font-size:9.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#a0d6b4;">03 &mdash; Carrier &amp; Tracking</p></td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;width:38%;text-transform:uppercase;letter-spacing:0.5px;">Carrier</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;">${e(f.carrier)}</td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;border-bottom:1px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.5px;">Tracking #</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;border-bottom:1px solid #e0e0e0;font-family:ui-monospace,Menlo,monospace;">${e(f.tracking)}</td></tr>
+          <tr><td style="padding:11px 18px;font-size:12px;color:#888888;${f.address ? 'border-bottom:1px solid #e0e0e0;' : ''}text-transform:uppercase;letter-spacing:0.5px;">${isInbound ? 'Received On' : 'Shipped On'}</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;${f.address ? 'border-bottom:1px solid #e0e0e0;' : ''}">${e(f.shipDate)}</td></tr>
+          ${f.address ? `<tr><td style="padding:11px 18px;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:0.5px;">${isInbound ? 'Received At' : 'Ship To'}</td><td style="padding:11px 18px;font-size:13px;color:#0a0a0a;">${e(f.address)}</td></tr>` : ''}
+        </table>
+
+        ${f.instructions ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border:1px solid #d0d0d0;border-radius:6px;overflow:hidden;">
+          <tr><td style="background-color:#e2e2e2;padding:10px 18px;border-bottom:1px solid #d0d0d0;"><p style="margin:0;font-size:9.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#a0d6b4;">04 &mdash; Special Instructions</p></td></tr>
+          <tr><td style="padding:16px 18px;"><p style="margin:0;font-size:13px;color:#0a0a0a;line-height:1.9;white-space:pre-line;">${e(f.instructions)}</p></td></tr>
+        </table>` : ''}
+
+        ${photoButtons}
+
+        <!-- ASSIGN PURPOSE CTA — client-facing call to action -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 28px;">
+          <tr><td align="center" style="padding:24px 0 8px;border-top:1px solid #e0e0e0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+              <tr><td style="background-color:#a0d6b4;border-radius:8px;text-align:center;">
+                <a href="https://assignpurpose.netlify.app/?po=${e(f.itemId)}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Assign Purpose &rarr;</a>
+              </td></tr>
+            </table>
+            <p style="margin:10px 0 0;font-size:11px;color:#888;">Let us know how you&rsquo;d like these materials used.</p>
+          </td></tr>
+        </table>
+
+      </td></tr>
+
+      <!-- DISCLAIMER -->
+      <tr><td style="background-color:#e8e8e8;padding:20px 40px;border-top:1px solid #d5d5d5;">
+        <p style="margin:0;font-size:12px;color:#888888;line-height:1.7;text-align:center;">Questions or discrepancies? Reply to this email or contact <a href="mailto:concierge&#64;handslogistics.com" style="color:#a0d6b4;text-decoration:none;">concierge&#64;handslogistics.com</a>.</p>
+      </td></tr>
+
+      <!-- CAMO FOOTER -->
+      <tr><td style="padding:0;font-size:0;line-height:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+          <td width="68%" height="3" style="background-color:#1a1a1a;font-size:0;line-height:0;">&nbsp;</td>
+          <td width="32%" height="3" style="background-color:#a0d6b4;font-size:0;line-height:0;">&nbsp;</td>
+        </tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+          <td style="background-color:#0a0a0a;padding:0;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:rgba(5,5,5,0.90);">
+              <tr><td style="padding:32px 40px 36px 40px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td width="38%" style="vertical-align:top;padding-right:32px;border-right:1px solid rgba(255,255,255,0.12);">
+                    <p style="margin:0 0 6px 0;font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:normal;color:#ffffff;letter-spacing:0.01em;line-height:1.2;">Warehouse Desk</p>
+                    <p style="margin:0 0 20px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#a0d6b4;">HANDS Logistics</p>
+                    <table cellpadding="0" cellspacing="0" border="0"><tr>
+                      <td style="background-color:#a0d6b4;border-radius:6px;text-align:center;">
+                        <a href="${e(f.mondayUrl)}" target="_blank" style="display:inline-block;padding:13px 20px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Open On Monday</a>
+                      </td>
+                    </tr></table>
+                  </td>
+                  <td width="62%" style="vertical-align:top;padding-left:32px;">
+                    <p style="margin:0 0 18px 0;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:rgba(255,255,255,0.85);letter-spacing:0.02em;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.12);">Your logistics are in better HANDS.</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr><td width="22" style="vertical-align:top;padding-top:1px;padding-bottom:12px;"><span style="color:#a0d6b4;font-size:13px;">&#9993;</span></td><td style="vertical-align:middle;padding-bottom:12px;"><a href="mailto:concierge&#64;handslogistics.com" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#ffffff;text-decoration:none;">concierge&#64;handslogistics.com</a></td></tr>
+                      <tr><td width="22" style="vertical-align:top;padding-top:1px;padding-bottom:12px;"><span style="color:#a0d6b4;font-size:13px;">&#9872;</span></td><td style="vertical-align:middle;padding-bottom:12px;"><a href="https://www.handslogistics.com" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#ffffff;text-decoration:none;">www.handslogistics.com</a></td></tr>
+                      <tr><td width="22" style="vertical-align:top;padding-top:2px;"><span style="color:#a0d6b4;font-size:13px;">&#9679;</span></td><td style="vertical-align:top;"><span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.75);line-height:1.5;">8540 Dean Martin Drive<br>Suite 160, Las Vegas, NV 89139</span></td></tr>
+                    </table>
+                  </td>
+                </tr></table>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;"><tr><td height="1" style="background-color:rgba(255,255,255,0.10);font-size:0;line-height:0;"></td></tr></table>
+                <p style="margin:10px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.35);">Inbound &nbsp;&middot;&nbsp; Outbound &nbsp;&middot;&nbsp; Warehousing</p>
+              </td></tr>
+            </table>
+          </td>
+        </tr></table>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+module.exports = { fetchItem, extractFields, extractPodFields, buildEmail, buildPodEmail, markSent, markPodSent, sanitizeEmailList, renderIoNoticeHtml, BOARD_ID };
