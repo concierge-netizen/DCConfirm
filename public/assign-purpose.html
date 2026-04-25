@@ -259,9 +259,10 @@
 const API_ENDPOINT = '/api/assign-purpose';
 
 // ─── LOAD DATA FROM URL ──────────────────────────────────────────────────────
-// Supports two URL shapes:
-//   1. ?data=BASE64JSON  (preferred — richer payload from ops side)
-//   2. ?po=...&name=...&email=...&account=...&dir=...&date=...&carrier=...&tracking=...&contents=...
+// Supports three URL shapes (in order of preference):
+//   1. ?data=BASE64JSON  (richest payload — passed by I/O notice email CTA)
+//   2. ?po=... + individual params (legacy, less common)
+//   3. ?po=...  alone — falls back to /api/lookup-po server-side
 function loadParams() {
   const p = new URLSearchParams(window.location.search);
   const d = p.get('data');
@@ -288,14 +289,39 @@ const REC = loadParams();
 // ─── POPULATE UI ─────────────────────────────────────────────────────────────
 function $ (id) { return document.getElementById(id); }
 
-$('h-po').textContent        = REC.po;
-$('s-account').textContent   = REC.account;
-$('s-direction').textContent = REC.direction;
-$('s-date').textContent      = REC.date;
-$('s-carrier').textContent   = REC.carrier + (REC.tracking ? ' · ' + REC.tracking : '');
-$('s-contents').textContent  = REC.contents;
-$('f-name').value            = REC.clientName  || '';
-$('f-email').value           = REC.clientEmail || '';
+function repaintFromREC() {
+  $('h-po').textContent        = REC.po || '—';
+  $('s-account').textContent   = REC.account || '—';
+  $('s-direction').textContent = REC.direction || '—';
+  $('s-date').textContent      = REC.date || '—';
+  $('s-carrier').textContent   = (REC.carrier || '—') + (REC.tracking ? ' · ' + REC.tracking : '');
+  $('s-contents').textContent  = REC.contents || '—';
+  $('f-name').value            = REC.clientName  || '';
+  $('f-email').value           = REC.clientEmail || '';
+}
+
+repaintFromREC();
+
+// If the URL only had ?po=X (no ?data= payload, no other params), fetch from the
+// server-side lookup so the order info panel populates correctly.
+(async function maybeFetchFromLookup() {
+  const p = new URLSearchParams(window.location.search);
+  const hasData = !!p.get('data');
+  const hasName = !!p.get('name');
+  const po      = p.get('po');
+  // Only fetch when we have a PO but no other context to populate the panel
+  if (hasData || hasName || !po) return;
+
+  try {
+    const res = await fetch('https://dcconfirm.netlify.app/api/lookup-po?po=' + encodeURIComponent(po));
+    if (!res.ok) return;
+    const fresh = await res.json();
+    Object.assign(REC, fresh);
+    repaintFromREC();
+  } catch (e) {
+    // Silent fail — fields stay as — but the form still works for submission
+  }
+})();
 
 // ─── CHIP SELECTION ──────────────────────────────────────────────────────────
 let selectedPurpose = '';
