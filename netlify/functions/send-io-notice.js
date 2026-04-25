@@ -22,7 +22,7 @@
 const { renderIoNoticeHtml } = require('./_email-builder');
 
 const MONDAY_TOKEN = process.env.MONDAY_TOKEN;
-const RESEND_KEY   = process.env.RESEND_KEY;
+const RESEND_KEY   = 're_Xi5en35b_9XFtdPxMhPrZ2bLfSE2jtRwD'; // hardcoded — matches send-confirmation.js to avoid env mismatch
 const BOARD_ID     = '18405667848';
 
 const FROM          = 'HANDS Logistics <concierge@handslogistics.com>';
