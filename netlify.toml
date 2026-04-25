@@ -72,3 +72,14 @@
   from = "/api/schedule-delivery"
   to = "/.netlify/functions/schedule-delivery"
   status = 200
+
+# ── Phase 2: Label generator migration ──
+[[redirects]]
+  from = "/label"
+  to = "/label.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/lookup-label"
+  to = "/.netlify/functions/lookup-label"
+  status = 200
