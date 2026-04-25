@@ -442,6 +442,28 @@ function renderIoNoticeHtml(f) {
     : 'Your outbound shipment has been processed and is on its way.';
   const bannerText = isInbound ? 'Inbound Receipt' : 'Outbound Shipment';
 
+  // Build base64 payload for Assign Purpose form (it expects ?data=BASE64JSON
+  // with itemId, po, clientName, clientEmail, account, direction, date,
+  // carrier, tracking, contents — see assign-purpose.html loadParams())
+  const assignPayload = {
+    itemId:      f.itemId,
+    po:          f.itemId,
+    clientName:  f.clientName || '',
+    clientEmail: f.clientEmail || '',
+    account:     f.account || '',
+    direction:   f.direction,
+    date:        f.shipDate || '',
+    carrier:     f.carrier || '',
+    tracking:    f.tracking || '',
+    contents:    f.contents || ''
+  };
+  // Plain base64 — the form decodes via atob() which expects standard base64.
+  // URI-encode the result so + / = survive transit through email clients and URLSearchParams.
+  const assignDataBlob = encodeURIComponent(
+    Buffer.from(JSON.stringify(assignPayload)).toString('base64')
+  );
+  const assignPurposeUrl = 'https://dcconfirm.netlify.app/assign-purpose?data=' + assignDataBlob;
+
   // Build the package stats row — only show what's present
   const stats = [];
   if (f.cartons) stats.push({ label: 'Cartons', value: f.cartons });
@@ -549,7 +571,7 @@ function renderIoNoticeHtml(f) {
           <tr><td align="center" style="padding:24px 0 8px;border-top:1px solid #e0e0e0;">
             <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
               <tr><td style="background-color:#a0d6b4;border-radius:8px;text-align:center;">
-                <a href="https://assignpurpose.netlify.app/?po=${e(f.itemId)}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Assign Purpose &rarr;</a>
+                <a href="${assignPurposeUrl}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0a0a0a;text-decoration:none;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Assign Purpose &rarr;</a>
               </td></tr>
             </table>
             <p style="margin:10px 0 0;font-size:11px;color:#888;">Let us know how you&rsquo;d like these materials used.</p>
