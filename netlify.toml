@@ -56,3 +56,8 @@
   from = "/assign-purpose"
   to = "/assign-purpose.html"
   status = 200
+
+[[redirects]]
+  from = "/api/lookup-po"
+  to = "/.netlify/functions/lookup-po"
+  status = 200
