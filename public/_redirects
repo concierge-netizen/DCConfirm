@@ -1,0 +1,5 @@
+# HANDS Phase 3 — POD portal routes
+/api/lookup-item    /.netlify/functions/lookup-item    200
+/api/submit-pod     /.netlify/functions/submit-pod     200
+/api/preview-pod    /.netlify/functions/preview-pod    200
+/pod                /pod.html                          200
