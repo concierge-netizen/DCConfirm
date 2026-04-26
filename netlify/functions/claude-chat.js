@@ -23,15 +23,56 @@
 //
 // Required env vars:
 //   ANTHROPIC_API_KEY     — from console.anthropic.com
-//   CLAUDE_CHAT_SECRET    — shared secret the hub must send
+//   HUB_JWT_SECRET        — HMAC secret for verifying hub login JWTs (PRIMARY auth)
+//   CLAUDE_CHAT_SECRET    — DEPRECATED legacy shared secret (kept for migration; remove after Jon confirms)
 //   MONDAY_TOKEN          — Monday API token (write access)
 //   RESEND_KEY            — Resend API key (for the email tools)
 // ============================================================
 
+const crypto = require('crypto');
+
 const ANTHROPIC_API_KEY  = process.env.ANTHROPIC_API_KEY;
-const CLAUDE_CHAT_SECRET = process.env.CLAUDE_CHAT_SECRET;
+const HUB_JWT_SECRET     = process.env.HUB_JWT_SECRET;
+const CLAUDE_CHAT_SECRET = process.env.CLAUDE_CHAT_SECRET;  // legacy fallback
 const MONDAY_TOKEN       = process.env.MONDAY_TOKEN;
 const RESEND_KEY         = process.env.RESEND_KEY;
+
+// ─────────────────────────────────────────────────────────────
+// JWT verification — HS256, validates issuer/expiry, constant-time signature check
+// ─────────────────────────────────────────────────────────────
+function b64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return Buffer.from(str, 'base64');
+}
+function b64url(buf) {
+  return Buffer.from(buf).toString('base64')
+    .replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+function verifyHubJWT(token, secret) {
+  if (!token || typeof token !== 'string') return { ok: false, reason: 'no_token' };
+  const parts = token.split('.');
+  if (parts.length !== 3) return { ok: false, reason: 'malformed' };
+  const [headerB64, payloadB64, sigB64] = parts;
+
+  // Verify signature with constant-time compare
+  const expected = b64url(crypto.createHmac('sha256', secret).update(headerB64 + '.' + payloadB64).digest());
+  const A = Buffer.from(sigB64);
+  const B = Buffer.from(expected);
+  if (A.length !== B.length || !crypto.timingSafeEqual(A, B)) {
+    return { ok: false, reason: 'bad_signature' };
+  }
+
+  // Parse + check claims
+  let payload;
+  try { payload = JSON.parse(b64urlDecode(payloadB64).toString('utf8')); }
+  catch { return { ok: false, reason: 'bad_payload' }; }
+
+  if (payload.iss !== 'hands-hub') return { ok: false, reason: 'bad_issuer' };
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof payload.exp !== 'number' || payload.exp < now) return { ok: false, reason: 'expired' };
+  return { ok: true, payload };
+}
 
 const MODEL           = 'claude-haiku-4-5';
 const MAX_TOKENS      = 2000;
@@ -52,7 +93,7 @@ const CORS = {
 // ─────────────────────────────────────────────────────────────
 // SYSTEM PROMPT — written to make the agent act, not refuse
 // ─────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `HANDS Logistics ops agent. Embedded in ops.handslogistics.com/hub. User: Jon Williams (CEO) or his ops team. Las Vegas concierge 3PL — deliveries, warehousing, brand activation logistics.
+const SYSTEM_PROMPT_BASE = `HANDS Logistics ops agent. Embedded in ops.handslogistics.com/hub. User: Jon Williams (CEO) or his ops team. Las Vegas concierge 3PL — deliveries, warehousing, brand activation logistics.
 
 ACT, DON'T REFUSE. You have broad write access to Monday. If no structured tool fits, USE monday_graphql — it's your universal escape hatch for any query/mutation. Saying "I can't do that" when monday_graphql can do it = failure. The user explicitly granted full power. Default to action.
 
@@ -90,6 +131,29 @@ INTAKE PROTOCOL: pull Unconfirmed group → enrich → propose to Jon → on app
 EMAIL: propose_email_send (DC/POD) or propose_custom_email → wait for approval → THEN send_*.
 
 TONE: concise, real PO numbers, brief explanations, no filler. Show your work before destructive ops. Don't apologize for being capable.`;
+
+// Build the full system prompt with current date prepended.
+// Called fresh on each request so the date is always accurate.
+function buildSystemPrompt() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' };
+  const todayStr = now.toLocaleDateString('en-US', opts);
+  // Format Monday's text2 column ("MARCH 30, 2026" — uppercase, comma-separated)
+  const t2opts = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' };
+  const todayText2 = now.toLocaleDateString('en-US', t2opts).toUpperCase();
+  // ISO date in PT
+  const ptDateParts = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Los_Angeles' }).formatToParts(now);
+  const isoPT = ptDateParts.filter(p => p.type !== 'literal').map(p => p.value).join('-');
+
+  const dateBlock = `CURRENT DATE: ${todayStr} (Pacific Time, Las Vegas).
+- Today's date in Monday text2 format: ${todayText2}
+- Today's ISO date: ${isoPT}
+- When the user says "today", "tomorrow", "this week", "this Wednesday", etc., resolve relative to this date.
+- Never claim you don't know today's date — it's right here.
+
+`;
+  return dateBlock + SYSTEM_PROMPT_BASE;
+}
 
 // ─────────────────────────────────────────────────────────────
 // TOOL DEFINITIONS
@@ -516,7 +580,7 @@ async function callClaude(messages) {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(),
       tools: TOOLS,
       messages: messages
     })
@@ -682,15 +746,33 @@ exports.handler = async function(event) {
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   if (!ANTHROPIC_API_KEY)  return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'ANTHROPIC_API_KEY not set' }) };
-  if (!CLAUDE_CHAT_SECRET) return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'CLAUDE_CHAT_SECRET not set' }) };
   if (!MONDAY_TOKEN)       return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'MONDAY_TOKEN not set' }) };
+  if (!HUB_JWT_SECRET && !CLAUDE_CHAT_SECRET) {
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Auth not configured (need HUB_JWT_SECRET or CLAUDE_CHAT_SECRET)' }) };
+  }
 
   let body;
   try { body = JSON.parse(event.body || '{}'); }
   catch (e) { return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
-  if (body.secret !== CLAUDE_CHAT_SECRET) {
-    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized' }) };
+  // ── Auth: prefer JWT (Authorization: Bearer …), fall back to legacy body.secret ──
+  let authed = false;
+  const authHeader = event.headers && (event.headers.authorization || event.headers.Authorization);
+  if (HUB_JWT_SECRET && authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    const v = verifyHubJWT(token, HUB_JWT_SECRET);
+    if (v.ok) authed = true;
+    else {
+      // Distinguishable error so the hub can prompt re-login
+      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Auth failed: ' + v.reason, code: v.reason }) };
+    }
+  } else if (CLAUDE_CHAT_SECRET && body.secret === CLAUDE_CHAT_SECRET) {
+    // Legacy path — kept temporarily so the deploy doesn't break the hub before the new client ships.
+    authed = true;
+  }
+
+  if (!authed) {
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized', code: 'no_token' }) };
   }
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
