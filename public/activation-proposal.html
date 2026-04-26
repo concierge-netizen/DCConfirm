@@ -525,8 +525,16 @@
   document.addEventListener("DOMContentLoaded", loadProposal);
 
   function getSlug() {
+    // Primary: ?slug=... from rewrite splat
     const params = new URLSearchParams(location.search);
-    return params.get("slug");
+    const fromQuery = params.get("slug");
+    if (fromQuery) return fromQuery;
+
+    // Fallback: parse pathname directly. Netlify rewrites with :splat
+    // sometimes don't carry the querystring through to the client, so
+    // the URL the browser sees is still /activation-proposal/<slug>.
+    const m = location.pathname.match(/\/activation-proposal\/([^\/?#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
   }
 
   async function loadProposal() {
