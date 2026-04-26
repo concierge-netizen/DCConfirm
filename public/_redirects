@@ -27,3 +27,10 @@
 /api/inventory         /.netlify/functions/inventory         200
 /workorders            /workorders.html                      200
 /workorder-portal      /workorder-portal.html                200
+
+# HANDS Phase 7 wave 2 — CEO Dashboard / Billing Operations
+/api/sheets-budget     /.netlify/functions/sheets-budget     200
+/api/billing-digest    /.netlify/functions/billing-digest    200
+/api/billing-webhook   /.netlify/functions/billing-webhook   200
+/api/claude-stream     /.netlify/functions/claude-stream     200
+/ceo                   /ceo.html                             200
