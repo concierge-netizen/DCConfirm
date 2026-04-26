@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HANDS — Client Emails</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#0a0a0a; color:#e8e8e8; min-height:100vh; padding:40px 20px; }
+  .wrap { max-width:640px; margin:0 auto; }
+  .hdr { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:#a0d6b4; }
+  .brand { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a0d6b4; }
+  h1 { font-size:24px; font-weight:800; margin-bottom:32px; letter-spacing:-0.5px; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:32px; margin-bottom:20px; }
+  .card h2 { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .card .sub { color:#888; font-size:13px; margin-bottom:20px; line-height:1.5; }
+  label { display:block; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#a0d6b4; margin-bottom:8px; }
+  input { width:100%; background:#1a1a1a; border:1px solid #2a2a2a; color:#fff; padding:12px 14px; border-radius:8px; font-size:15px; font-family:inherit; }
+  input:focus { outline:none; border-color:#a0d6b4; }
+  .row { display:flex; gap:10px; margin-top:14px; }
+  button { flex:1; background:#a0d6b4; border:none; color:#0a0a0a; padding:12px; border-radius:8px; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+  button:hover { background:#8cc4a1; }
+  button.ghost { background:transparent; color:#a0d6b4; border:1px solid #a0d6b4; }
+  button.ghost:hover { background:rgba(160,214,180,0.1); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .result { margin-top:16px; padding:14px; border-radius:8px; font-size:12px; line-height:1.6; display:none; }
+  .result.show { display:block; }
+  .result.ok { background:rgba(160,214,180,0.1); border:1px solid #a0d6b4; color:#a0d6b4; }
+  .result.err { background:rgba(255,100,100,0.1); border:1px solid #d84040; color:#ff8080; }
+  .result pre { font-family:ui-monospace, monospace; font-size:11px; margin-top:6px; white-space:pre-wrap; word-break:break-all; color:#aaa; }
+  .endpoints { margin-top:16px; font-size:11px; color:#666; line-height:1.8; }
+  .endpoints code { background:#1a1a1a; padding:2px 6px; border-radius:4px; color:#a0d6b4; font-family:ui-monospace, monospace; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hdr"><span class="dot"></span><span class="brand">HANDS Logistics</span></div>
+    <h1>Client Emails</h1>
+
+    <!-- DC CARD -->
+    <div class="card" data-kind="dc">
+      <h2>Delivery Confirmation</h2>
+      <p class="sub">Sends before delivery. Monday auto-fires when <strong>SEND DC</strong> flips to Yes.</p>
+      <label>Monday Item ID (PO#)</label>
+      <input type="text" class="po-input" placeholder="e.g. 1234567890" autocomplete="off" />
+      <label style="margin-top:14px;">CC Additional Recipients <span style="opacity:0.5;font-weight:normal;text-transform:none;letter-spacing:0;">(optional, comma-separated)</span></label>
+      <input type="text" class="cc-input" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email" />
+      <div class="row">
+        <button class="ghost preview">Preview</button>
+        <button class="send">Send DC</button>
+      </div>
+      <div class="result"></div>
+    </div>
+
+    <!-- POD CARD -->
+    <div class="card" data-kind="pod">
+      <h2>Proof of Delivery</h2>
+      <p class="sub">Sends after delivery, with POD photo links. Monday auto-fires when <strong>SEND POD</strong> flips to YES.</p>
+      <label>Monday Item ID (PO#)</label>
+      <input type="text" class="po-input" placeholder="e.g. 1234567890" autocomplete="off" />
+      <label style="margin-top:14px;">CC Additional Recipients <span style="opacity:0.5;font-weight:normal;text-transform:none;letter-spacing:0;">(optional, comma-separated)</span></label>
+      <input type="text" class="cc-input" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email" />
+      <div class="row">
+        <button class="ghost preview">Preview</button>
+        <button class="send">Send POD</button>
+      </div>
+      <div class="result"></div>
+    </div>
+
+    <div class="endpoints">
+      Endpoints: <code>POST /api/send-confirmation</code> · <code>POST /api/send-pod</code> · <code>POST /api/monday-webhook</code> · <code>GET /api/preview?po=...&amp;kind=dc|pod</code>
+    </div>
+  </div>
+
+<script>
+  const ENDPOINTS = { dc: '/api/send-confirmation', pod: '/api/send-pod' };
+  const LABELS    = { dc: 'Send DC',                pod: 'Send POD' };
+
+  document.querySelectorAll('.card').forEach(card => {
+    const kind    = card.dataset.kind;
+    const input   = card.querySelector('.po-input');
+    const ccInput = card.querySelector('.cc-input');
+    const preview = card.querySelector('.preview');
+    const send    = card.querySelector('.send');
+    const result  = card.querySelector('.result');
+
+    function show(ok, msg, detail) {
+      result.className = 'result show ' + (ok ? 'ok' : 'err');
+      result.innerHTML = msg + (detail ? '<pre>' + JSON.stringify(detail, null, 2) + '</pre>' : '');
+    }
+
+    preview.onclick = () => {
+      const po = input.value.trim();
+      if (!po) { input.focus(); return; }
+      window.open('/api/preview?po=' + encodeURIComponent(po) + '&kind=' + kind, '_blank');
+    };
+
+    send.onclick = async () => {
+      const po = input.value.trim();
+      if (!po) { input.focus(); return; }
+      // Parse CC field — split on , or ;, trim, filter empty
+      const ccRaw = (ccInput.value || '').trim();
+      const ccEmails = ccRaw ? ccRaw.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+      send.disabled = true;
+      send.textContent = 'Sending...';
+      result.className = 'result';
+      try {
+        const r = await fetch(ENDPOINTS[kind], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: po, ccEmails })
+        });
+        const j = await r.json();
+        if (r.ok && j.success) {
+          const ccLine = (j.ccSentTo && j.ccSentTo.length) ? ' (cc: ' + j.ccSentTo.join(', ') + ')' : '';
+          show(true, 'Sent to ' + j.sentTo + ccLine + ' ✓', { emailId: j.emailId, itemId: j.itemId, writeBackError: j.writeBackError });
+        } else {
+          show(false, 'Failed: ' + (j.error || r.status), j);
+        }
+      } catch (err) {
+        show(false, 'Network error: ' + err.message);
+      } finally {
+        send.disabled = false;
+        send.textContent = LABELS[kind];
+      }
+    };
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') send.click(); });
+  });
+</script>
+</body>
+</html>
