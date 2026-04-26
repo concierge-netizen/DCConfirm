@@ -430,7 +430,7 @@
   .row:last-child { border-bottom: none; }
   .row.r-pipeline { grid-template-columns: 1fr 1fr; }
   .row.r-board { grid-template-columns: 1fr; }
-  .row.r-bottom { grid-template-columns: 1.4fr 1fr; }
+  .row.r-bottom { grid-template-columns: 1fr; }
 
   .panel {
     background: var(--white);
@@ -805,6 +805,195 @@
     font-weight: 500;
     margin-left: 6px;
     font-size: 12px;
+  }
+
+  /* ─── CALENDAR PANEL (dark) ─── */
+  .cal-panel {
+    background: var(--text);
+    color: var(--white);
+    border: none;
+  }
+  .cal-panel .p-head {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .cal-panel .p-title {
+    color: var(--white);
+  }
+  .cal-panel .p-title .num {
+    color: var(--green);
+  }
+  .cal-panel .cal-month-label {
+    color: rgba(255,255,255,0.5) !important;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .cal-panel .p-tab {
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .cal-panel .p-tab:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--white);
+    border-color: rgba(255,255,255,0.25);
+  }
+  .cal-panel .p-tab.active {
+    color: var(--text);
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .cal-wrap {
+    padding: 12px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 360px;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .cal-weekdays > div {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    text-align: left;
+    padding: 0 6px;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(64px, 1fr);
+    gap: 6px;
+    flex: 1;
+  }
+  .cal-day {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+    transition: background .12s, border-color .12s;
+  }
+  .cal-day:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .cal-day.cal-other-month {
+    background: transparent;
+    border-color: rgba(255,255,255,0.03);
+    opacity: 0.4;
+  }
+  .cal-day.cal-today {
+    border-color: var(--green);
+    background: rgba(160,214,180,0.08);
+  }
+  .cal-day.cal-weekend {
+    background: rgba(255,255,255,0.015);
+  }
+  .cal-day-num {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .cal-day.cal-today .cal-day-num {
+    color: var(--green);
+  }
+  .cal-day.cal-other-month .cal-day-num {
+    color: rgba(255,255,255,0.3);
+  }
+  .cal-day-count {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+  }
+  .cal-day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .cal-event {
+    font-family: var(--body);
+    font-size: 10px;
+    line-height: 1.25;
+    padding: 2px 5px;
+    color: var(--text);
+    background: var(--green);
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: opacity .12s;
+  }
+  .cal-event:hover { opacity: 0.85; }
+  .cal-event.cal-event-Delivery   { background: #6dba96; }
+  .cal-event.cal-event-Activation { background: #c8a84b; color: var(--text); }
+  .cal-event.cal-event-IO         { background: #5b8fc4; color: var(--white); }
+  .cal-event.cal-event-Sourcing   { background: #9a7fc1; color: var(--white); }
+  .cal-event.cal-event-Production { background: #c75a5a; color: var(--white); }
+  .cal-event-more {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.5);
+    padding: 1px 5px;
+    cursor: pointer;
+  }
+  .cal-event-more:hover {
+    color: var(--white);
+  }
+  .cal-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .cal-leg {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.55);
+  }
+  .cal-leg i {
+    width: 9px; height: 9px;
+    display: inline-block;
+  }
+  .cal-leg-spacer { flex: 1; }
+  .cal-leg-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.4);
   }
 
   .goals-grid {
@@ -1899,138 +2088,29 @@
 
     <div class="row r-bottom">
 
-      <div class="panel">
+      <div class="panel cal-panel">
         <div class="p-head">
-          <div class="p-title"><span class="num">04</span> Pipeline by week <span style="color:var(--text-2);font-weight:400;letter-spacing:0;">· last 5 weeks</span></div>
-          <div class="p-tabs">
-            <button class="p-tab">1W</button>
-            <button class="p-tab active">1M</button>
-            <button class="p-tab">3M</button>
-            <button class="p-tab">YTD</button>
+          <div class="p-title"><span class="num">04</span> Calendar <span class="cal-month-label" id="calMonthLabel" style="color:var(--text-2);font-weight:400;letter-spacing:0;margin-left:8px;">—</span></div>
+          <div class="p-tabs cal-nav">
+            <button class="p-tab" id="calPrev" title="Previous month">‹</button>
+            <button class="p-tab" id="calToday">Today</button>
+            <button class="p-tab" id="calNext" title="Next month">›</button>
           </div>
-        </div>
-        <div class="chart-wrap">
-          <svg class="chart-svg" viewBox="0 0 800 260" preserveAspectRatio="none">
-            <line x1="0" y1="220" x2="800" y2="220" stroke="#e2e0d6" stroke-width="1"/>
-            <line x1="0" y1="170" x2="800" y2="170" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
-            <line x1="0" y1="120" x2="800" y2="120" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
-            <line x1="0" y1="70"  x2="800" y2="70"  stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
-            <text x="6" y="174" font-family="DM Mono" font-size="9" fill="#c8c8c4">5</text>
-            <text x="6" y="124" font-family="DM Mono" font-size="9" fill="#c8c8c4">10</text>
-            <text x="6" y="74"  font-family="DM Mono" font-size="9" fill="#c8c8c4">15</text>
-
-            <g transform="translate(60,0)">
-              <rect x="0"  y="190" width="20" height="30" fill="#6dba96"/>
-              <rect x="22" y="170" width="20" height="50" fill="#a0d6b4"/>
-              <rect x="44" y="180" width="20" height="40" fill="#c8c8c4"/>
-              <rect x="66" y="195" width="20" height="25" fill="#7a7a76"/>
-              <rect x="88" y="205" width="20" height="15" fill="#111110"/>
-              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W13</text>
-            </g>
-
-            <g transform="translate(220,0)">
-              <rect x="0"  y="180" width="20" height="40" fill="#6dba96"/>
-              <rect x="22" y="155" width="20" height="65" fill="#a0d6b4"/>
-              <rect x="44" y="170" width="20" height="50" fill="#c8c8c4"/>
-              <rect x="66" y="185" width="20" height="35" fill="#7a7a76"/>
-              <rect x="88" y="195" width="20" height="25" fill="#111110"/>
-              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W14</text>
-            </g>
-
-            <g transform="translate(380,0)">
-              <rect x="0"  y="175" width="20" height="45" fill="#6dba96"/>
-              <rect x="22" y="140" width="20" height="80" fill="#a0d6b4"/>
-              <rect x="44" y="160" width="20" height="60" fill="#c8c8c4"/>
-              <rect x="66" y="175" width="20" height="45" fill="#7a7a76"/>
-              <rect x="88" y="190" width="20" height="30" fill="#111110"/>
-              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W15</text>
-            </g>
-
-            <g transform="translate(540,0)">
-              <rect x="0"  y="180" width="20" height="40" fill="#6dba96"/>
-              <rect x="22" y="135" width="20" height="85" fill="#a0d6b4"/>
-              <rect x="44" y="155" width="20" height="65" fill="#c8c8c4"/>
-              <rect x="66" y="170" width="20" height="50" fill="#7a7a76"/>
-              <rect x="88" y="185" width="20" height="35" fill="#111110"/>
-              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W16</text>
-            </g>
-
-            <g transform="translate(700,0)">
-              <rect x="-2" y="-2" width="116" height="226" fill="none" stroke="#111110" stroke-width="1" stroke-dasharray="2 3"/>
-              <rect x="0"  y="170" width="20" height="50" fill="#6dba96"/>
-              <rect x="22" y="100" width="20" height="120" fill="#a0d6b4"/>
-              <rect x="44" y="140" width="20" height="80" fill="#c8c8c4"/>
-              <rect x="66" y="150" width="20" height="70" fill="#7a7a76"/>
-              <rect x="88" y="200" width="20" height="20" fill="#111110"/>
-              <text x="10" y="163" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">5</text>
-              <text x="32" y="93"  text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">12</text>
-              <text x="54" y="133" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">8</text>
-              <text x="76" y="143" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">7</text>
-              <text x="98" y="193" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">2</text>
-              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#111110" font-weight="500">W17 · NOW</text>
-            </g>
-          </svg>
-          <div class="chart-legend">
-            <div class="leg"><span class="sw" style="background:#6dba96;"></span>Intake <strong>5</strong></div>
-            <div class="leg"><span class="sw" style="background:#a0d6b4;"></span>Sched <strong>12</strong></div>
-            <div class="leg"><span class="sw" style="background:#c8c8c4;"></span>Motion <strong>8</strong></div>
-            <div class="leg"><span class="sw" style="background:#7a7a76;"></span>Delivered <strong>7</strong></div>
-            <div class="leg"><span class="sw" style="background:#111110;"></span>Billed <strong>2</strong></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="p-head">
-          <div class="p-title"><span class="num">05</span> Monthly goals · Apr</div>
-          <div class="p-meta">day 25/30 · 83% elapsed</div>
         </div>
         <div class="p-body no-pad">
-          <div class="goals-grid">
-            <div class="goal-cell">
-              <div class="goal-label">Delivery</div>
-              <div class="goal-num-row">
-                <span class="goal-num-now">12</span>
-                <span class="goal-num-target">/ 18</span>
-              </div>
-              <div class="goal-track"><div class="goal-fill" style="width:67%;"></div></div>
-              <div class="goal-pace up">↑ on pace · 67%</div>
+          <div class="cal-wrap">
+            <div class="cal-weekdays">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
-            <div class="goal-cell">
-              <div class="goal-label">Activation</div>
-              <div class="goal-num-row">
-                <span class="goal-num-now">4</span>
-                <span class="goal-num-target">/ 10</span>
-              </div>
-              <div class="goal-track"><div class="goal-fill" style="width:40%;"></div></div>
-              <div class="goal-pace down">↓ behind · 40%</div>
-            </div>
-            <div class="goal-cell">
-              <div class="goal-label">I/O Ship</div>
-              <div class="goal-num-row">
-                <span class="goal-num-now">8</span>
-                <span class="goal-num-target">/ 13</span>
-              </div>
-              <div class="goal-track"><div class="goal-fill" style="width:62%;"></div></div>
-              <div class="goal-pace up">↑ on pace · 62%</div>
-            </div>
-            <div class="goal-cell">
-              <div class="goal-label">Sourcing</div>
-              <div class="goal-num-row">
-                <span class="goal-num-now">3</span>
-                <span class="goal-num-target">/ 6</span>
-              </div>
-              <div class="goal-track"><div class="goal-fill" style="width:50%;"></div></div>
-              <div class="goal-pace down">↓ behind · 50%</div>
-            </div>
-            <div class="goal-cell">
-              <div class="goal-label">Production</div>
-              <div class="goal-num-row">
-                <span class="goal-num-now">11</span>
-                <span class="goal-num-target">/ 10</span>
-              </div>
-              <div class="goal-track"><div class="goal-fill over" style="width:100%;"></div></div>
-              <div class="goal-pace up">↑ ahead · 110%</div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="cal-legend">
+              <span class="cal-leg"><i style="background:#6dba96;"></i>Delivery</span>
+              <span class="cal-leg"><i style="background:#c8a84b;"></i>Activation</span>
+              <span class="cal-leg"><i style="background:#5b8fc4;"></i>I/O Shipping</span>
+              <span class="cal-leg"><i style="background:#9a7fc1;"></i>Sourcing</span>
+              <span class="cal-leg"><i style="background:#c75a5a;"></i>Production</span>
+              <span class="cal-leg-spacer"></span>
+              <span class="cal-leg-meta" id="calMeta">—</span>
             </div>
           </div>
         </div>
@@ -2778,129 +2858,159 @@ function askClaudeForAction(prompt) {
 }
 
 // Pipeline-by-week chart
-function renderChart() {
-  // Build last 5 weeks of data from cachedAllItems
-  var now = new Date();
-  var currentWeek = isoWeek(now);
-  var weeksData = [];
-  for (var i = 4; i >= 0; i--) {
-    var weekDate = new Date(now.getTime() - i * 7 * 86400000);
-    var w = isoWeek(weekDate);
-    weeksData.push({ week: w, isCurrent: i === 0, stages: { intake:0, scheduled:0, motion:0, delivered:0, billed:0 } });
-  }
-  // Distribute items across weeks based on delivery date
-  cachedAllItems.forEach(function(it){
-    if (isPersonnel(it)) return;
-    if (pipeGet(it, ACTIVITY_COL) !== 'Delivery') return;
-    var d = parseDeliveryDate(pipeGet(it, 'text2'));
-    if (!d) return;
-    var w = isoWeek(d);
-    var bucket = weeksData.find(function(b){ return b.week === w; });
-    if (!bucket) return;
-    var stage = classifyDelivery(it);
-    if (bucket.stages[stage] !== undefined) bucket.stages[stage]++;
-  });
+// ─────────────────────────────────────────────
+// CALENDAR — Monday-driven month grid
+// ─────────────────────────────────────────────
+var calOffset = 0;  // 0 = current month, -1 = prev, +1 = next
 
-  // Find max for scaling
-  var maxVal = 1;
-  weeksData.forEach(function(wd){
-    Object.values(wd.stages).forEach(function(v){ if (v > maxVal) maxVal = v; });
-  });
-  // Round up to nearest 5 for nicer scale
-  maxVal = Math.ceil(maxVal / 5) * 5;
-  if (maxVal < 5) maxVal = 5;
+function calActivityClass(label) {
+  // Map activity type label → CSS class suffix used in .cal-event-X
+  if (!label) return '';
+  var l = String(label).toLowerCase();
+  if (l.indexOf('deliver')   !== -1) return 'Delivery';
+  if (l.indexOf('activation')!== -1) return 'Activation';
+  if (l.indexOf('i/o')       !== -1 || l.indexOf('shipping') !== -1) return 'IO';
+  if (l.indexOf('sourc')     !== -1) return 'Sourcing';
+  if (l.indexOf('product')   !== -1) return 'Production';
+  return '';
+}
 
-  var stages = ['intake','scheduled','motion','delivered','billed'];
-  var stageColors = { intake:'#6dba96', scheduled:'#a0d6b4', motion:'#c8c8c4', delivered:'#7a7a76', billed:'#111110' };
-  var stageLabels = { intake:'Intake', scheduled:'Sched', motion:'Motion', delivered:'Delivered', billed:'Billed' };
-
-  var maxBarHeight = 200;
-  var barAreaTop = 20;
-  var barAreaBottom = 220;
-  function yForVal(v) { return barAreaBottom - (v / maxVal) * maxBarHeight; }
-
-  var svg = '<svg class="chart-svg" viewBox="0 0 800 260" preserveAspectRatio="none">';
-  // Y-axis grid lines at 25%, 50%, 75% of max
-  [0.25, 0.5, 0.75, 1].forEach(function(frac){
-    var y = barAreaBottom - frac * maxBarHeight;
-    svg += '<line x1="20" y1="' + y + '" x2="800" y2="' + y + '" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>';
-    svg += '<text x="6" y="' + (y + 4) + '" font-family="DM Mono" font-size="9" fill="#c8c8c4">' + Math.round(frac * maxVal) + '</text>';
-  });
-  svg += '<line x1="20" y1="' + barAreaBottom + '" x2="800" y2="' + barAreaBottom + '" stroke="#e2e0d6" stroke-width="1"/>';
-
-  // Render each week cluster
-  weeksData.forEach(function(wd, wi){
-    var clusterX = 60 + wi * 160;
-    var clusterTransform = 'translate(' + clusterX + ',0)';
-    svg += '<g transform="' + clusterTransform + '">';
-    if (wd.isCurrent) {
-      svg += '<rect x="-2" y="-2" width="116" height="226" fill="none" stroke="#111110" stroke-width="1" stroke-dasharray="2 3"/>';
-    }
-    stages.forEach(function(stg, si){
-      var v = wd.stages[stg];
-      var h = (v / maxVal) * maxBarHeight;
-      var y = barAreaBottom - h;
-      var x = si * 22;
-      svg += '<rect x="' + x + '" y="' + y + '" width="20" height="' + h + '" fill="' + stageColors[stg] + '"/>';
-      if (wd.isCurrent && v > 0) {
-        svg += '<text x="' + (x + 10) + '" y="' + (y - 6) + '" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">' + v + '</text>';
-      }
+function calBuildEventsByDay(year, month) {
+  // Walk cachedAllItems, parse Delivery Date, bucket by day-of-month if it's in this month
+  var byDay = {};
+  if (!cachedAllItems || !cachedAllItems.length) return byDay;
+  cachedAllItems.forEach(function(item){
+    if (typeof isPersonnel === 'function' && isPersonnel(item)) return;
+    var dateText = pipeGet(item, 'text2');
+    if (!dateText) return;
+    var d = parseDeliveryDate(dateText);
+    if (!d || isNaN(d.getTime())) return;
+    if (d.getFullYear() !== year || d.getMonth() !== month) return;
+    var day = d.getDate();
+    if (!byDay[day]) byDay[day] = [];
+    var clientName = pipeGet(item, 'text') || pipeGet(item, 'text4') || '';
+    var project    = pipeGet(item, 'text5') || '';
+    var actLabel   = pipeGet(item, ACTIVITY_COL) || '';
+    var status     = pipeGet(item, 'color') || '';
+    byDay[day].push({
+      id:      item.id,
+      name:    item.name || '',
+      client:  clientName,
+      project: project,
+      activity: actLabel,
+      activityClass: calActivityClass(actLabel),
+      status:  status
     });
-    svg += '<text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="' + (wd.isCurrent ? '#111110' : '#7a7a76') + '" font-weight="' + (wd.isCurrent ? '500' : '400') + '">W' + wd.week + (wd.isCurrent ? ' · NOW' : '') + '</text>';
-    svg += '</g>';
   });
-  svg += '</svg>';
+  // Sort each day's events: Delivery first, then Activation, then alphabetical by client
+  var order = { 'Delivery': 0, 'Activation': 1, 'IO': 2, 'Sourcing': 3, 'Production': 4 };
+  Object.keys(byDay).forEach(function(d){
+    byDay[d].sort(function(a,b){
+      var oa = order[a.activityClass] !== undefined ? order[a.activityClass] : 99;
+      var ob = order[b.activityClass] !== undefined ? order[b.activityClass] : 99;
+      if (oa !== ob) return oa - ob;
+      return (a.client || '').localeCompare(b.client || '');
+    });
+  });
+  return byDay;
+}
 
-  var chartArea = document.querySelector('.chart-wrap');
-  if (chartArea) {
-    var existing = chartArea.querySelector('.chart-svg');
-    if (existing) existing.outerHTML = svg;
+function renderCalendar() {
+  var grid = document.getElementById('calGrid');
+  if (!grid) return;
+
+  var now = new Date();
+  // Compute target month based on calOffset
+  var targetYear  = now.getFullYear();
+  var targetMonth = now.getMonth() + calOffset;
+  // Normalize (handles negative or > 11)
+  while (targetMonth < 0)  { targetMonth += 12; targetYear -= 1; }
+  while (targetMonth > 11) { targetMonth -= 12; targetYear += 1; }
+
+  // Update header label
+  var monthNames = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  var label = document.getElementById('calMonthLabel');
+  if (label) label.textContent = monthNames[targetMonth] + ' ' + targetYear;
+
+  // Mark which p-tab is active
+  var todayBtn = document.getElementById('calToday');
+  if (todayBtn) {
+    if (calOffset === 0) todayBtn.classList.add('active');
+    else todayBtn.classList.remove('active');
   }
 
-  // Legend with current totals
-  var legend = document.querySelector('.chart-legend');
-  if (legend && weeksData.length > 0) {
-    var current = weeksData[weeksData.length - 1].stages;
-    legend.innerHTML =
-      '<div class="leg"><span class="sw" style="background:#6dba96;"></span>Intake <strong>' + current.intake + '</strong></div>' +
-      '<div class="leg"><span class="sw" style="background:#a0d6b4;"></span>Sched <strong>' + current.scheduled + '</strong></div>' +
-      '<div class="leg"><span class="sw" style="background:#c8c8c4;"></span>Motion <strong>' + current.motion + '</strong></div>' +
-      '<div class="leg"><span class="sw" style="background:#7a7a76;"></span>Delivered <strong>' + current.delivered + '</strong></div>' +
-      '<div class="leg"><span class="sw" style="background:#111110;"></span>Billed <strong>' + current.billed + '</strong></div>';
+  // Get events for this month
+  var byDay = calBuildEventsByDay(targetYear, targetMonth);
+
+  // Build the day cells. Calendar shows the full weeks containing the month's days.
+  // Start = first Sunday on or before the 1st; end = last Saturday on or after the last day.
+  var firstOfMonth = new Date(targetYear, targetMonth, 1);
+  var startDay = new Date(firstOfMonth);
+  startDay.setDate(1 - firstOfMonth.getDay());  // back up to Sunday
+
+  var lastOfMonth = new Date(targetYear, targetMonth + 1, 0);
+  var endDay = new Date(lastOfMonth);
+  endDay.setDate(lastOfMonth.getDate() + (6 - lastOfMonth.getDay()));  // forward to Saturday
+
+  var todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  var cells = [];
+  var totalEventCount = 0;
+  var cur = new Date(startDay);
+  while (cur <= endDay) {
+    var isThisMonth = (cur.getMonth() === targetMonth);
+    var isToday     = (cur.getTime() === todayMidnight.getTime());
+    var isWeekend   = (cur.getDay() === 0 || cur.getDay() === 6);
+    var dayNum      = cur.getDate();
+
+    var classes = ['cal-day'];
+    if (!isThisMonth) classes.push('cal-other-month');
+    if (isToday)      classes.push('cal-today');
+    if (isWeekend && isThisMonth) classes.push('cal-weekend');
+
+    var events = isThisMonth ? (byDay[dayNum] || []) : [];
+    totalEventCount += events.length;
+
+    var maxShow = 3;
+    var visible = events.slice(0, maxShow);
+    var moreCount = events.length - visible.length;
+
+    var eventsHtml = visible.map(function(ev){
+      var label = ev.client || ev.name || '#' + ev.id;
+      var cls   = ev.activityClass ? ('cal-event-' + ev.activityClass) : '';
+      var title = (ev.client || '') + (ev.project ? ' · ' + ev.project : '') + (ev.activity ? ' [' + ev.activity + ']' : '');
+      return '<a class="cal-event ' + cls + '" href="https://handslogistics.monday.com/boards/' + OPS_BOARD + '/pulses/' + ev.id + '" target="_blank" title="' + escHtml(title) + '">' + escHtml(label) + '</a>';
+    }).join('');
+    if (moreCount > 0) {
+      eventsHtml += '<div class="cal-event-more" title="' + moreCount + ' more on this day">+ ' + moreCount + ' more</div>';
+    }
+
+    var countLabel = events.length > 0 ? '<span class="cal-day-count">' + events.length + '</span>' : '';
+    cells.push(
+      '<div class="' + classes.join(' ') + '">' +
+        '<div class="cal-day-num"><span>' + dayNum + '</span>' + countLabel + '</div>' +
+        '<div class="cal-day-events">' + eventsHtml + '</div>' +
+      '</div>'
+    );
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  grid.innerHTML = cells.join('');
+
+  // Footer meta
+  var meta = document.getElementById('calMeta');
+  if (meta) {
+    meta.textContent = totalEventCount + ' scheduled · ' + Object.keys(byDay).length + ' active days';
   }
 }
 
-// Monthly goals (5-column row)
-function renderGoalsV3() {
-  var now = new Date();
-  var monthIdx = now.getMonth();
-  var monthYear = now.getFullYear();
-  var dayOfMonth = now.getDate();
-  var daysInMonth = new Date(monthYear, monthIdx + 1, 0).getDate();
-  var elapsedPct = Math.round((dayOfMonth / daysInMonth) * 100);
-
-  var grid = document.querySelector('.goals-grid');
-  if (!grid) return;
-  grid.innerHTML = ACTIVITY_TYPES.map(function(at){
-    var goal = getMonthlyGoalFromCache(at.label, monthYear, monthIdx);
-    var done = countCompletedFromCache(at.label, monthYear, monthIdx);
-    var pct = goal > 0 ? Math.round((done / goal) * 100) : 0;
-    var fillClass = pct >= 100 ? ' over' : '';
-    var fillWidth = Math.min(100, pct);
-    var paceClass, paceLabel;
-    if (pct >= 100) { paceClass = 'up'; paceLabel = '↑ ahead · ' + pct + '%'; }
-    else if (pct >= elapsedPct - 5) { paceClass = 'up'; paceLabel = '↑ on pace · ' + pct + '%'; }
-    else { paceClass = 'down'; paceLabel = '↓ behind · ' + pct + '%'; }
-    return '<div class="goal-cell">' +
-      '<div class="goal-label">' + escHtml(at.label) + '</div>' +
-      '<div class="goal-num-row"><span class="goal-num-now">' + done + '</span><span class="goal-num-target">/ ' + goal + '</span></div>' +
-      '<div class="goal-track"><div class="goal-fill' + fillClass + '" style="width:' + fillWidth + '%;"></div></div>' +
-      '<div class="goal-pace ' + paceClass + '">' + paceLabel + '</div>' +
-    '</div>';
-  }).join('');
-
-  var meta = document.querySelector('.row.r-bottom .panel:last-child .p-meta');
-  if (meta) meta.textContent = 'day ' + dayOfMonth + '/' + daysInMonth + ' · ' + elapsedPct + '% elapsed';
+function wireCalendarNav() {
+  var prev = document.getElementById('calPrev');
+  var next = document.getElementById('calNext');
+  var today = document.getElementById('calToday');
+  if (prev)  prev.addEventListener('click', function(){ calOffset -= 1; renderCalendar(); });
+  if (next)  next.addEventListener('click', function(){ calOffset += 1; renderCalendar(); });
+  if (today) today.addEventListener('click', function(){ calOffset = 0; renderCalendar(); });
 }
 
 // Live activity feed (real Monday updates)
@@ -2958,8 +3068,7 @@ function loadAllV3() {
     renderStatusBar();
     renderPipelinesV3();
     renderActiveBoard();
-    renderChart();
-    renderGoalsV3();
+    renderCalendar();
     return loadActivity();
   }).catch(function(err){
     console.error('Load failed:', err);
@@ -3545,6 +3654,7 @@ document.addEventListener('DOMContentLoaded', function(){
   wireBoardTabs();
   wireChat();
   wireModals();
+  wireCalendarNav();
   loadAllV3();
   // Refresh every 90s
   setInterval(loadAllV3, 90000);
