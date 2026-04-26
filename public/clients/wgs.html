@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>William Grant &amp; Sons — Asset Portal · HANDS Logistics</title>
+<meta name="description" content="William Grant &amp; Sons asset deployment portal — operated by HANDS Logistics, Las Vegas.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f8f7f4;
+    --paper-2: #efeee9;
+    --text: #1a1a1a;
+    --text-soft: #555;
+    --text-mute: #888;
+    --line: #e2e0d8;
+    --line-dark: #2a2a2a;
+    --green: #a0d6b4;
+    --green-dark: #6dba96;
+    --green-deep: #3f8c63;
+    --warn: #e6a93f;
+    --bad: #c75450;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { color: inherit; }
+
+  /* ── PASSWORD GATE ─────────────────────────────────────────── */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--text);
+    color: #fff;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    transition: opacity .3s;
+  }
+  .gate.hidden { opacity: 0; pointer-events: none; }
+  .gate-card {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .gate-brand img { height: 60px; margin-bottom: 32px; }
+  .gate-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+  .gate-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1.15;
+    margin: 0 0 12px;
+  }
+  .gate-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,.55);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+  .gate-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,.25);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: .15em;
+    padding: 12px 0;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .gate-input:focus { border-bottom-color: var(--green); }
+  .gate-input.shake { animation: shake .35s; border-bottom-color: var(--bad); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-8px); }
+    40%,80% { transform: translateX(8px); }
+  }
+  .gate-btn {
+    margin-top: 20px;
+    background: var(--green);
+    color: var(--text);
+    border: none;
+    padding: 14px 36px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background .15s;
+  }
+  .gate-btn:hover { background: var(--green-dark); }
+  .gate-err {
+    color: var(--bad);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    height: 14px;
+  }
+  .gate-foot {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+    margin-top: 48px;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────────── */
+  .nav {
+    background: var(--text);
+    color: #fff;
+    border-bottom: 2px solid var(--green);
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 16px; }
+  .nav-brand img { height: 40px; display: block; }
+  .nav-brand .nav-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255,255,255,.2);
+  }
+  .nav-client {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: #fff;
+    letter-spacing: .2px;
+    line-height: 1;
+  }
+  .nav-client-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-top: 4px;
+  }
+  .nav-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    text-align: center;
+  }
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,.3);
+    padding: 8px 14px;
+    border-radius: 2px;
+    transition: all .15s;
+  }
+  .nav-cta:hover { background: var(--green); color: var(--text); border-color: var(--green); }
+
+  /* ── HERO ──────────────────────────────────────────────────── */
+  .hero {
+    background: var(--text);
+    color: #fff;
+    padding: 60px 32px 80px;
+    border-bottom: 1px solid var(--line-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green) 50%, transparent);
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -.5px;
+    margin: 0 0 16px;
+    max-width: 800px;
+  }
+  .hero-title em { font-style: italic; color: var(--green); }
+  .hero-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,.72);
+    max-width: 580px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── DATE PICKER STRIP ─────────────────────────────────────── */
+  .picker-strip {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .picker-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 16px;
+    align-items: end;
+  }
+  .picker-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .picker-field { display: flex; flex-direction: column; }
+  .picker-input {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+    outline: none;
+    width: 160px;
+  }
+  .picker-input:focus { border-bottom-color: var(--green-deep); }
+  .picker-stat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-soft);
+    padding: 8px 0;
+    min-width: 80px;
+  }
+  .picker-stat strong { color: var(--text); font-weight: 500; }
+  .cart-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: background .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cart-btn:hover:not(:disabled) { background: var(--green-deep); }
+  .cart-btn:disabled { background: var(--paper-2); color: var(--text-mute); cursor: not-allowed; }
+  .cart-count {
+    background: var(--green);
+    color: var(--text);
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+  }
+
+  /* ── CATALOG ───────────────────────────────────────────────── */
+  .catalog-wrap { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; }
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+  }
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green-deep);
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    margin: 4px 0 0;
+    letter-spacing: -.3px;
+  }
+  .section-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-mute);
+  }
+  .group-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--text-soft);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 16px;
+    transition: all .15s;
+  }
+  .chip:hover { border-color: var(--text); color: var(--text); }
+  .chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .card {
+    background: #fff;
+    padding: 20px;
+    cursor: pointer;
+    transition: background .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 280px;
+    position: relative;
+  }
+  .card:hover { background: var(--paper); }
+  .card-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--paper-2);
+    background-size: cover;
+    background-position: center;
+    border-radius: 2px;
+  }
+  .card-img.no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-mute);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+  .card-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0;
+    letter-spacing: -.2px;
+  }
+  .card-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-top: auto;
+  }
+  .card-add {
+    align-self: flex-start;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--green-deep);
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .card-add::before { content: '+ '; }
+  .card-added { color: var(--text-mute); pointer-events: none; }
+  .card-added::before { content: '✓ '; color: var(--green-deep); }
+  .card.skeleton .card-img,
+  .card.skeleton .card-title,
+  .card.skeleton .card-meta {
+    background: linear-gradient(90deg, var(--paper-2) 0%, #fff 50%, var(--paper-2) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    color: transparent;
+    border-radius: 2px;
+  }
+  .card.skeleton .card-title { height: 22px; }
+  .card.skeleton .card-meta { height: 12px; width: 60%; }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .empty-state {
+    grid-column: 1 / -1;
+    background: #fff;
+    padding: 80px 40px;
+    text-align: center;
+    color: var(--text-mute);
+  }
+  .empty-state-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .empty-state-msg { font-size: 13px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+  /* ── PRODUCT MODAL ─────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,20,20,.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    max-width: 720px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
+    border-radius: 4px;
+    position: relative;
+    border-top: 3px solid var(--green);
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-mute);
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 40px; }
+  .modal-img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--paper-2);
+    background-size: cover;
+    background-position: center;
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+  .modal-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    margin: 0 0 8px;
+    letter-spacing: -.3px;
+  }
+  .modal-group {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green-deep);
+    margin-bottom: 16px;
+  }
+  .modal-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-soft);
+    margin-bottom: 24px;
+  }
+  .modal-availability {
+    background: var(--paper);
+    border-left: 3px solid var(--line);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-soft);
+  }
+  .modal-availability.ok { border-left-color: var(--green-deep); }
+  .modal-availability.bad { border-left-color: var(--bad); }
+  .modal-availability strong { color: var(--text); font-weight: 500; }
+  .modal-qty-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; }
+  .modal-qty-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  .qty-stepper { display: flex; border: 1px solid var(--line); }
+  .qty-stepper button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .qty-stepper button:hover { background: var(--paper); }
+  .qty-stepper input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+  }
+  .modal-add-btn {
+    width: 100%;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .modal-add-btn:hover:not(:disabled) { background: var(--green-deep); }
+  .modal-add-btn:disabled { background: var(--paper-2); color: var(--text-mute); cursor: not-allowed; }
+
+  /* ── CHECKOUT DRAWER ───────────────────────────────────────── */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,20,20,.6);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+  }
+  .drawer-overlay.open { display: block; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: -520px;
+    width: 100%;
+    max-width: 520px;
+    height: 100vh;
+    background: var(--paper);
+    z-index: 201;
+    transition: right .28s cubic-bezier(.2,.7,.3,1);
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { right: 0; }
+  .drawer-head {
+    background: var(--text);
+    color: #fff;
+    padding: 28px 32px;
+    border-bottom: 2px solid var(--green);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+  .drawer-title { font-family: var(--serif); font-size: 28px; font-weight: 400; margin: 0; }
+  .drawer-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .drawer-close {
+    background: none;
+    border: 1px solid rgba(255,255,255,.3);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    border-radius: 2px;
+  }
+  .drawer-close:hover { background: var(--green); color: var(--text); border-color: var(--green); }
+  .drawer-body { flex: 1; overflow: auto; padding: 24px 32px; }
+  .drawer-section {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin: 24px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .drawer-section:first-child { margin-top: 0; }
+  .cart-line {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .cart-line-name { font-family: var(--serif); font-size: 18px; }
+  .cart-line-qty { font-family: var(--mono); font-size: 11px; color: var(--text-soft); }
+  .cart-line-rm {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--bad);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .cart-line-rm:hover { text-decoration: underline; }
+  .cart-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-mute);
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 18px;
+  }
+  .form-field { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    border-radius: 2px;
+  }
+  .form-input:focus { border-color: var(--green-deep); }
+  textarea.form-input { min-height: 80px; resize: vertical; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .drawer-foot {
+    background: #fff;
+    border-top: 1px solid var(--line);
+    padding: 20px 32px;
+  }
+  .submit-btn {
+    width: 100%;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .submit-btn:hover:not(:disabled) { background: var(--green-deep); }
+  .submit-btn:disabled { background: var(--paper-2); color: var(--text-mute); cursor: not-allowed; }
+  .submit-fineprint {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ── FOOTER ────────────────────────────────────────────────── */
+  .foot {
+    background: var(--text);
+    color: rgba(255,255,255,.6);
+    padding: 40px 32px;
+    text-align: center;
+  }
+  .foot-tag {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .foot-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+  }
+  .foot-houses {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-top: 14px;
+  }
+
+  /* ── SUCCESS MODAL ─────────────────────────────────────────── */
+  .success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,20,20,.85);
+    backdrop-filter: blur(8px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+  .success-overlay.open { display: flex; }
+  .success-card {
+    background: #fff;
+    max-width: 520px;
+    width: 100%;
+    padding: 48px 40px;
+    text-align: center;
+    border-top: 3px solid var(--green);
+    border-radius: 4px;
+  }
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--green-deep);
+  }
+  .success-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    margin: 0 0 12px;
+  }
+  .success-ref {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 20px;
+  }
+  .success-msg { font-size: 14px; line-height: 1.6; color: var(--text-soft); margin-bottom: 28px; }
+  .success-btn {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .success-btn:hover { background: var(--green-deep); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────── */
+  @media (max-width: 720px) {
+    .nav { grid-template-columns: 1fr auto; padding: 14px 18px; gap: 12px; }
+    .nav-meta { display: none; }
+    .nav-brand img { height: 32px; }
+    .nav-brand .nav-divider { height: 26px; }
+    .nav-client { font-size: 16px; }
+    .hero { padding: 40px 18px 56px; }
+    .picker-strip { padding: 16px 18px; }
+    .picker-inner { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .picker-stat { grid-column: 1 / -1; padding: 4px 0; }
+    .cart-btn { grid-column: 1 / -1; justify-content: center; }
+    .picker-input { width: 100%; }
+    .catalog-wrap { padding: 32px 18px 60px; }
+    .modal-body { padding: 28px 20px; }
+    .drawer-head, .drawer-body, .drawer-foot { padding-left: 20px; padding-right: 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .card { min-height: 220px; padding: 14px; }
+    .card-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── PASSWORD GATE ── -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-brand"><img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics"></div>
+    <div class="gate-eyebrow">William Grant &amp; Sons · Asset Portal</div>
+    <h1 class="gate-title">Restricted access</h1>
+    <p class="gate-sub">This portal is for authorized William Grant &amp; Sons team members. Enter the access code to continue.</p>
+    <input class="gate-input" id="gateInput" type="password" placeholder="Access code" autocomplete="off">
+    <div class="gate-err" id="gateErr"></div>
+    <button class="gate-btn" id="gateBtn">Enter portal</button>
+    <div class="gate-foot">Operated by HANDS Logistics · Las Vegas</div>
+  </div>
+</div>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-brand">
+    <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics">
+    <div class="nav-divider"></div>
+    <div>
+      <div class="nav-client">William Grant &amp; Sons</div>
+      <div class="nav-client-sub">Asset Portal</div>
+    </div>
+  </div>
+  <div class="nav-meta">Las Vegas · Asset Deployment</div>
+  <a href="/clients/wgs/track" class="nav-cta">Track a request</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Asset Deployment · Las Vegas</div>
+    <h1 class="hero-title">Your assets. <em>Deployed with care.</em></h1>
+    <p class="hero-sub">Your point-of-sale displays, branded materials, and corporate assets — received, stored, and deployed across Las Vegas activations. Tell us your dates, select what you need, and our team will confirm logistics within one business day.</p>
+  </div>
+</section>
+
+<!-- ── DATE PICKER ── -->
+<div class="picker-strip">
+  <div class="picker-inner">
+    <div style="display: flex; gap: 24px;">
+      <div class="picker-field">
+        <label class="picker-label">From</label>
+        <input type="date" class="picker-input" id="dateFrom">
+      </div>
+      <div class="picker-field">
+        <label class="picker-label">To</label>
+        <input type="date" class="picker-input" id="dateTo">
+      </div>
+    </div>
+    <div class="picker-stat" id="pickerStat">Pick your dates to begin</div>
+    <div></div>
+    <button class="cart-btn" id="cartBtn" disabled>
+      Request Deployment
+      <span class="cart-count" id="cartCount" style="display:none">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── CATALOG ── -->
+<main class="catalog-wrap">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">WGS Inventory</div>
+      <h2 class="section-title">Your Assets</h2>
+    </div>
+    <div class="section-meta" id="catalogMeta">Loading…</div>
+  </div>
+
+  <div class="group-chips" id="groupChips">
+    <button class="chip active" data-group="all">All</button>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="card skeleton"><div class="card-img"></div><div class="card-title"></div><div class="card-meta"></div></div>
+    <div class="card skeleton"><div class="card-img"></div><div class="card-title"></div><div class="card-meta"></div></div>
+    <div class="card skeleton"><div class="card-img"></div><div class="card-title"></div><div class="card-meta"></div></div>
+    <div class="card skeleton"><div class="card-img"></div><div class="card-title"></div><div class="card-meta"></div></div>
+  </div>
+</main>
+
+<!-- ── PRODUCT MODAL ── -->
+<div class="modal-overlay" id="productModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ── CHECKOUT DRAWER ── -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="drawer" aria-label="Deployment request">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-eyebrow">Request a deployment</div>
+      <h2 class="drawer-title">Your request</h2>
+    </div>
+    <button class="drawer-close" id="drawerCloseBtn" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="drawer-section">Assets (<span id="drawerCount">0</span>)</div>
+    <div id="drawerItems"></div>
+
+    <div class="drawer-section">Dates</div>
+    <div class="form-field">
+      <div id="drawerDates" style="font-family:var(--mono);font-size:13px;color:var(--text);"></div>
+    </div>
+
+    <div class="drawer-section">Your details</div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Name *</label>
+        <input class="form-input" id="formName" type="text" required>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="formEmail" type="email" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="formPhone" type="tel">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Brand / Team</label>
+        <input class="form-input" id="formCompany" type="text" placeholder="e.g. Glenfiddich">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Deployment address</label>
+      <input class="form-input" id="formAddress" type="text" placeholder="Venue / street, City, State, ZIP">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Activation details</label>
+      <textarea class="form-input" id="formNotes" placeholder="Anything we should know — venue access, timing, brand context, install or strike windows…"></textarea>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="submit-btn" id="submitBtn">Submit Request</button>
+    <div class="submit-fineprint">No charges. We'll confirm logistics within one business day.</div>
+  </div>
+</aside>
+
+<!-- ── SUCCESS MODAL ── -->
+<div class="success-overlay" id="successModal">
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h3 class="success-title">Request received</h3>
+    <div class="success-ref" id="successRef"></div>
+    <p class="success-msg">Thanks — our team will review your dates and asset list and reply with confirmation within one business day. Check your inbox for a copy of your request.</p>
+    <button class="success-btn" id="successCloseBtn">Continue browsing</button>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="foot">
+  <div class="foot-tag">Events and Production. In Better HANDS.</div>
+  <div class="foot-meta">William Grant &amp; Sons × HANDS Logistics</div>
+  <div class="foot-houses">Glenfiddich · Hendrick's · Monkey Shoulder · Tullamore D.E.W.</div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Slug + config (this file is hardcoded for WGS) ─────────────
+  var SLUG = 'wgs';
+  var PASSWORD_HASH = 'd05d6f0708fe70a3e8568e8d7a867cae428cb5a744f49cd49bc99727610b0090';
+  var SESSION_KEY = 'hands.client.wgs.unlocked';
+
+  // ── State ──────────────────────────────────────────────────────
+  var state = {
+    products: [],
+    productsById: {},
+    groups: [],
+    activeGroup: 'all',
+    cart: {},
+    currentProduct: null,
+    dates: { from: null, to: null }
+  };
+
+  var $ = function(id) { return document.getElementById(id); };
+
+  // ── Password gate ──────────────────────────────────────────────
+  async function sha256Hex(text) {
+    var encoder = new TextEncoder();
+    var data = encoder.encode(text);
+    var hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash))
+      .map(function(b) { return b.toString(16).padStart(2, '0'); })
+      .join('');
+  }
+
+  function unlock() {
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    $('gate').classList.add('hidden');
+    setTimeout(function() { $('gate').style.display = 'none'; }, 320);
+    boot();
+  }
+
+  function checkGate() {
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        $('gate').classList.add('hidden');
+        $('gate').style.display = 'none';
+        boot();
+        return;
+      }
+    } catch (e) {}
+    // Show gate, focus input
+    setTimeout(function() { $('gateInput').focus(); }, 200);
+  }
+
+  $('gateBtn').addEventListener('click', tryUnlock);
+  $('gateInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tryUnlock();
+  });
+
+  async function tryUnlock() {
+    var v = $('gateInput').value.trim();
+    if (!v) return;
+    $('gateErr').textContent = '';
+    try {
+      var h = await sha256Hex(v);
+      if (h === PASSWORD_HASH) {
+        unlock();
+      } else {
+        $('gateInput').classList.add('shake');
+        $('gateErr').textContent = 'Incorrect access code';
+        setTimeout(function() { $('gateInput').classList.remove('shake'); }, 400);
+        $('gateInput').select();
+      }
+    } catch (err) {
+      $('gateErr').textContent = 'Browser error — please refresh';
+    }
+  }
+
+  // ── Boot (runs after gate passes) ──────────────────────────────
+  function boot() {
+    var dateFrom = $('dateFrom');
+    var dateTo = $('dateTo');
+    var t = new Date();
+    var tomorrow = new Date(t.getTime() + 86400000);
+    var threeDaysLater = new Date(t.getTime() + 86400000 * 4);
+    dateFrom.value = isoDate(tomorrow);
+    dateTo.value   = isoDate(threeDaysLater);
+    state.dates.from = dateFrom.value;
+    state.dates.to   = dateTo.value;
+    updatePickerStat();
+
+    dateFrom.addEventListener('change', function() {
+      state.dates.from = dateFrom.value;
+      if (state.dates.to && state.dates.to < state.dates.from) {
+        dateTo.value = state.dates.from;
+        state.dates.to = state.dates.from;
+      }
+      updatePickerStat();
+    });
+    dateTo.addEventListener('change', function() {
+      state.dates.to = dateTo.value;
+      updatePickerStat();
+    });
+
+    loadCatalog();
+  }
+
+  function isoDate(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function updatePickerStat() {
+    var f = state.dates.from, t = state.dates.to;
+    var el = $('pickerStat');
+    if (!f || !t) { el.textContent = 'Pick your dates to begin'; return; }
+    var days = Math.max(1, Math.round((new Date(t) - new Date(f)) / 86400000) + 1);
+    el.innerHTML = '<strong>' + days + ' day' + (days === 1 ? '' : 's') + '</strong>';
+  }
+
+  // ── Load catalog ───────────────────────────────────────────────
+  function loadCatalog() {
+    fetch('/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) + '&endpoint=products&per_page=100')
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        var raw = (json && json.data) || [];
+        state.products = raw
+          .map(parseProduct)
+          .filter(function(p) { return !p.archived; });
+        state.products.forEach(function(p) { state.productsById[p.id] = p; });
+        buildGroups();
+        renderCatalog();
+        $('catalogMeta').textContent = state.products.length + ' assets';
+      })
+      .catch(function(err) {
+        console.error('Catalog load failed:', err);
+        $('grid').innerHTML = '<div class="empty-state"><h3 class="empty-state-title">Unable to load catalog</h3><div class="empty-state-msg">We\'re having trouble reaching our inventory system. Please refresh the page or contact our team.</div></div>';
+        $('catalogMeta').textContent = 'Error';
+      });
+  }
+
+  function parseProduct(item) {
+    var a = item.attributes || {};
+    return {
+      id: item.id,
+      name: a.name || 'Unnamed',
+      description: a.description || a.short_description || '',
+      photo: a.photo_url || a.image_url || (a.photo && a.photo.url) || '',
+      groupId: (item.relationships && item.relationships.product_group && item.relationships.product_group.data && item.relationships.product_group.data.id) || null,
+      groupName: a.product_group_name || '',
+      archived: a.archived === true || a.discarded_at != null
+    };
+  }
+
+  function buildGroups() {
+    var byId = {};
+    state.products.forEach(function(p) {
+      if (p.groupId) {
+        byId[p.groupId] = byId[p.groupId] || { id: p.groupId, name: p.groupName || 'Group', count: 0 };
+        byId[p.groupId].count++;
+      }
+    });
+    state.groups = Object.keys(byId).map(function(k) { return byId[k]; })
+      .sort(function(a, b) { return b.count - a.count; });
+
+    var groupChips = $('groupChips');
+    groupChips.innerHTML = '<button class="chip active" data-group="all">All · ' + state.products.length + '</button>';
+    state.groups.forEach(function(g) {
+      var btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.dataset.group = g.id;
+      btn.textContent = g.name + ' · ' + g.count;
+      groupChips.appendChild(btn);
+    });
+    groupChips.addEventListener('click', function(e) {
+      var t = e.target.closest('.chip');
+      if (!t) return;
+      groupChips.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+      t.classList.add('active');
+      state.activeGroup = t.dataset.group;
+      renderCatalog();
+    });
+  }
+
+  function renderCatalog() {
+    var grid = $('grid');
+    grid.innerHTML = '';
+    var filtered = state.activeGroup === 'all'
+      ? state.products
+      : state.products.filter(function(p) { return p.groupId === state.activeGroup; });
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No assets in this category</h3><div class="empty-state-msg">Try another category or browse all.</div></div>';
+      return;
+    }
+
+    filtered.forEach(function(p) {
+      var card = document.createElement('div');
+      card.className = 'card';
+      var inCart = !!state.cart[p.id];
+      card.innerHTML =
+        (p.photo
+          ? '<div class="card-img" style="background-image:url(' + escAttr(p.photo) + ')"></div>'
+          : '<div class="card-img no-img">No image</div>') +
+        '<h3 class="card-title">' + esc(p.name) + '</h3>' +
+        (p.groupName ? '<div class="card-meta">' + esc(p.groupName) + '</div>' : '<div class="card-meta">Asset</div>') +
+        '<button class="card-add' + (inCart ? ' card-added' : '') + '">' +
+          (inCart ? 'In your request' : 'View · Add') +
+        '</button>';
+      card.addEventListener('click', function() { openProduct(p.id); });
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Product modal ──────────────────────────────────────────────
+  function openProduct(id) {
+    var p = state.productsById[id];
+    if (!p) return;
+    state.currentProduct = p;
+    $('modalBody').innerHTML =
+      (p.photo
+        ? '<div class="modal-img" style="background-image:url(' + escAttr(p.photo) + ')"></div>'
+        : '<div class="modal-img no-img"></div>') +
+      (p.groupName ? '<div class="modal-group">' + esc(p.groupName) + '</div>' : '') +
+      '<h2 class="modal-title">' + esc(p.name) + '</h2>' +
+      (p.description ? '<div class="modal-desc">' + esc(p.description) + '</div>' : '') +
+      '<div class="modal-availability" id="availabilityBox"><strong>Checking availability…</strong></div>' +
+      '<div class="modal-qty-row">' +
+        '<span class="modal-qty-label">Quantity</span>' +
+        '<div class="qty-stepper">' +
+          '<button id="qtyMinus" type="button">−</button>' +
+          '<input id="qtyInput" type="number" value="' + (state.cart[id] ? state.cart[id].qty : 1) + '" min="1" max="99">' +
+          '<button id="qtyPlus" type="button">+</button>' +
+        '</div>' +
+      '</div>' +
+      '<button class="modal-add-btn" id="modalAddBtn">' +
+        (state.cart[id] ? 'Update in request' : 'Add to request') +
+      '</button>';
+
+    $('productModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    $('qtyMinus').addEventListener('click', function() {
+      var i = $('qtyInput'); i.value = Math.max(1, parseInt(i.value, 10) - 1);
+    });
+    $('qtyPlus').addEventListener('click', function() {
+      var i = $('qtyInput'); i.value = Math.min(99, (parseInt(i.value, 10) || 1) + 1);
+    });
+    $('modalAddBtn').addEventListener('click', function() {
+      var qty = parseInt($('qtyInput').value, 10) || 1;
+      addToCart(p, qty);
+      closeProductModal();
+    });
+
+    checkAvailability(p.id);
+  }
+
+  function closeProductModal() {
+    $('productModal').classList.remove('open');
+    document.body.style.overflow = '';
+    state.currentProduct = null;
+  }
+
+  function checkAvailability(productId) {
+    if (!state.dates.from || !state.dates.to) return;
+    var from = state.dates.from + 'T08:00:00Z';
+    var till = state.dates.to + 'T17:00:00Z';
+    var url = '/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) +
+              '&endpoint=availabilities' +
+              '&filter[product_id]=' + encodeURIComponent(productId) +
+              '&filter[from]=' + encodeURIComponent(from) +
+              '&filter[till]=' + encodeURIComponent(till);
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        var box = $('availabilityBox');
+        if (!box || state.currentProduct === null || state.currentProduct.id !== productId) return;
+        var data = (json && json.data) || [];
+        var hasStock = data.length > 0 && data.some(function(a) {
+          var av = a.attributes || {};
+          var stock = av.stock_count != null ? av.stock_count : (av.available != null ? av.available : 1);
+          return stock > 0;
+        });
+        if (hasStock) {
+          box.className = 'modal-availability ok';
+          box.innerHTML = '<strong>✓ Available</strong> for ' + state.dates.from + ' through ' + state.dates.to + '. Subject to final confirmation.';
+        } else {
+          box.className = 'modal-availability';
+          box.innerHTML = '<strong>Confirm with our team.</strong> We\'ll verify availability for ' + state.dates.from + ' → ' + state.dates.to + ' when you submit.';
+        }
+      })
+      .catch(function() {
+        var box = $('availabilityBox');
+        if (box) {
+          box.className = 'modal-availability';
+          box.innerHTML = '<strong>We\'ll confirm availability</strong> when you submit your request.';
+        }
+      });
+  }
+
+  // ── Cart ───────────────────────────────────────────────────────
+  function addToCart(product, qty) {
+    state.cart[product.id] = { qty: qty, productName: product.name };
+    updateCartUi();
+    renderCatalog();
+  }
+  function removeFromCart(id) {
+    delete state.cart[id];
+    updateCartUi();
+    renderCatalog();
+    renderDrawer();
+  }
+  function cartCountValue() { return Object.keys(state.cart).length; }
+  function updateCartUi() {
+    var n = cartCountValue();
+    var btn = $('cartBtn'), cnt = $('cartCount');
+    if (n > 0) {
+      btn.disabled = false;
+      cnt.style.display = '';
+      cnt.textContent = n;
+    } else {
+      btn.disabled = true;
+      cnt.style.display = 'none';
+    }
+  }
+
+  // ── Drawer ─────────────────────────────────────────────────────
+  $('cartBtn').addEventListener('click', function() {
+    if (this.disabled) return;
+    renderDrawer();
+    $('drawer').classList.add('open');
+    $('drawerOverlay').classList.add('open');
+  });
+  function closeDrawer() {
+    $('drawer').classList.remove('open');
+    $('drawerOverlay').classList.remove('open');
+  }
+  $('drawerCloseBtn').addEventListener('click', closeDrawer);
+  $('drawerOverlay').addEventListener('click', closeDrawer);
+
+  function renderDrawer() {
+    var keys = Object.keys(state.cart);
+    $('drawerCount').textContent = keys.length;
+    var drawerItems = $('drawerItems');
+    if (!keys.length) {
+      drawerItems.innerHTML = '<div class="cart-empty">No assets selected yet.</div>';
+    } else {
+      drawerItems.innerHTML = keys.map(function(id) {
+        var it = state.cart[id];
+        return '<div class="cart-line">' +
+          '<div class="cart-line-name">' + esc(it.productName) + '</div>' +
+          '<div class="cart-line-qty">×' + it.qty + '</div>' +
+          '<button class="cart-line-rm" data-rm="' + esc(id) + '">Remove</button>' +
+        '</div>';
+      }).join('');
+      drawerItems.querySelectorAll('[data-rm]').forEach(function(b) {
+        b.addEventListener('click', function() { removeFromCart(b.dataset.rm); });
+      });
+    }
+    $('drawerDates').innerHTML = state.dates.from && state.dates.to
+      ? '<strong>' + state.dates.from + '</strong> &nbsp;→&nbsp; <strong>' + state.dates.to + '</strong>'
+      : '<em>Pick dates above</em>';
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────
+  $('submitBtn').addEventListener('click', submitRequest);
+
+  function submitRequest() {
+    var name    = $('formName').value.trim();
+    var email   = $('formEmail').value.trim();
+    var phone   = $('formPhone').value.trim();
+    var company = $('formCompany').value.trim();
+    var address = $('formAddress').value.trim();
+    var notes   = $('formNotes').value.trim();
+
+    if (!name)               { alert('Please enter your name.'); $('formName').focus(); return; }
+    if (!email || !/.+@.+\..+/.test(email)) { alert('Please enter a valid email.'); $('formEmail').focus(); return; }
+    if (!cartCountValue())   { alert('Please add at least one asset.'); return; }
+    if (!state.dates.from || !state.dates.to) { alert('Please select your dates.'); return; }
+
+    var items = Object.keys(state.cart).map(function(id) {
+      return { productId: id, productName: state.cart[id].productName, quantity: state.cart[id].qty };
+    });
+
+    var btn = $('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    fetch('/api/booqable-create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        slug: SLUG,
+        customer: { name: name, email: email, phone: phone, company: company },
+        startDate: state.dates.from + 'T08:00:00Z',
+        endDate:   state.dates.to   + 'T17:00:00Z',
+        deliveryAddress: address,
+        eventDetails: notes,
+        items: items
+      })
+    })
+      .then(function(r) {
+        return r.json().then(function(j) { return { ok: r.ok, body: j }; });
+      })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+        if (!res.ok || !res.body.success) {
+          alert('Submission failed: ' + (res.body.error || 'Unknown error') + '\nPlease try again or email us at jon@handslogistics.com.');
+          return;
+        }
+        $('successRef').textContent = 'Reference ' + (res.body.reference || ('BQ-WGS-' + res.body.orderId));
+        $('successModal').classList.add('open');
+        closeDrawer();
+        state.cart = {};
+        updateCartUi();
+        renderCatalog();
+        $('formAddress').value = '';
+        $('formNotes').value = '';
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+        alert('Network error: ' + err.message + '\nPlease try again or email us at jon@handslogistics.com.');
+      });
+  }
+
+  $('successCloseBtn').addEventListener('click', function() {
+    $('successModal').classList.remove('open');
+  });
+
+  // ── Modal close handlers ──────────────────────────────────────
+  $('modalCloseBtn').addEventListener('click', closeProductModal);
+  $('productModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProductModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if ($('productModal').classList.contains('open')) closeProductModal();
+      else if ($('drawer').classList.contains('open')) closeDrawer();
+    }
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function escAttr(s) { return esc(s); }
+
+  // Start
+  checkGate();
+})();
+</script>
+</body>
+</html>
