@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HANDS — Billing Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--dark:#0a0a0a;--card:#141414;--card2:#1a1a1a;--border:#242424;--border2:#2e2e2e;--green:#a0d6b4;--gold:#c8a84b;--body:#ddd;--label:#777;--muted:#555;--white:#fff;--red:#e24b4a;--amber:#ba7517;--blue:#378add;--pur:#8b7dd8}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--dark);color:var(--body);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+.hdr{background:var(--dark);border-bottom:1px solid var(--border);padding:0 2rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.1em;color:var(--white)}.logo em{color:var(--green);font-style:normal}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.ts{font-size:11px;color:var(--label);font-family:'DM Mono',monospace}
+.accent{height:3px;background:linear-gradient(90deg,var(--dark) 68%,var(--green) 68%)}
+.btn{font-size:11px;padding:5px 13px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:5px;transition:all .15s;border:1px solid var(--border2);background:none;color:var(--label);text-decoration:none}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn-grn{background:var(--green);color:var(--dark);border-color:var(--green);font-weight:500}.btn-grn:hover{background:#8dc9a0;color:var(--dark)}
+.btn-gold{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:500}.btn-gold:hover{background:#d4a835}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:500}.btn-blue:hover{background:#2a7acc}
+.btn-pur{background:var(--pur);color:#fff;border-color:var(--pur);font-weight:500}.btn-pur:hover{background:#7a6cc4}
+.sbtn{background:none;border:1px solid var(--border2);color:var(--green);font-family:'DM Mono',monospace;font-size:11px;padding:5px 13px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+.sbtn:hover{border-color:var(--green)}.sbtn.loading{opacity:.6;pointer-events:none}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
+.pulse.spin{animation:sp .8s linear infinite;background:none;border:2px solid var(--green);border-top-color:transparent;border-radius:50%;width:10px;height:10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.wrap{max-width:1200px;margin:0 auto;padding:1.25rem 2rem}
+.smeta{font-size:11px;color:var(--label);font-family:'DM Mono',monospace;text-align:right;margin-bottom:.6rem}.smeta span{color:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1rem}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.85rem 1rem}
+.kl{font-size:10px;color:var(--label);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-family:'DM Mono',monospace}
+.kv{font-size:21px;font-family:'DM Mono',monospace;font-weight:500}
+.kn{font-size:10px;color:var(--muted);margin-top:2px}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--gold)}.b{color:var(--blue)}.p{color:var(--pur)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:1rem 1.1rem}
+.pfull{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:1rem 1.1rem;margin-bottom:1rem}
+.pttl{font-size:10px;color:var(--label);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem;display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dg{background:var(--green)}.da{background:var(--gold)}.dr{background:var(--red)}.db{background:var(--blue)}.dp{background:var(--pur)}
+.pr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}.pr:last-child{border-bottom:none}
+.pb{font-size:9px;font-weight:500;padding:2px 8px;border-radius:10px;flex-shrink:0;font-family:'DM Mono',monospace}
+.pbg{background:#0d2b1a;color:var(--green)}.pbb{background:#0d1e33;color:var(--blue)}.pba{background:#2b1e08;color:var(--gold)}.pbr{background:#2b0d0d;color:var(--red)}.pbx{background:var(--card2);color:var(--muted)}
+.pl{font-size:12px;color:var(--body);flex:1}
+.pc{font-size:17px;font-family:'DM Mono',monospace;font-weight:500;min-width:24px;text-align:right}
+.tw{overflow-x:auto}
+table.jt{width:100%;border-collapse:collapse;font-size:12px}
+table.jt th{font-size:10px;color:var(--label);text-align:left;padding:0 7px 7px 0;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+table.jt td{padding:6px 7px 6px 0;border-bottom:1px solid var(--border);color:var(--label);vertical-align:middle}
+table.jt tr:last-child td{border-bottom:none}
+table.jt tr:hover td{color:var(--body);background:rgba(255,255,255,.02)}
+.ab{font-size:9px;font-weight:500;padding:1px 6px;border-radius:6px;white-space:nowrap;font-family:'DM Mono',monospace}
+.ad{background:#0d2b1a;color:var(--green)}.aa{background:#2b1e08;color:var(--gold)}.ai{background:#0d1e33;color:var(--blue)}.ap{background:#20102a;color:#b48be0}
+.sr{color:var(--green);font-weight:500}.se{color:var(--blue)}.sn{color:var(--gold)}.sno{color:var(--red)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;padding-top:.8rem;border-top:1px solid var(--border);margin-top:.8rem}
+.br{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bl{font-size:11px;color:var(--label);width:110px;flex-shrink:0;text-align:right}
+.bt{flex:1;height:5px;background:var(--card2);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;transition:width .6s ease}
+.bv{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;width:46px;text-align:right;flex-shrink:0}
+.ber{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bel{font-size:11px;color:var(--label);flex:1}
+.bet{flex:2;height:7px;background:var(--card2);border-radius:4px;overflow:hidden}
+.bef{height:100%;border-radius:4px;transition:width .6s ease}
+.bev{font-size:11px;font-family:'DM Mono',monospace;font-weight:500;width:58px;text-align:right;flex-shrink:0}
+.pnl-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.pnl-row:last-child{border-bottom:none}
+.pnl-row.tot{border-top:1px solid var(--border2);margin-top:4px;padding-top:8px;font-weight:500;font-family:'DM Mono',monospace}
+.pamt{font-family:'DM Mono',monospace;font-size:12px}
+.kpis-budget{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px}
+.div-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;margin-top:.2rem;display:flex;align-items:center;gap:8px}
+/* Google Sheets status bar */
+.gs-bar{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.65rem 1.1rem;margin-bottom:10px;display:flex;align-items:center;gap:10px;font-size:11px;font-family:'DM Mono',monospace}
+.gs-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .4s}
+.gs-dot.live{background:var(--green);box-shadow:0 0 7px rgba(160,214,180,.5)}
+.gs-dot.err{background:var(--red)}
+.gs-dot.syncing{animation:sp .8s linear infinite;background:none;border:2px solid var(--green);border-top-color:transparent;border-radius:50%;width:9px;height:9px}
+.gs-lbl{color:var(--label);flex:1}
+.gs-lbl strong{color:var(--green)}
+.gs-time{color:var(--muted);font-size:10px}
+.gs-btn{font-size:10px;padding:3px 10px;border-radius:3px;cursor:pointer;font-family:'DM Mono',monospace;border:1px solid var(--border2);background:none;color:var(--label);transition:all .15s}
+.gs-btn:hover{border-color:var(--green);color:var(--green)}
+/* AI panel */
+.ai-panel{background:var(--card);border:1px solid var(--pur);border-radius:6px;margin-bottom:1rem;overflow:hidden}
+.ai-hdr{background:#1a1228;border-bottom:1px solid #2e2040;padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between}
+.ai-title{font-size:10px;font-family:'DM Mono',monospace;color:var(--pur);text-transform:uppercase;letter-spacing:.09em;display:flex;align-items:center;gap:7px}
+.ai-spark{width:6px;height:6px;border-radius:50%;background:var(--pur);animation:sparkle 2s ease-in-out infinite}
+@keyframes sparkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.ai-chips{display:flex;gap:6px;flex-wrap:wrap;padding:.7rem 1.1rem .85rem}
+.chip{font-size:10px;padding:4px 12px;border-radius:14px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+.chip:hover,.chip.active{border-color:var(--pur);color:var(--pur);background:#1a1228}
+.ai-body{padding:1rem 1.1rem;min-height:90px}
+.ai-out{font-size:12px;color:var(--body);line-height:1.8;white-space:pre-wrap}
+.ai-out.idle{color:var(--muted);font-family:'DM Mono',monospace;font-size:11px}
+.ai-cursor{display:inline-block;width:7px;height:13px;background:var(--pur);border-radius:1px;animation:blink .9s step-end infinite;vertical-align:text-bottom;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.ai-think{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.d1,.d2,.d3{width:4px;height:4px;border-radius:50%;background:var(--pur);display:inline-block;animation:bounce .9s ease-in-out infinite}
+.d2{animation-delay:.15s}.d3{animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1.1);opacity:1}}
+.ai-footer{padding:.7rem 1.1rem;border-top:1px solid var(--border);background:#0a0a0a;display:flex;align-items:center;gap:8px}
+.ai-input{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:4px;color:var(--body);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 12px;outline:none;transition:border-color .15s}
+.ai-input:focus{border-color:var(--pur)}.ai-input::placeholder{color:var(--muted)}
+/* Invoice modal */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;overflow-y:auto;padding:2rem 1rem;align-items:flex-start;justify-content:center}
+.mbg.open{display:flex}
+.modal{background:#111;border:1px solid var(--border2);border-radius:8px;width:100%;max-width:880px}
+.mhdr{background:#0a0a0a;border-bottom:1px solid var(--border);padding:.9rem 1.4rem;display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.07em;color:var(--white)}.mtitle em{color:var(--green);font-style:normal}
+.mclose{background:none;border:none;color:var(--label);font-size:22px;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1}.mclose:hover{color:var(--white);background:var(--card2)}
+.mbody{padding:1.2rem 1.4rem}
+.fr{display:grid;gap:10px;margin-bottom:10px}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:10px;color:var(--label);text-transform:uppercase;letter-spacing:.07em;font-family:'DM Mono',monospace}
+.field input,.field select{background:var(--card2);border:1px solid var(--border2);border-radius:4px;color:var(--body);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;outline:none;transition:border-color .15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--green)}.field select option{background:#1a1a1a}
+.hdiv{border:none;border-top:1px solid var(--border);margin:12px 0}
+.lit{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:12px}
+.lit th{font-size:10px;color:var(--label);text-align:left;padding:0 6px 6px 0;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
+.lit td{padding:5px 6px 5px 0;border-bottom:1px solid var(--border);vertical-align:middle}.lit tr:last-child td{border-bottom:none}
+.lit input,.lit select{background:var(--card2);border:1px solid var(--border2);border-radius:3px;color:var(--body);font-size:11px;padding:4px 7px;width:100%;font-family:'DM Sans',sans-serif}
+.lit input:focus,.lit select:focus{border-color:var(--green);outline:none}
+.ldel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 7px;border-radius:3px}.ldel:hover{color:var(--red);background:#2b0d0d}
+.ltc{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);text-align:right}
+.totbar{background:var(--card2);border-radius:5px;padding:12px 18px;display:flex;justify-content:flex-end;gap:2.5rem;margin-bottom:12px}
+.tbi{text-align:right}.tbl{font-size:10px;color:var(--label);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.tbv{font-size:20px;font-family:'DM Mono',monospace;font-weight:500;color:var(--green)}
+.estrip{background:#0a0a0a;border-top:1px solid var(--border);padding:1rem 1.4rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:0 0 8px 8px}
+.einfo{flex:1}.etitle{font-size:12px;color:var(--body);font-weight:500}.esub{font-size:10px;color:var(--muted);margin-top:2px}
+.toast{position:fixed;bottom:2rem;right:2rem;background:#0d2b1a;border:1px solid var(--green);color:var(--green);font-family:'DM Mono',monospace;font-size:12px;padding:10px 20px;border-radius:5px;z-index:600;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:420px;line-height:1.5}
+.toast.show{opacity:1;transform:translateY(0)}
+.foot{text-align:center;font-size:10px;color:var(--muted);margin-top:2rem;padding-bottom:2rem;font-family:'DM Mono',monospace}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">H<em>∧</em>NDS <span style="font-family:'DM Sans';font-weight:300;font-size:14px;color:var(--muted)">Billing Ops</span></div>
+  <div class="hdr-r">
+    <span class="ts" id="lsync">Never synced</span>
+    <button class="sbtn" id="sbtn" onclick="syncAll()"><span class="pulse" id="sicon"></span>Sync monday</button>
+    <button class="btn btn-gold" onclick="openInv(null)">+ Invoice</button>
+    <a class="btn btn-grn" href="https://handstools.netlify.app">← Hub</a>
+  </div>
+</div>
+<div class="accent"></div>
+
+<div class="wrap">
+<div class="smeta" id="smeta">Click Sync monday to load live data</div>
+
+<!-- LIVE OPS KPIs -->
+<div class="kpis">
+  <div class="kpi"><div class="kl">Invoice Pending</div><div class="kv g" id="k-ip">—</div><div class="kn">Ready to bill</div></div>
+  <div class="kpi"><div class="kl">Est. Ready</div><div class="kv b" id="k-er">—</div><div class="kn">Awaiting approval</div></div>
+  <div class="kpi"><div class="kl">Needs Rate</div><div class="kv a" id="k-nr">—</div><div class="kn">Complete, unbilled</div></div>
+  <div class="kpi"><div class="kl">In Progress</div><div class="kv" id="k-pg">—</div><div class="kn">Active jobs</div></div>
+  <div class="kpi"><div class="kl">Pipeline Value</div><div class="kv g" id="k-pv">—</div><div class="kn">Est. total</div></div>
+</div>
+
+<!-- GOOGLE SHEETS STATUS BAR -->
+<div class="gs-bar" id="gs-bar">
+  <span class="gs-dot syncing" id="gs-dot"></span>
+  <span class="gs-lbl" id="gs-lbl">Connecting to <strong>Google Sheets</strong> — HANDS Budget 2026…</span>
+  <span class="gs-time" id="gs-time"></span>
+  <button class="gs-btn" onclick="syncSheets()">Refresh budget</button>
+  <a class="gs-btn" href="https://docs.google.com/spreadsheets/d/1NA2EGqfg-2f-5ZXgHLpND0MKkClDwOAJVF7Zpc-yfKk/edit" target="_blank" style="text-decoration:none">Open Sheets ↗</a>
+</div>
+
+<!-- BUDGET KPIs (from Google Sheets) -->
+<div class="div-lbl"><span id="budget-src-dot" style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0"></span>Financial model — <span id="budget-src">loading from Google Sheets…</span></div>
+<div class="kpis-budget">
+  <div class="kpi"><div class="kl">Budgeted Revenue</div><div class="kv a" id="b-rev">…</div><div class="kn" id="b-rev-n">Target /mo</div></div>
+  <div class="kpi"><div class="kl">Gross Profit</div><div class="kv g" id="b-gp">…</div><div class="kn" id="b-gp-n">Loading…</div></div>
+  <div class="kpi"><div class="kl">Total SG&amp;A</div><div class="kv r" id="b-sga">…</div><div class="kn">Fixed /mo</div></div>
+  <div class="kpi"><div class="kl">EBIT</div><div class="kv r" id="b-ebit">…</div><div class="kn">Structural gap</div></div>
+  <div class="kpi"><div class="kl">Break-even</div><div class="kv p" id="b-be">…</div><div class="kn">Revenue needed /mo</div></div>
+</div>
+
+<!-- BREAK-EVEN + SG&A -->
+<div class="row3" style="margin-bottom:1rem">
+  <div class="panel" style="grid-column:span 2">
+    <div class="pttl"><span class="dot da"></span>Break-even road map — target <span id="be-target">$39K</span>/mo</div>
+    <div class="ber"><span class="bel">Current budget revenue</span><div class="bet"><div class="bef" id="be-bar1" style="width:36%;background:var(--red)"></div></div><span class="bev r" id="be-v1">$14,087</span></div>
+    <div class="ber"><span class="bel">+5 WH retainers @ $2K</span><div class="bet"><div class="bef" id="be-bar2" style="width:62%;background:var(--amber)"></div></div><span class="bev a" id="be-v2">$24,087</span></div>
+    <div class="ber"><span class="bel">+$15K ad-hoc billings</span><div class="bet"><div class="bef" id="be-bar3" style="width:100%;background:var(--green)"></div></div><span class="bev g" id="be-v3">$39,087</span></div>
+    <div style="margin-top:.8rem;padding:9px 12px;background:var(--card2);border-radius:5px;font-size:11px;color:var(--muted);line-height:1.6" id="be-note">
+      Alternative: sublease warehouse space (-$3K rent) → break-even drops to ~$33K/mo
+    </div>
+    <div style="margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--border)">
+      <div class="pttl" style="margin-bottom:.5rem"><span class="dot db"></span>Monthly P&amp;L</div>
+      <div class="pnl-row"><span style="color:var(--label)">Retainer revenue</span><span class="pamt g" id="pl-ret">+$13,587</span></div>
+      <div class="pnl-row"><span style="color:var(--label)">Ad-hoc / delivery / activation</span><span class="pamt b" id="pl-adhoc">+$500 est.</span></div>
+      <div class="pnl-row tot"><span>Total revenue</span><span class="pamt a" id="pl-rev">$14,087</span></div>
+      <div class="pnl-row" style="margin-top:5px"><span style="color:var(--label)">Direct labor (CL)</span><span class="pamt r" id="pl-cogs">-$6,500</span></div>
+      <div class="pnl-row tot"><span>Gross profit</span><span class="pamt g" id="pl-gp">$7,587</span></div>
+      <div class="pnl-row"><span style="color:var(--label)">Total SG&amp;A</span><span class="pamt r" id="pl-sga">-$21,266</span></div>
+      <div class="pnl-row tot"><span>EBIT</span><span class="pamt r" id="pl-ebit">-$13,679</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="pttl"><span class="dot dr"></span>SG&amp;A breakdown — <span id="sga-ttl">$21,266</span>/mo</div>
+    <div class="br"><span class="bl">Dean Martin rent</span><div class="bt"><div class="bf" id="sg-rent-bar" style="width:44%;background:var(--red)"></div></div><span class="bv" id="sg-rent">$9,400</span></div>
+    <div class="br"><span class="bl">Auto loans ×3</span><div class="bt"><div class="bf" id="sg-auto-bar" style="width:16%;background:var(--amber)"></div></div><span class="bv" id="sg-auto">$3,334</span></div>
+    <div class="br"><span class="bl">Loan repayments</span><div class="bt"><div class="bf" id="sg-loan-bar" style="width:19%;background:var(--amber)"></div></div><span class="bv" id="sg-loan">$3,950</span></div>
+    <div class="br"><span class="bl">Software stack</span><div class="bt"><div class="bf" id="sg-sw-bar" style="width:5%;background:var(--pur)"></div></div><span class="bv" id="sg-sw">$1,085</span></div>
+    <div class="br"><span class="bl">Insurance</span><div class="bt"><div class="bf" id="sg-ins-bar" style="width:5%;background:var(--muted)"></div></div><span class="bv" id="sg-ins">$1,032</span></div>
+    <div class="br"><span class="bl">Utilities &amp; comms</span><div class="bt"><div class="bf" id="sg-util-bar" style="width:3%;background:var(--muted)"></div></div><span class="bv" id="sg-util">$738</span></div>
+    <div class="br"><span class="bl">Fuel &amp; maint.</span><div class="bt"><div class="bf" id="sg-fuel-bar" style="width:4%;background:var(--muted)"></div></div><span class="bv" id="sg-fuel">$945</span></div>
+    <div class="br"><span class="bl">Other</span><div class="bt"><div class="bf" id="sg-oth-bar" style="width:4%;background:var(--border2)"></div></div><span class="bv" id="sg-oth">$782</span></div>
+    <div style="margin-top:.9rem;padding:9px 12px;background:var(--card2);border-radius:5px;font-size:11px;color:var(--muted);line-height:1.6" id="sga-note">
+      Rent = 44% of SG&A · SG&A is 2.8× gross profit · Data live from Google Sheets
+    </div>
+  </div>
+</div>
+
+<!-- AI FP&A -->
+<div class="ai-panel">
+  <div class="ai-hdr">
+    <div class="ai-title"><span class="ai-spark"></span>AI FP&amp;A Advisor — Claude Sonnet · Live monday + Google Sheets data</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace" id="ai-status">Sync for live context</span>
+      <button class="btn btn-pur" id="ai-run-btn" onclick="runAI(currentPrompt)" style="font-size:10px;padding:4px 12px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run analysis
+      </button>
+      <button class="btn" onclick="clearAI()" style="font-size:10px;padding:4px 10px">Clear</button>
+    </div>
+  </div>
+  <div class="ai-chips">
+    <button class="chip active" onclick="setChip(this,'billing')">Billing gaps</button>
+    <button class="chip" onclick="setChip(this,'cashflow')">Cash flow risk</button>
+    <button class="chip" onclick="setChip(this,'revenue')">Revenue levers</button>
+    <button class="chip" onclick="setChip(this,'clients')">Client concentration</button>
+    <button class="chip" onclick="setChip(this,'breakeven')">Break-even path</button>
+    <button class="chip" onclick="setChip(this,'actions')">Top 3 actions this week</button>
+  </div>
+  <div class="ai-body">
+    <div class="ai-out idle" id="ai-out">Select a topic and click Run analysis — or ask anything below. Claude receives your live monday pipeline and Google Sheets budget data as context.</div>
+  </div>
+  <div class="ai-footer">
+    <input class="ai-input" id="ai-input" placeholder="Ask anything — e.g. which jobs should I invoice first this week?" onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="btn btn-pur" onclick="sendAI()" style="font-size:11px;padding:6px 16px">Ask Claude</button>
+  </div>
+</div>
+
+<div class="row2">
+  <div class="panel">
+    <div class="pttl"><span class="dot dg"></span>Billing pipeline — live monday</div>
+    <div id="pipe-rows"><div class="pr"><span class="pb pbx">—</span><span class="pl">Sync to load</span><span class="pc" style="color:var(--muted)">—</span></div></div>
+    <div class="acts">
+      <button class="btn btn-gold" onclick="openInv(null)">+ Build invoice</button>
+      <a class="btn btn-grn" href="https://clientestimate.netlify.app/" target="_blank">+ Estimate</a>
+      <a class="btn" href="https://handslogistics.monday.com/boards/4550650855" target="_blank">monday ↗</a>
+      <button class="btn" onclick="syncAll()">Refresh</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="pttl"><span class="dot da"></span>Automation status</div>
+    <div class="pr"><span class="pb pbg">LIVE</span><span class="pl">billing-webhook — COMPLETE trigger</span><span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">webhook 557439386</span></div>
+    <div class="pr"><span class="pb pbg">LIVE</span><span class="pl">billing-digest — Invoice Pending feed</span><span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">/billing-digest</span></div>
+    <div class="pr"><span class="pb pbg">LIVE</span><span class="pl">Google Sheets API — budget sync</span><span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">real-time</span></div>
+    <div class="pr"><span class="pb pbx">PENDING</span><span class="pl">Zapier email digest</span><span style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Add Zapier URL</span></div>
+    <div style="margin-top:.9rem;padding:9px 12px;background:var(--card2);border-radius:5px;font-size:11px;color:var(--muted);line-height:1.6">
+      Test webhook: flip any job COMPLETE in monday → auto Invoice Pending in 2s<br>
+      Budget: update any number in Google Sheets → refresh dashboard → instantly live
+    </div>
+  </div>
+</div>
+
+<div class="pfull">
+  <div class="pttl"><span class="dot dg"></span>Active &amp; billable jobs <span id="jcount" style="color:var(--muted);margin-left:4px"></span></div>
+  <div class="tw">
+    <table class="jt">
+      <thead><tr>
+        <th style="width:26%">Job</th><th style="width:13%">Account</th><th style="width:8%">Date</th>
+        <th style="width:9%">Type</th><th style="width:9%">Logistics</th><th style="width:10%">Billing</th>
+        <th style="width:9%">QBO</th><th style="width:16%">Action</th>
+      </tr></thead>
+      <tbody id="jtbody"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:16px;font-family:'DM Mono',monospace;font-size:11px">Click Sync monday to load jobs</td></tr></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<div class="foot">HANDS Logistics · Billing Ops · incredible-fairy-d479b1.netlify.app · monday board 4550650855 · Google Sheets budget live</div>
+
+<!-- INVOICE MODAL -->
+<div class="mbg" id="mbg" onclick="bgc(event)">
+<div class="modal">
+  <div class="mhdr"><div class="mtitle"><em>H∧NDS</em> Invoice Builder</div><button class="mclose" onclick="closeInv()">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="fr" style="margin-bottom:12px">
+      <div class="field"><label>Load from monday job (auto-fills form)</label>
+        <select id="ijsel" onchange="loadJob()"><option value="">— select job or fill manually —</option></select>
+      </div>
+    </div>
+    <hr class="hdiv">
+    <div class="fr c3">
+      <div class="field"><label>Invoice # (HANDS-ID)</label><input id="inum" placeholder="HANDS-XXXXXXXXX"></div>
+      <div class="field"><label>Invoice Date</label><input id="idate" type="date"></div>
+      <div class="field"><label>Due Date (NET 30)</label><input id="idue" type="date"></div>
+    </div>
+    <div class="fr c2">
+      <div class="field"><label>Customer — QBO exact name</label>
+        <select id="icust">
+          <option>GHOST Beverage / Next Wave Beverages</option><option>Campari America</option>
+          <option>Moet Hennessy USA</option><option>Bacardi USA</option><option>Alps Beverages</option>
+          <option>SAHARA Las Vegas</option><option>Stadium Swim / Aperol</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>PO / WBS / Billing Code</label><input id="ipo" placeholder="PO760482"></div>
+    </div>
+    <div class="fr c2">
+      <div class="field"><label>Memo / Job Notes</label><input id="imemo" placeholder="Service details..."></div>
+      <div class="field"><label>Location</label><input id="iloc" value="Las Vegas"></div>
+    </div>
+    <hr class="hdiv">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:10px;color:var(--label);text-transform:uppercase;letter-spacing:.07em;font-family:'DM Mono',monospace">Line Items</span>
+      <button class="btn" style="font-size:10px;padding:3px 11px" onclick="addLine()">+ Add line</button>
+    </div>
+    <table class="lit">
+      <thead><tr>
+        <th style="width:33%">Product / Service (QBO)</th><th style="width:27%">Description</th>
+        <th style="width:8%">Qty</th><th style="width:13%">Unit Price</th><th style="width:11%">Total</th><th style="width:8%"></th>
+      </tr></thead>
+      <tbody id="libody"></tbody>
+    </table>
+    <div class="totbar">
+      <div class="tbi"><div class="tbl">Subtotal</div><div class="tbv" id="isub">$0.00</div></div>
+      <div class="tbi"><div class="tbl">Tax</div><div class="tbv" style="color:var(--muted);font-size:14px">—</div></div>
+      <div class="tbi"><div class="tbl">Invoice Total</div><div class="tbv" id="itot">$0.00</div></div>
+    </div>
+  </div>
+  <div class="estrip">
+    <div class="einfo"><div class="etitle">Export invoice</div><div class="esub">Spreadsheet Sync → paste into Excel v4 QBO Sync Upload tab · QBO CSV → import in QuickBooks</div></div>
+    <button class="btn btn-blue" onclick="copySSRows()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy SS Rows</button>
+    <button class="btn btn-gold" onclick="dlCSV()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download QBO CSV</button>
+    <button class="btn" onclick="closeInv()">Close</button>
+  </div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONSTANTS ──────────────────────────────────────────────────────────── */
+const BOARD=4550650855;
+const GS_URL='/api/sheets-budget'; // server-side proxy — token + key live on Netlify env
+const MONDAY_PROXY='/api/monday-proxy';
+const CLAUDE_STREAM='/api/claude-stream';
+
+// ── Same-origin Monday helper (was direct fetch with hardcoded token) ──
+async function mondayQuery(q){
+  const r=await fetch(MONDAY_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+  if(!r.ok) throw new Error('Proxy HTTP '+r.status);
+  return r.json();
+}
+
+const CMAP={'GHOST Beverage':'GHOST Beverage / Next Wave Beverages','GHOST Beverages LLC':'GHOST Beverage / Next Wave Beverages','GHOST':'GHOST Beverage / Next Wave Beverages','Campari':'Campari America','Campari America':'Campari America','MHUSA':'Moet Hennessy USA','Bacardi':'Bacardi USA','Alps Beverages':'Alps Beverages','SAHARA':'SAHARA Las Vegas','Stadium Swim':'Stadium Swim / Aperol'};
+const PMAP={'Delivery':'Logistics and Deliveries','Activation':'Activation Logistics','I/O Shipping':'Inbound Service','Production':'Production Services','Sourcing':'Custom Logistics'};
+const PRODS=['Logistics and Deliveries','Delivery - Tier 1','Delivery - Tier 2','Delivery - Tier 3','Activation Logistics','Activation Management','ONP Activation Logistics','Inbound Service','Outbound Service','I/O Shipping','Production Services','Bespoke Production','Assembly','Warehouse Storage','Warehousing','Warehouse Custom','Custom Logistics','Custom Critical','Concierge Logistics','Administration','Agency Fee','Staffing','Mileage','Excess Fuel','Wait Time','Shipping Cost','Shipping Supplies','Bulk and Freight Delivery','Graphic Design','Photography','Printing','Engraving','Rental','Materials','Job Site Travel','Service Enhancement','Order Management'];
+
+let allItems=[],boardStats={},lseq=0,currentPrompt='billing',aiRunning=false;
+let budget={totalRev:14087,retainerRev:13587,adhocRev:500,cogs:6500,gp:7587,gpPct:.538,totalSGA:21266,ebit:-13679,breakeven:39000,rent:9400,autoLoans:3334,debt:3950,software:1085,insurance:1032,utilities:738,fuel:945,other:782};
+
+const gc=(it,id)=>{ const c=(it.column_values||[]).find(c=>c.id===id); return c?c.text||'':''; };
+const fmtC=n=>'$'+Math.abs(Math.round(n)).toLocaleString();
+const fmtD=n=>'$'+(+n).toFixed(2);
+const todayS=()=>new Date().toISOString().slice(0,10);
+const net30=()=>{ const d=new Date(); d.setDate(d.getDate()+30); return d.toISOString().slice(0,10); };
+const tSince=t=>{ const s=Math.round((Date.now()-t)/1e3); return s<60?s+'s ago':s<3600?Math.round(s/60)+'m ago':Math.round(s/3600)+'h ago'; };
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200); }
+function st(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+
+/* ── GOOGLE SHEETS SYNC ─────────────────────────────────────────────────── */
+async function syncSheets(){
+  const dot=document.getElementById('gs-dot'), lbl=document.getElementById('gs-lbl');
+  dot.className='gs-dot syncing';
+  lbl.innerHTML='Syncing with <strong>Google Sheets</strong>…';
+  try{
+    const r=await fetch(GS_URL);
+    if(!r.ok){
+      const errText=await r.text();
+      let errJson={};
+      try{errJson=JSON.parse(errText);}catch(_){}
+      throw new Error(errJson.error||errJson.detail||`HTTP ${r.status}`);
+    }
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error||'Unknown error from budget proxy');
+
+    // Parse pre-computed budget from proxy
+    const bud=j.budget;
+    const {totalRev,retainerRev,adhocRev,cogs,gp,gpPct,totalSGA,ebit,breakeven,
+           rent,autoLoans,debt,software,insurance,utilities,fuel} = bud;
+    const other = bud.other||0;
+
+    // Store in global budget object
+    budget={totalRev,retainerRev,adhocRev,cogs,gp,gpPct,totalSGA,ebit,breakeven,rent,autoLoans,debt,software,insurance,utilities,fuel,other};
+
+    // Update all DOM elements
+    updateBudgetDOM(budget);
+
+    // Status bar
+    dot.className='gs-dot live';
+    const now=new Date().toLocaleTimeString();
+    lbl.innerHTML=`<strong>Google Sheets</strong> live — HANDS Budget 2026 · Monthly Budget sheet`;
+    document.getElementById('gs-time').textContent=`Updated ${now}`;
+    document.getElementById('budget-src').textContent=`live from Google Sheets · ${now}`;
+    document.getElementById('budget-src-dot').style.background='var(--green)';
+    document.getElementById('ai-status').textContent=`Budget + ${boardStats.ops||0} ops items loaded`;
+    toast('Google Sheets synced — all budget KPIs updated live');
+
+  }catch(err){
+    dot.className='gs-dot err';
+    lbl.innerHTML=`<strong style="color:var(--red)">Google Sheets error:</strong> ${err.message}`;
+    document.getElementById('gs-time').textContent='';
+    // Check if it's a permissions error
+    if(err.message.includes('403')||err.message.includes('401')){
+      lbl.innerHTML+=' — Make sure the sheet is shared as <em>Anyone with the link → Viewer</em>';
+    }
+  }
+}
+
+function updateBudgetDOM(b){
+  const fc=fmtC;
+  // KPI cards
+  st('b-rev', fc(b.totalRev));
+  st('b-rev-n','Target /mo');
+  st('b-gp', fc(b.gp));
+  st('b-gp-n',(b.gpPct*100).toFixed(1)+'% margin');
+  st('b-sga', fc(b.totalSGA));
+  st('b-ebit',(b.ebit<0?'-':'')+fc(b.ebit));
+  st('b-be', fc(b.breakeven));
+
+  // P&L
+  st('pl-ret',  '+'+fc(b.retainerRev));
+  st('pl-adhoc',b.adhocRev>0?'+'+fc(b.adhocRev):'+$0 est.');
+  st('pl-rev',  fc(b.totalRev));
+  st('pl-cogs', '-'+fc(b.cogs));
+  st('pl-gp',   fc(b.gp));
+  st('pl-sga',  '-'+fc(b.totalSGA));
+  st('pl-ebit', (b.ebit<0?'-':'')+fc(b.ebit));
+  document.getElementById('pl-ebit').className='pamt '+(b.ebit<0?'r':'g');
+
+  // Break-even bars
+  const be2=b.retainerRev+10000;
+  const setBar=(barId,valId,val,max,color)=>{
+    const pct=Math.min(100,Math.round(Math.abs(val)/Math.abs(max)*100));
+    const bar=document.getElementById(barId); const lbl=document.getElementById(valId);
+    if(bar){bar.style.width=pct+'%';bar.style.background=color;}
+    if(lbl) lbl.textContent='$'+Math.round(Math.abs(val)).toLocaleString();
+  };
+  setBar('be-bar1','be-v1',b.totalRev,b.breakeven,'var(--red)');
+  setBar('be-bar2','be-v2',be2,b.breakeven,'var(--amber)');
+  setBar('be-bar3','be-v3',b.breakeven,b.breakeven,'var(--green)');
+  st('be-target','$'+Math.round(b.breakeven/1000)+'K');
+
+  // SG&A bars
+  const sgaMax=b.totalSGA;
+  setBar('sg-rent-bar','sg-rent',b.rent,sgaMax,'var(--red)');
+  setBar('sg-auto-bar','sg-auto',b.autoLoans,sgaMax,'var(--amber)');
+  setBar('sg-loan-bar','sg-loan',b.debt,sgaMax,'var(--amber)');
+  setBar('sg-sw-bar','sg-sw',b.software,sgaMax,'var(--pur)');
+  setBar('sg-ins-bar','sg-ins',b.insurance,sgaMax,'var(--muted)');
+  setBar('sg-util-bar','sg-util',b.utilities,sgaMax,'var(--muted)');
+  setBar('sg-fuel-bar','sg-fuel',b.fuel,sgaMax,'var(--muted)');
+  setBar('sg-oth-bar','sg-oth',b.other+b.rent*0,sgaMax,'var(--border2)');
+  st('sga-ttl',fc(b.totalSGA));
+
+  const rentPct=sgaMax>0?Math.round(b.rent/sgaMax*100):44;
+  const mult=b.gp>0?(b.totalSGA/b.gp).toFixed(1):'∞';
+  document.getElementById('sga-note').textContent=`Rent = ${rentPct}% of SG&A · SG&A is ${mult}× gross profit · Data live from Google Sheets`;
+}
+
+/* ── MONDAY SYNC ─────────────────────────────────────────────────────────── */
+async function syncAll(){
+  const btn=document.getElementById('sbtn'),icon=document.getElementById('sicon');
+  btn.classList.add('loading'); btn.textContent=' Syncing…'; icon.className='pulse spin'; btn.prepend(icon);
+  try{
+    const q=`{boards(ids:[${BOARD}]){items_page(limit:100){items{id name column_values(ids:["text4","text2","text20","color","color_mm1wxn5k","status2","numeric_mm1wq77t","numeric_mm1weeyp"]){id text}}}}}`;
+    const j=await mondayQuery(q);
+    allItems=j.data.boards[0].items_page.items;
+    boardStats=computeStats(allItems);
+    renderDash(allItems,boardStats);
+    populateSel(allItems);
+    const now=Date.now();
+    document.getElementById('lsync').textContent='Synced just now';
+    document.getElementById('smeta').innerHTML=`Live · Board ${BOARD} · <span>${allItems.length} items</span> · ${new Date().toLocaleTimeString()}`;
+    document.getElementById('ai-status').textContent=`${boardStats.ops} ops items + budget live`;
+    setInterval(()=>{ document.getElementById('lsync').textContent='Last sync: '+tSince(now); },30000);
+  }catch(e){ document.getElementById('smeta').textContent='Sync failed: '+e.message; }
+  btn.classList.remove('loading'); icon.className='pulse'; btn.textContent=' Sync monday'; btn.prepend(icon);
+}
+
+function computeStats(items){
+  const ops=items.filter(it=>gc(it,'color_mm1wxn5k'));
+  let iP=0,eR=0,nR=0,iG=0,nS=0,subm=0,tEst=0;
+  const byClient={},byActivity={};
+  ops.forEach(it=>{
+    const b=gc(it,'status2'),l=gc(it,'color'),e=parseFloat(gc(it,'numeric_mm1wq77t'))||0;
+    const act=gc(it,'color_mm1wxn5k'),client=gc(it,'text4')||'Unknown';
+    tEst+=e; byActivity[act]=(byActivity[act]||0)+1; byClient[client]=(byClient[client]||0)+1;
+    if(b==='INVOICE PENDING') iP++;
+    else if(b==='ESTIMATE READY') eR++;
+    else if(b==='SUBMITTED') subm++;
+    else if(['COMPLETE','DELIVERY SCHEDULED'].includes(l)&&(!b||b==='NOT STARTED')) nR++;
+    else if(['IN PROGRESS','ON HOLD','Proposal Need'].includes(l)) iG++;
+    else nS++;
+  });
+  return{ops:ops.length,iP,eR,nR,iG,nS,subm,tEst,byClient,byActivity};
+}
+
+function renderDash(items,s){
+  st('k-ip',s.iP); st('k-er',s.eR); st('k-nr',s.nR); st('k-pg',s.iG); st('k-pv',fmtC(s.tEst||500));
+  document.getElementById('pipe-rows').innerHTML=[
+    {cls:'pbg',lbl:'Invoice Pending — ready to upload',cnt:s.iP,c:'var(--green)'},
+    {cls:'pbb',lbl:'Estimate ready — awaiting approval',cnt:s.eR,c:'var(--blue)'},
+    {cls:'pba',lbl:'Complete — needs rate set',cnt:s.nR,c:'var(--gold)'},
+    {cls:'pbx',lbl:'In progress / on hold',cnt:s.iG,c:'var(--muted)'},
+    {cls:'pbr',lbl:'No billing status',cnt:s.nS,c:'var(--red)'},
+  ].map(r=>`<div class="pr"><span class="pb ${r.cls}">${r.cls==='pbg'?'Ready':r.cls==='pbb'?'Estimate':r.cls==='pba'?'Needs Rate':r.cls==='pbx'?'Active':'No Status'}</span><span class="pl">${r.lbl}</span><span class="pc" style="color:${r.c}">${r.cnt}</span></div>`).join('');
+
+  const ops=items.filter(it=>gc(it,'color_mm1wxn5k'));
+  const sorted=[...ops].sort((a,b)=>{
+    const d=['COMPLETE'],aD=d.includes(gc(a,'color')),bD=d.includes(gc(b,'color'));
+    if(aD&&!bD)return 1; if(!aD&&bD)return -1;
+    return(gc(a,'text2')||'').localeCompare(gc(b,'text2')||'');
+  });
+  const aC={Delivery:'ad',Activation:'aa','I/O Shipping':'ai',Production:'ap'};
+  const bB={'INVOICE PENDING':'<span class="sr">Inv.Pending</span>','ESTIMATE READY':'<span class="se">Est.Ready</span>','SUBMITTED':'<span style="color:var(--muted)">Submitted</span>','NOT STARTED':'<span class="sn">Not Started</span>','':'<span style="color:var(--muted)">—</span>'};
+  const qC=(b,l,e)=>b==='INVOICE PENDING'?'<span class="sr">Ready ✓</span>':b==='ESTIMATE READY'?`<span class="se">${e?fmtC(e)+' est.':'Rate?'}</span>`:b==='SUBMITTED'?'<span style="color:var(--muted)">Synced</span>':['COMPLETE','DELIVERY SCHEDULED'].includes(l)?'<span class="sn">Set rate</span>':'<span class="sno">—</span>';
+  st('jcount',`(${sorted.length})`);
+  document.getElementById('jtbody').innerHTML=sorted.slice(0,25).map(it=>{
+    const act=gc(it,'color_mm1wxn5k'),b=gc(it,'status2'),l=gc(it,'color'),e=parseFloat(gc(it,'numeric_mm1wq77t'))||0;
+    const name=it.name.length>33?it.name.slice(0,32)+'…':it.name;
+    const acct=(CMAP[gc(it,'text4')]||gc(it,'text4')||'—').slice(0,16);
+    const dt=(gc(it,'text2')||'—').replace('2026-','').replace('MARCH ','Mar ').replace('APRIL ','Apr ').replace('MAY ','May ').slice(0,8);
+    return `<tr>
+      <td style="color:var(--body)" title="${it.name.replace(/"/g,'&quot;')}">${name}</td>
+      <td>${acct}</td><td style="font-family:'DM Mono',monospace;font-size:11px">${dt}</td>
+      <td><span class="ab ${aC[act]||'ad'}">${act||'—'}</span></td>
+      <td style="font-size:11px">${l||'—'}</td><td>${bB[b]||bB['']}</td><td>${qC(b,l,e)}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn" style="font-size:9px;padding:2px 8px;color:var(--gold);border-color:#3d2d0d" onclick="openFromId('${it.id}')">Invoice</button>
+        <button class="btn" style="font-size:9px;padding:2px 8px;color:var(--pur);border-color:#2e2040" onclick="aiJob('${it.id}','${it.name.replace(/'/g,"\\'").replace(/"/g,'\\"').slice(0,40)}')">AI</button>
+      </td></tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--muted)">No ops items found</td></tr>';
+}
+
+function populateSel(items){
+  const ops=items.filter(it=>gc(it,'color_mm1wxn5k'));
+  const sel=document.getElementById('ijsel');
+  sel.innerHTML='<option value="">— select job or fill manually —</option>';
+  ops.forEach(it=>{ const o=document.createElement('option'); o.value=it.id; o.textContent=`${it.name.slice(0,50)} · ${gc(it,'text4')||'?'} · ${gc(it,'status2')||'no billing'}`; sel.appendChild(o); });
+}
+
+/* ── AI ENGINE ───────────────────────────────────────────────────────────── */
+const PROMPTS={
+billing:`You are a senior FP&A advisor for HANDS Logistics (Las Vegas experiential marketing & concierge logistics). Analyze billing pipeline and identify specific revenue leakage.
+
+LIVE BOARD (monday.com):
+- Ops items: {{ops}} | Invoice Pending: {{iP}} | Estimate Ready: {{eR}} | Complete/Unbilled: {{nR}} | In Progress: {{iG}} | Pipeline value: {{tEst}}
+
+LIVE FINANCIALS (Google Sheets):
+- Monthly revenue: ${{rev}} | COGS: ${{cogs}} | Gross profit: ${{gp}} ({{gpPct}}% margin)
+- SG&A: ${{sga}} (rent ${{rent}} = {{rentPct}}% of SG&A) | EBIT: ${{ebit}}/mo | Break-even: ${{be}}/mo
+
+CLIENT ACTIVITY: {{clients}} | ACTIVITY MIX: {{activities}}
+
+Give sharp CFO-level analysis: most urgent billing gaps, dollar value at risk from {{nR}} unbilled complete jobs, specific next actions by dollar impact, one FP&A flag being missed. No generic advice.`,
+
+cashflow:`You are a senior FP&A advisor for HANDS Logistics.
+
+LIVE CASH POSITION:
+- Invoice Pending: {{iP}} | Complete unbilled: {{nR}} | Pipeline: {{tEst}}
+
+LIVE FIXED OBLIGATIONS (from Google Sheets — ${{sga}}/mo total):
+- Rent: ${{rent}} | Auto loans: ${{autoLoans}} | Debt service: ${{debt}} | Software: ${{sw}} | Insurance: ${{ins}}
+
+STRUCTURAL GAP: GP ${{gp}}/mo vs SG&A ${{sga}}/mo = ${{ebit}}/mo burn
+
+30-day cash position, which obligations are flexible, billing velocity to cover payroll + rent, single most urgent action. Specific numbers only.`,
+
+revenue:`You are a senior FP&A advisor for HANDS Logistics.
+
+LIVE REVENUE MIX (from Google Sheets):
+- Total budget: ${{rev}}/mo | Retainers: ${{ret}}/mo | Ad-hoc: ${{adhoc}}/mo
+- Break-even gap: ${{gap}}/mo needed
+- Gross margin: {{gpPct}}%
+
+CLIENTS: {{clients}} | UPCOMING: Lalo Tequila May 5, Buddy V's Campari Apr 5, APEROL Apr 4
+JOB MIX: {{activities}}
+
+Which clients have highest expansion potential, what services are undercharged, realistic path to close the ${{gap}} monthly gap. Specific to Las Vegas beverage/spirits market.`,
+
+clients:`You are a senior FP&A advisor for HANDS Logistics.
+
+CLIENT ACTIVITY COUNT: {{clients}}
+
+RETAINER BREAKDOWN (live from Google Sheets):
+- MHUSA: ${{mhusa}}/mo ({{mhusaPct}}% of retainers) ← CONCENTRATION RISK
+- Campari: ${{campari}} | Tito's + Patron: ~$3K | GHOST + WG&S: ~$2K
+- Total retainers: ${{ret}} | Total revenue: ${{rev}} | Break-even: ${{be}}
+
+MHUSA concentration risk and P&L impact if they reduce scope, which clients show growth, diversification strategy for Las Vegas market. What losing the top client does to the math — be specific.`,
+
+breakeven:`You are a senior FP&A advisor for HANDS Logistics.
+
+LIVE P&L (Google Sheets):
+- Revenue: ${{rev}}/mo | COGS: ${{cogs}} | GP: ${{gp}} ({{gpPct}}%) | SG&A: ${{sga}} | EBIT: ${{ebit}}
+- Break-even: ${{be}}/mo (gap: ${{gap}})
+
+PIPELINE: {{ops}} ops items | {{iP}} Invoice Pending | {{eR}} Est. Ready
+NEAR-TERM: APEROL Apr 4, Buddy V's Apr 5, Lalo Tequila May 5
+
+Model 3 break-even scenarios: (1) pure revenue growth, (2) hybrid growth + cost cuts, (3) fastest path. For each: exact revenue mix, client count needed, realistic timeline.`,
+
+actions:`You are a senior FP&A advisor for HANDS Logistics. Today is ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}.
+
+3 highest-impact financial actions THIS WEEK, ranked by dollar impact:
+
+LIVE STATUS:
+- EBIT: ${{ebit}}/mo structural gap | Break-even gap: ${{gap}}/mo
+- Invoice Pending: {{iP}} | Complete unbilled: {{nR}} | Est. Ready: {{eR}} (pipeline: {{tEst}})
+- Top clients: {{clients}}
+
+For each: exactly what to do, who to contact, dollar impact this month, time required. Concrete to-do only.`
+};
+
+function buildPrompt(key,customPrompt){
+  if(customPrompt) return customPrompt;
+  const s=boardStats, b=budget;
+  const clients=Object.entries(s.byClient||{}).sort((a,v)=>v[1]-a[1]).slice(0,6).map(([k,v])=>`${k}: ${v}`).join(', ')||'(sync monday)';
+  const acts=Object.entries(s.byActivity||{}).sort((a,v)=>v[1]-a[1]).map(([k,v])=>`${k}: ${v}`).join(', ')||'(sync monday)';
+  const mhusa=6600, campari=2000;
+  return (PROMPTS[key]||PROMPTS.billing)
+    .replace(/\{\{ops\}\}/g,s.ops||0).replace(/\{\{iP\}\}/g,s.iP||0).replace(/\{\{eR\}\}/g,s.eR||0)
+    .replace(/\{\{nR\}\}/g,s.nR||0).replace(/\{\{iG\}\}/g,s.iG||0).replace(/\{\{tEst\}\}/g,fmtC(s.tEst||0))
+    .replace(/\{\{clients\}\}/g,clients).replace(/\{\{activities\}\}/g,acts)
+    .replace(/\{\{rev\}\}/g,Math.round(b.totalRev).toLocaleString())
+    .replace(/\{\{ret\}\}/g,Math.round(b.retainerRev).toLocaleString())
+    .replace(/\{\{adhoc\}\}/g,Math.round(b.adhocRev).toLocaleString())
+    .replace(/\{\{cogs\}\}/g,Math.round(b.cogs).toLocaleString())
+    .replace(/\{\{gp\}\}/g,Math.round(b.gp).toLocaleString())
+    .replace(/\{\{gpPct\}\}/g,(b.gpPct*100).toFixed(1))
+    .replace(/\{\{sga\}\}/g,Math.round(b.totalSGA).toLocaleString())
+    .replace(/\{\{ebit\}\}/g,(b.ebit<0?'-':'')+Math.round(Math.abs(b.ebit)).toLocaleString())
+    .replace(/\{\{be\}\}/g,Math.round(b.breakeven).toLocaleString())
+    .replace(/\{\{gap\}\}/g,Math.round(Math.max(0,b.breakeven-b.totalRev)).toLocaleString())
+    .replace(/\{\{rent\}\}/g,Math.round(b.rent).toLocaleString())
+    .replace(/\{\{rentPct\}\}/g,b.totalSGA>0?Math.round(b.rent/b.totalSGA*100):44)
+    .replace(/\{\{autoLoans\}\}/g,Math.round(b.autoLoans).toLocaleString())
+    .replace(/\{\{debt\}\}/g,Math.round(b.debt).toLocaleString())
+    .replace(/\{\{sw\}\}/g,Math.round(b.software).toLocaleString())
+    .replace(/\{\{ins\}\}/g,Math.round(b.insurance).toLocaleString())
+    .replace(/\{\{mhusa\}\}/g,mhusa.toLocaleString())
+    .replace(/\{\{mhusaPct\}\}/g,b.retainerRev>0?Math.round(mhusa/b.retainerRev*100):47)
+    .replace(/\{\{campari\}\}/g,campari.toLocaleString());
+}
+
+async function runAI(promptKey,customPrompt){
+  if(aiRunning) return;
+  aiRunning=true;
+  const btn=document.getElementById('ai-run-btn'); btn.disabled=true; btn.style.opacity='.6';
+  const out=document.getElementById('ai-out');
+  out.className='ai-out';
+  out.innerHTML='<div class="ai-think"><span class="d1"></span><span class="d2"></span><span class="d3"></span>&nbsp;Analyzing live board + Sheets data…</div>';
+  const prompt=buildPrompt(promptKey,customPrompt);
+  let text='';
+  try{
+    const r=await fetch(CLAUDE_STREAM,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,maxTokens:1000})});
+    if(!r.ok) throw new Error(`API ${r.status}`);
+    const reader=r.body.getReader(),dec=new TextDecoder();
+    out.innerHTML=''; const cursor=document.createElement('span'); cursor.className='ai-cursor'; out.appendChild(cursor);
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      for(const line of dec.decode(value,{stream:true}).split('\n')){
+        if(!line.startsWith('data:')) continue;
+        const data=line.slice(5).trim(); if(data==='[DONE]') break;
+        try{ const j=JSON.parse(data); if(j.type==='content_block_delta'&&j.delta?.text){ text+=j.delta.text; out.textContent=text; out.appendChild(cursor); out.parentElement.scrollTop=out.parentElement.scrollHeight; } }catch(_){}
+      }
+    }
+    cursor.remove(); out.textContent=text;
+    document.getElementById('ai-status').textContent=`Last analysis: ${new Date().toLocaleTimeString()}`;
+  }catch(e){ out.className='ai-out idle'; out.textContent=`Analysis failed: ${e.message}`; }
+  aiRunning=false; btn.disabled=false; btn.style.opacity='1';
+}
+
+async function sendAI(){
+  const inp=document.getElementById('ai-input'); const q=inp.value.trim(); if(!q) return;
+  inp.value=''; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  const ctx=`You are a senior FP&A advisor for HANDS Logistics (Las Vegas). Answer directly with specific numbers.
+
+LIVE DATA (${new Date().toLocaleTimeString()}):
+monday: ${boardStats.ops||0} ops items | ${boardStats.iP||0} Invoice Pending | ${boardStats.nR||0} complete/unbilled | pipeline ${fmtC(boardStats.tEst||0)}
+Google Sheets: Revenue $${Math.round(budget.totalRev).toLocaleString()}/mo | SGA $${Math.round(budget.totalSGA).toLocaleString()}/mo | EBIT ${budget.ebit<0?'-':''}$${Math.round(Math.abs(budget.ebit)).toLocaleString()}/mo | Break-even $${Math.round(budget.breakeven).toLocaleString()}/mo
+Clients: ${Object.entries(boardStats.byClient||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}:${v}`).join(', ')||'(sync monday)'}
+
+QUESTION: ${q}`;
+  await runAI(null,ctx);
+}
+
+async function aiJob(itemId,jobName){
+  const item=allItems.find(x=>x.id===itemId); if(!item){ toast('Sync monday first'); return; }
+  const b=gc(item,'status2'),l=gc(item,'color'),acct=gc(item,'text4'),act=gc(item,'color_mm1wxn5k'),e=parseFloat(gc(item,'numeric_mm1wq77t'))||0;
+  const prompt=`FP&A advisor for HANDS Logistics. 3-bullet billing rec for this job:
+JOB: ${jobName} | Account: ${acct||'?'} | Type: ${act} | Logistics: ${l} | Billing: ${b||'none'} | Estimate: ${e?fmtC(e):'none'}
+Context: EBIT -$${Math.round(Math.abs(budget.ebit)).toLocaleString()}/mo, break-even $${Math.round(budget.breakeven).toLocaleString()}/mo, ${boardStats.iP||0} jobs in Invoice Pending queue.
+1. Invoice now? (yes/no + why) 2. Recommended QBO product + rate 3. Client billing risk or flag. 3 bullets max.`;
+  document.querySelector('.ai-panel').scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  await runAI(null,prompt);
+}
+
+function setChip(el,key){ currentPrompt=key; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
+function clearAI(){ const o=document.getElementById('ai-out'); o.className='ai-out idle'; o.textContent='Select a topic and click Run analysis, or ask anything below.'; }
+
+/* ── INVOICE BUILDER ─────────────────────────────────────────────────────── */
+function openInv(item){ resetForm(); if(item) fillForm(item); else addLine(); document.getElementById('mbg').classList.add('open'); }
+function openFromId(id){ openInv(allItems.find(x=>x.id===id)||null); }
+function closeInv(){ document.getElementById('mbg').classList.remove('open'); }
+function bgc(e){ if(e.target.id==='mbg') closeInv(); }
+function resetForm(){
+  ['inum','ipo','imemo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('idate').value=todayS(); document.getElementById('idue').value=net30();
+  document.getElementById('iloc').value='Las Vegas'; document.getElementById('icust').value='GHOST Beverage / Next Wave Beverages';
+  document.getElementById('ijsel').value=''; document.getElementById('libody').innerHTML=''; lseq=0; recalc();
+}
+function fillForm(item){
+  const acct=gc(item,'text4'),act=gc(item,'color_mm1wxn5k'),e=parseFloat(gc(item,'numeric_mm1wq77t'))||0;
+  document.getElementById('inum').value=`HANDS-${item.id}`;
+  document.getElementById('icust').value=CMAP[acct]||acct||'GHOST Beverage / Next Wave Beverages';
+  document.getElementById('ipo').value=gc(item,'text20')||'';
+  document.getElementById('imemo').value=item.name;
+  const sel=document.getElementById('ijsel'); for(let o of sel.options) if(o.value===item.id){ sel.value=item.id; break; }
+  addLine(PMAP[act]||'Logistics and Deliveries',item.name,1,e||'');
+}
+function loadJob(){ const id=document.getElementById('ijsel').value; if(!id) return; const item=allItems.find(x=>x.id===id); if(!item) return; document.getElementById('libody').innerHTML=''; lseq=0; fillForm(item); }
+function addLine(prod='Logistics and Deliveries',desc='',qty=1,rate=''){
+  lseq++; const id=lseq;
+  const opts=PRODS.map(p=>`<option${p===prod?' selected':''}>${p}</option>`).join('');
+  const tr=document.createElement('tr'); tr.id=`li${id}`;
+  tr.innerHTML=`<td><select onchange="recalc()">${opts}</select></td><td><input type="text" value="${String(desc).replace(/"/g,'&quot;')}" oninput="recalc()"></td><td><input type="number" min="0" step="1" value="${qty}" style="width:50px;text-align:center" oninput="recalc()"></td><td><input type="number" min="0" step="0.01" value="${rate}" placeholder="0.00" style="width:76px" oninput="recalc()"></td><td class="ltc" id="lt${id}">$0.00</td><td><button class="ldel" onclick="document.getElementById('li${id}').remove();recalc()">&#x2715;</button></td>`;
+  document.getElementById('libody').appendChild(tr); recalc();
+}
+function recalc(){
+  let sub=0;
+  document.querySelectorAll('#libody tr').forEach(tr=>{ const inp=[...tr.querySelectorAll('input')]; const q=parseFloat(inp[1]?.value)||0,r=parseFloat(inp[2]?.value)||0,t=q*r; sub+=t; const el=document.getElementById('lt'+tr.id.replace('li','')); if(el) el.textContent=fmtD(t); });
+  document.getElementById('isub').textContent=fmtD(sub); document.getElementById('itot').textContent=fmtD(sub);
+}
+function getRows(){
+  const num=document.getElementById('inum').value||'HANDS-NEW',iD=document.getElementById('idate').value||todayS(),dD=document.getElementById('idue').value||net30();
+  const cust=document.getElementById('icust').value,po=document.getElementById('ipo').value,memo=document.getElementById('imemo').value,loc=document.getElementById('iloc').value||'Las Vegas';
+  const rows=[]; let first=true;
+  document.querySelectorAll('#libody tr').forEach(tr=>{ const sel=tr.querySelector('select')?.value||''; const inp=[...tr.querySelectorAll('input')]; const desc=inp[0]?.value||'',qty=inp[1]?.value||'1',rate=inp[2]?.value||'0',tot=((parseFloat(qty)||0)*(parseFloat(rate)||0)).toFixed(2); rows.push({num:first?num:'',iD:first?iD:'',dD:first?dD:'',cust:first?cust:'',po:first?po:'',memo:first?memo:'',loc,prod:sel,desc,qty,rate:parseFloat(rate).toFixed(2),tot}); first=false; });
+  return rows;
+}
+function copySSRows(){
+  const rows=getRows(); if(!rows.length){ toast('No line items.'); return; }
+  const hdr=['Invoice/Bill Date','Due Date','Invoice / Bill Number','Transaction Type','Customer','Currency Code','Product/Services','Description','Qty','Discount %','Unit Price','Category','Location','Class','Tax','Custom Field (PO/WBS)'];
+  const lines=[hdr.join('\t')]; rows.forEach(r=>{ lines.push([r.iD,r.dD,r.num,r.num?'Invoice':'',r.cust,r.cust?'USD':'',r.prod,r.desc,r.qty,'',r.rate,'',r.loc,'','',r.po].join('\t')); });
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('Copied! Open Excel v4 → QBO Sync Upload tab → click A7 → Paste → Spreadsheet Sync → Upload')).catch(()=>{ const ta=document.createElement('textarea'); ta.value=lines.join('\n'); ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('Copied — paste into Excel v4 QBO Sync Upload tab'); });
+}
+function dlCSV(){
+  const rows=getRows(); if(!rows.length){ toast('No line items.'); return; }
+  const fname=(document.getElementById('inum').value||'HANDS-NEW').replace(/[^\w-]/g,'')+'.csv';
+  const esc=v=>{ if(!v&&v!==0)return''; const s=String(v); return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:`${s}`; };
+  const hdr='*InvoiceNo,*Customer,*InvoiceDate,*DueDate,Terms,Location,Memo,*Item(Product/Service),ItemDescription,*ItemQuantity,*ItemRate,ItemAmount,ServiceDate,Taxable';
+  const csv=[hdr]; rows.forEach(r=>{ csv.push([esc(r.num),esc(r.cust),esc(r.iD),esc(r.dD),r.iD?'Net 30':'',esc(r.loc),esc(r.memo),esc(r.prod),esc(r.desc),r.qty,r.rate,r.tot,esc(r.iD),''].join(',')); });
+  const blob=new Blob([csv.join('\n')],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast(`Downloaded ${fname} — import: QBO → Accountant → Import Data → Invoices`);
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeInv(); });
+window.addEventListener('DOMContentLoaded',()=>{
+  // Render defaults immediately so financial panels are visible
+  updateBudgetDOM(budget);
+  // Then fire live syncs
+  setTimeout(()=>{ syncSheets(); syncAll(); }, 400);
+});
+</script>
+</body>
+</html>
