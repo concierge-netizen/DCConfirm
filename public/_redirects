@@ -11,3 +11,8 @@
 /estimates           /estimates.html                     200
 /warehouse           /warehouse.html                     200
 /bol                 /bol.html                           200
+
+# HANDS Phase 7 wave 1 — Driver Dispatch
+/api/fetch-items     /.netlify/functions/fetch-items     200
+/api/send-dispatch   /.netlify/functions/send-dispatch   200
+/dispatch            /dispatch.html                      200
