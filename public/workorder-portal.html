@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HANDS · Work Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#a0d6b4; --green-dim:#7bbf9a; --ink:#1a1a1a; --ink-mid:#555; --ink-light:#999;
+  --rule:#e8e8e4; --bg:#f7f7f5; --card:#fff;
+  --error:#c0392b; --amber:#fff8e8; --amber-b:#e8d48a;
+  --install:#2980b9; --retrieval:#8e44ad;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:var(--ink);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--green);}
+.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:0.12em;text-transform:uppercase;color:#fff;}
+.logo span{color:var(--green);}
+.phase-badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;padding:5px 14px;border-radius:20px;font-weight:500;}
+.phase-install{background:rgba(41,128,185,0.2);color:#5dade2;border:1px solid rgba(93,173,226,0.3);}
+.phase-retrieval{background:rgba(142,68,211,0.2);color:#af7ac5;border:1px solid rgba(175,122,197,0.3);}
+
+/* ── STATES ── */
+.state{display:none;padding:48px 24px;text-align:center;}
+.state.active{display:block;}
+.state-icon{font-size:48px;margin-bottom:16px;}
+.state-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:8px;}
+.state-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-light);letter-spacing:0.1em;line-height:1.7;}
+.spinner-ring{width:44px;height:44px;border:3px solid rgba(160,214,180,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── MAIN CONTENT ── */
+.content{max-width:680px;margin:0 auto;padding:0 0 80px;}
+
+/* ── HERO CARD ── */
+.hero-card{background:var(--ink);color:#fff;padding:28px 24px;margin-bottom:0;}
+.hero-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;}
+.hero-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;line-height:1.2;margin-bottom:4px;}
+.hero-account{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);letter-spacing:0.1em;}
+.hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1);}
+.hero-meta-item{}
+.hero-meta-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:4px;}
+.hero-meta-val{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:#fff;}
+.hero-meta-val.green{color:var(--green);}
+
+/* ── TIME BANNER ── */
+.time-banner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;background:rgba(160,214,180,0.1);border:1px solid rgba(160,214,180,0.25);padding:18px 24px;margin:0;}
+.time-block{text-align:center;}
+.time-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px;}
+.time-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--ink);line-height:1;}
+.time-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);margin-top:3px;}
+.time-arrow{font-size:20px;color:var(--green);}
+
+/* ── SECTION ── */
+.section{background:var(--card);border-bottom:1px solid var(--rule);padding:20px 24px;}
+.section-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--ink-light);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--rule);}
+
+/* ── VENUE ── */
+.venue-row{display:flex;align-items:flex-start;gap:12px;}
+.venue-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.venue-name{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;margin-bottom:3px;}
+.venue-address{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-mid);line-height:1.5;}
+.map-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--green-dim);text-decoration:none;text-transform:uppercase;border:1px solid rgba(160,214,180,0.4);padding:5px 12px;border-radius:4px;transition:all 0.15s;}
+.map-link:hover{background:rgba(160,214,180,0.1);}
+
+/* ── CONTACT ── */
+.contact-row{display:flex;align-items:center;gap:12px;}
+.contact-icon{width:40px;height:40px;background:rgba(160,214,180,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.contact-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;}
+.contact-phone{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-mid);margin-top:2px;}
+.call-btn{margin-left:auto;background:var(--green);color:var(--ink);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-block;}
+
+/* ── SUPPLIES ── */
+.supply-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule);}
+.supply-item:last-child{border-bottom:none;}
+.supply-check{width:24px;height:24px;border:2px solid var(--rule);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:14px;}
+.supply-check.checked{background:var(--green);border-color:var(--green-dim);color:var(--ink);}
+.supply-qty{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-light);min-width:32px;text-align:right;flex-shrink:0;}
+.supply-name{font-family:'DM Sans',sans-serif;font-size:14px;flex:1;}
+.supply-name.checked{text-decoration:line-through;color:var(--ink-light);}
+.supply-unit{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);}
+.supplies-progress{height:4px;background:var(--rule);border-radius:2px;margin-top:14px;overflow:hidden;}
+.supplies-progress-bar{height:100%;background:var(--green);border-radius:2px;transition:width 0.3s;}
+
+/* ── INSTRUCTIONS ── */
+.instruction-block{background:#f9f9f7;border-radius:6px;padding:16px;margin-bottom:12px;}
+.instruction-block:last-child{margin-bottom:0;}
+.instruction-phase{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:8px;}
+.instruction-phase.install{color:var(--install);}
+.instruction-phase.retrieval{color:var(--retrieval);}
+.instruction-text{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;color:var(--ink-mid);white-space:pre-wrap;}
+
+/* ── SIGN OFF FORM ── */
+.form-section{background:var(--card);padding:24px;border-bottom:1px solid var(--rule);}
+.form-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;}
+input[type=text],input[type=time],textarea{font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:6px;padding:11px 14px;width:100%;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+input:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(160,214,180,0.15);}
+input::placeholder,textarea::placeholder{color:#ccc;}
+textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.form-group{margin-bottom:16px;}
+
+/* ── PHOTO UPLOAD ── */
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;}
+.photo-slot{aspect-ratio:1;border:2px dashed var(--rule);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;overflow:hidden;position:relative;background:#fafaf8;}
+.photo-slot:hover{border-color:var(--green);background:rgba(160,214,180,0.05);}
+.photo-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.photo-slot-icon{font-size:22px;margin-bottom:4px;}
+.photo-slot-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);}
+.photo-slot input[type=file]{display:none;}
+.photo-uploading{position:absolute;inset:0;background:rgba(255,255,255,0.85);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);}
+
+/* ── SUBMIT BUTTON ── */
+.submit-wrap{padding:24px;background:var(--card);}
+.btn-submit{width:100%;padding:16px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-submit:hover:not(:disabled){background:#2d2d2d;}
+.btn-submit:disabled{background:#bbb;cursor:not-allowed;}
+.btn-submit .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.btn-submit.loading .spin{display:block;}
+
+/* ── SUCCESS ── */
+.success-card{background:rgba(160,214,180,0.1);border:1px solid rgba(160,214,180,0.3);border-radius:8px;padding:24px;text-align:center;margin:24px;}
+.success-icon{font-size:40px;margin-bottom:12px;}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;margin-bottom:6px;}
+.success-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);letter-spacing:0.1em;line-height:1.7;}
+
+/* ── EMPTY SUPPLIES ── */
+.empty-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-light);text-align:center;padding:20px 0;letter-spacing:0.08em;}
+
+/* ── PHASE TABS ── */
+.phase-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--ink);border-bottom:1px solid rgba(255,255,255,0.08);}
+.phase-tab{padding:14px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;color:rgba(255,255,255,0.4);transition:all 0.15s;border-bottom:3px solid transparent;}
+.phase-tab.active-install{color:#5dade2;border-color:#5dade2;}
+.phase-tab.active-retrieval{color:#af7ac5;border-color:#af7ac5;}
+.phase-panel{display:none;}
+.phase-panel.active{display:block;}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">H<span>A</span>NDS</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#666;margin-top:2px;text-transform:uppercase;">Work Order Portal</div>
+  </div>
+  <div id="phaseBadge"></div>
+</header>
+
+<!-- Loading -->
+<div class="state active" id="stateLoading">
+  <div class="spinner-ring"></div>
+  <div class="state-title">Loading Work Order</div>
+  <div class="state-sub">Fetching job details from HANDS…</div>
+</div>
+
+<!-- Error -->
+<div class="state" id="stateError">
+  <div class="state-icon">⚠️</div>
+  <div class="state-title">Work Order Not Found</div>
+  <div class="state-sub" id="errorMsg">Check your link and try again.<br>Contact HANDS dispatch if the issue persists.</div>
+</div>
+
+<!-- No ID -->
+<div class="state" id="stateNoId">
+  <div class="state-icon">🔗</div>
+  <div class="state-title">No Work Order Specified</div>
+  <div class="state-sub">This link is missing a work order ID.<br>Please use the link provided by HANDS dispatch.</div>
+</div>
+
+<!-- Main content -->
+<div class="content" id="stateContent" style="display:none;">
+
+  <!-- Hero -->
+  <div class="hero-card">
+    <div class="hero-label">Work Order <span id="woId"></span></div>
+    <div class="hero-name" id="woName"></div>
+    <div class="hero-account" id="woAccount"></div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">Activity Type</div>
+        <div class="hero-meta-val" id="woType"></div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">Status</div>
+        <div class="hero-meta-val green" id="woStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase tabs (install / retrieval) -->
+  <div class="phase-tabs">
+    <div class="phase-tab" id="tabInstall" onclick="switchPhase('install')">📦 Install</div>
+    <div class="phase-tab" id="tabRetrieval" onclick="switchPhase('retrieval')">🔄 Retrieval</div>
+  </div>
+
+  <!-- Time banner -->
+  <div class="time-banner">
+    <div class="time-block">
+      <div class="time-label">Start</div>
+      <div class="time-val" id="woStartTime">—</div>
+      <div class="time-date" id="woStartDate"></div>
+    </div>
+    <div class="time-arrow">→</div>
+    <div class="time-block">
+      <div class="time-label">End / Strike</div>
+      <div class="time-val" id="woEndTime">—</div>
+      <div class="time-date" id="woEndDate"></div>
+    </div>
+  </div>
+
+  <!-- Venue -->
+  <div class="section" id="venueSection" style="display:none;">
+    <div class="section-title">Venue</div>
+    <div class="venue-row">
+      <div class="venue-icon">📍</div>
+      <div>
+        <div class="venue-name" id="woVenue"></div>
+        <div class="venue-address" id="woAddress"></div>
+        <a class="map-link" id="woMapLink" href="#" target="_blank">📍 Open in Maps</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="section" id="contactSection" style="display:none;">
+    <div class="section-title">On-Site Contact</div>
+    <div class="contact-row">
+      <div class="contact-icon">👤</div>
+      <div>
+        <div class="contact-name" id="woContact"></div>
+        <div class="contact-phone" id="woPhone"></div>
+      </div>
+      <a class="call-btn" id="woCallBtn" href="#">Call</a>
+    </div>
+  </div>
+
+  <!-- Supplies -->
+  <div class="section">
+    <div class="section-title">Supplies & Equipment</div>
+    <div id="suppliesList"><div class="empty-note">No supplies listed — check with dispatch.</div></div>
+    <div class="supplies-progress" id="supplyProgressWrap" style="display:none;">
+      <div class="supplies-progress-bar" id="supplyProgressBar"></div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);margin-top:10px;text-align:right;" id="supplyCount"></div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="section" id="instructionsSection">
+    <div class="section-title">Instructions</div>
+    <div id="installInstructions" class="phase-panel">
+      <div class="instruction-block" id="installNotesBlock" style="display:none;">
+        <div class="instruction-phase install">📦 Install / Setup</div>
+        <div class="instruction-text" id="installNotes"></div>
+      </div>
+      <div class="instruction-block" id="generalNotesBlock" style="display:none;">
+        <div class="instruction-phase install">📋 General Notes</div>
+        <div class="instruction-text" id="generalNotes"></div>
+      </div>
+    </div>
+    <div id="retrievalInstructions" class="phase-panel" style="display:none;">
+      <div class="instruction-block" id="teardownNotesBlock" style="display:none;">
+        <div class="instruction-phase retrieval">🔄 Retrieval / Teardown</div>
+        <div class="instruction-text" id="teardownNotes"></div>
+      </div>
+    </div>
+    <div class="empty-note" id="noInstructions">No specific instructions — follow standard procedure.</div>
+  </div>
+
+  <!-- Sign-off Form -->
+  <div class="form-section">
+    <div class="section-title" style="margin-bottom:20px;">Installer Sign-Off</div>
+
+    <div class="form-group">
+      <label class="form-label">Your Name</label>
+      <input type="text" id="installerName" placeholder="First and last name" />
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label class="form-label">Actual Start Time</label>
+        <input type="time" id="actualStart" />
+      </div>
+      <div>
+        <label class="form-label">Actual End Time</label>
+        <input type="time" id="actualEnd" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Photos (tap to upload)</label>
+      <div class="photo-grid">
+        <div class="photo-slot" onclick="document.getElementById('photo0').click()">
+          <div class="photo-slot-icon">📷</div>
+          <div class="photo-slot-label">Photo 1</div>
+          <input type="file" id="photo0" accept="image/*" onchange="uploadPhoto(0,this)">
+        </div>
+        <div class="photo-slot" onclick="document.getElementById('photo1').click()">
+          <div class="photo-slot-icon">📷</div>
+          <div class="photo-slot-label">Photo 2</div>
+          <input type="file" id="photo1" accept="image/*" onchange="uploadPhoto(1,this)">
+        </div>
+        <div class="photo-slot" onclick="document.getElementById('photo2').click()">
+          <div class="photo-slot-icon">📷</div>
+          <div class="photo-slot-label">Photo 3</div>
+          <input type="file" id="photo2" accept="image/*" onchange="uploadPhoto(2,this)">
+        </div>
+        <div class="photo-slot" onclick="document.getElementById('photo3').click()">
+          <div class="photo-slot-icon">📷</div>
+          <div class="photo-slot-label">Photo 4</div>
+          <input type="file" id="photo3" accept="image/*" onchange="uploadPhoto(3,this)">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Completion Notes (optional)</label>
+      <textarea id="completionNotes" placeholder="Any issues, incidents, or notes for the HANDS team…"></textarea>
+    </div>
+  </div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="submitBtn" onclick="submitSignOff()">
+      <div class="spin"></div>
+      <span id="submitLabel">✓ Submit Sign-Off</span>
+    </button>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--ink-light);text-align:center;margin-top:10px;letter-spacing:0.08em;" id="submitNote">
+      Submitting will update the job status in HANDS monday.com
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success-card" id="successCard" style="display:none;">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Sign-Off Submitted</div>
+    <div class="success-sub" id="successMsg">Your completion has been logged.<br>The HANDS team has been notified.</div>
+  </div>
+
+</div>
+
+<script>
+var wo = null;
+var phase = 'install';
+var photoUrls = [null, null, null, null];
+var itemId = null;
+
+var CLOUDINARY_CLOUD = 'dxkpbjicu';
+var CLOUDINARY_PRESET = 'hands_pod_photos';
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var params = new URLSearchParams(window.location.search);
+  itemId = params.get('id');
+  phase = params.get('phase') || 'install';
+
+  if (!itemId) {
+    showState('noId');
+    return;
+  }
+
+  loadWorkOrder(itemId);
+});
+
+function showState(name) {
+  ['Loading','Error','NoId','Content'].forEach(function(s) {
+    var el = document.getElementById('state' + s);
+    if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+  });
+  var target = document.getElementById('state' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (!target) return;
+  if (name === 'content') {
+    target.style.display = 'block';
+  } else {
+    target.style.display = 'block';
+    target.classList.add('active');
+  }
+}
+
+// ── LOAD WORK ORDER ───────────────────────────────────────────────────────────
+async function loadWorkOrder(id) {
+  showState('loading');
+  try {
+    var res = await fetch('/api/get-workorder?id=' + id);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    wo = await res.json();
+    if (wo.error) throw new Error(wo.error);
+    renderWorkOrder();
+    showState('content');
+  } catch(err) {
+    document.getElementById('errorMsg').textContent = err.message;
+    showState('error');
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderWorkOrder() {
+  document.title = 'Work Order — ' + wo.name;
+  document.getElementById('woId').textContent = '#' + wo.id;
+  document.getElementById('woName').textContent = wo.name;
+  document.getElementById('woAccount').textContent = wo.account ? wo.account.toUpperCase() : '';
+  document.getElementById('woType').textContent = wo.activityType || 'Brand Activation';
+  document.getElementById('woStatus').textContent = wo.logisticsStatus || 'Scheduled';
+
+  // Times
+  if (wo.startTime) document.getElementById('woStartTime').textContent = formatTime(wo.startTime);
+  if (wo.endTime) document.getElementById('woEndTime').textContent = formatTime(wo.endTime);
+  if (wo.startDate) {
+    document.getElementById('woStartDate').textContent = formatDate(wo.startDate);
+    document.getElementById('woEndDate').textContent = formatDate(wo.startDate);
+  }
+
+  // Venue
+  if (wo.venue || wo.address) {
+    document.getElementById('venueSection').style.display = 'block';
+    document.getElementById('woVenue').textContent = wo.venue || '';
+    document.getElementById('woAddress').textContent = wo.address || '';
+    var mapQ = encodeURIComponent((wo.venue || '') + ' ' + (wo.address || ''));
+    document.getElementById('woMapLink').href = 'https://maps.apple.com/?q=' + mapQ;
+  }
+
+  // Contact
+  if (wo.contactName || wo.contactPhone) {
+    document.getElementById('contactSection').style.display = 'block';
+    document.getElementById('woContact').textContent = wo.contactName || '';
+    document.getElementById('woPhone').textContent = wo.contactPhone || '';
+    if (wo.contactPhone) {
+      document.getElementById('woCallBtn').href = 'tel:' + wo.contactPhone.replace(/\D/g,'');
+    }
+  }
+
+  // Supplies
+  renderSupplies();
+
+  // Instructions
+  var hasInstall   = !!(wo.setupNotes && wo.setupNotes.trim());
+  var hasTeardown  = !!(wo.teardownNotes && wo.teardownNotes.trim());
+  var hasGeneral   = !!(wo.notes && wo.notes.trim());
+  var hasAny = hasInstall || hasTeardown || hasGeneral;
+
+  if (hasInstall) {
+    document.getElementById('installNotesBlock').style.display = 'block';
+    document.getElementById('installNotes').textContent = wo.setupNotes;
+  }
+  if (hasGeneral) {
+    document.getElementById('generalNotesBlock').style.display = 'block';
+    document.getElementById('generalNotes').textContent = wo.notes;
+  }
+  if (hasTeardown) {
+    document.getElementById('teardownNotesBlock').style.display = 'block';
+    document.getElementById('teardownNotes').textContent = wo.teardownNotes;
+  }
+  document.getElementById('noInstructions').style.display = hasAny ? 'none' : 'block';
+
+  // Phase UI
+  switchPhase(phase);
+}
+
+function renderSupplies() {
+  var list = document.getElementById('suppliesList');
+  var supplies = wo.supplies || [];
+  if (!supplies.length) {
+    list.innerHTML = '<div class="empty-note">No supplies listed — check with dispatch.</div>';
+    return;
+  }
+  document.getElementById('supplyProgressWrap').style.display = 'block';
+  list.innerHTML = supplies.map(function(s, i) {
+    return '<div class="supply-item" id="supply-' + i + '">'
+      + '<div class="supply-check" id="check-' + i + '" onclick="toggleSupply(' + i + ')"></div>'
+      + '<div class="supply-qty">' + (s.qty || '1') + '</div>'
+      + '<div class="supply-name" id="supplyname-' + i + '">' + escHtml(s.name) + (s.unit ? ' <span class="supply-unit">' + escHtml(s.unit) + '</span>' : '') + '</div>'
+      + '</div>';
+  }).join('');
+  updateSupplyProgress();
+}
+
+var checkedSupplies = {};
+function toggleSupply(i) {
+  checkedSupplies[i] = !checkedSupplies[i];
+  var check = document.getElementById('check-' + i);
+  var name  = document.getElementById('supplyname-' + i);
+  if (checkedSupplies[i]) {
+    check.classList.add('checked'); check.textContent = '✓';
+    if (name) name.classList.add('checked');
+  } else {
+    check.classList.remove('checked'); check.textContent = '';
+    if (name) name.classList.remove('checked');
+  }
+  updateSupplyProgress();
+}
+function updateSupplyProgress() {
+  var total = (wo.supplies || []).length;
+  var done = Object.values(checkedSupplies).filter(Boolean).length;
+  var pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('supplyProgressBar').style.width = pct + '%';
+  document.getElementById('supplyCount').textContent = done + ' / ' + total + ' confirmed';
+}
+
+function switchPhase(p) {
+  phase = p;
+
+  document.getElementById('tabInstall').className = 'phase-tab' + (p === 'install' ? ' active-install' : '');
+  document.getElementById('tabRetrieval').className = 'phase-tab' + (p === 'retrieval' ? ' active-retrieval' : '');
+
+  var badge = document.getElementById('phaseBadge');
+  badge.className = 'phase-badge phase-' + p;
+  badge.textContent = p === 'install' ? '📦 Install' : '🔄 Retrieval';
+
+  document.getElementById('installInstructions').style.display = p === 'install' ? 'block' : 'none';
+  document.getElementById('retrievalInstructions').style.display = p === 'retrieval' ? 'block' : 'none';
+
+  document.getElementById('submitLabel').textContent = p === 'install'
+    ? '✓ Submit Install Sign-Off'
+    : '✓ Submit Retrieval Sign-Off';
+  document.getElementById('submitNote').textContent = p === 'install'
+    ? 'Marks install as complete in HANDS monday.com'
+    : 'Marks retrieval complete — job will be closed out';
+}
+
+// ── PHOTO UPLOAD ──────────────────────────────────────────────────────────────
+async function uploadPhoto(idx, input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+
+  var slot = input.parentElement;
+  var uploading = document.createElement('div');
+  uploading.className = 'photo-uploading';
+  uploading.textContent = 'Uploading…';
+  slot.appendChild(uploading);
+
+  // Show preview immediately
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.createElement('img');
+    img.src = e.target.result;
+    // Remove existing img if any
+    var existImg = slot.querySelector('img');
+    if (existImg) existImg.remove();
+    slot.insertBefore(img, slot.firstChild);
+  };
+  reader.readAsDataURL(file);
+
+  try {
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'work_orders');
+    var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
+    var data = await res.json();
+    if (data.secure_url) {
+      photoUrls[idx] = data.secure_url;
+      uploading.textContent = '✓';
+      setTimeout(function() { uploading.remove(); }, 1000);
+    } else { throw new Error('No URL'); }
+  } catch(err) {
+    uploading.textContent = '⚠ Retry';
+    console.warn('Upload failed:', err);
+  }
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function submitSignOff() {
+  var name = document.getElementById('installerName').value.trim();
+  if (!name) { alert('Please enter your name before submitting.'); return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.classList.add('loading');
+  document.getElementById('submitLabel').textContent = 'Submitting…';
+
+  var pending = photoUrls.filter(function(u, i) {
+    return document.getElementById('photo' + i).files.length > 0 && !u;
+  });
+  if (pending.length) {
+    document.getElementById('submitLabel').textContent = 'Waiting for photos…';
+    await new Promise(function(r) { setTimeout(r, 3000); });
+  }
+
+  try {
+    var res = await fetch('/api/submit-workorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        itemId: itemId,
+        phase: phase,
+        installerName: name,
+        actualStart: document.getElementById('actualStart').value,
+        actualEnd: document.getElementById('actualEnd').value,
+        photos: photoUrls.filter(Boolean),
+        notes: document.getElementById('completionNotes').value.trim()
+      })
+    });
+    var result = await res.json();
+    if (!res.ok || result.error) throw new Error(result.error || 'Submit failed');
+
+    // Success
+    document.getElementById('successCard').style.display = 'block';
+    document.getElementById('successMsg').textContent =
+      (phase === 'install' ? 'Install' : 'Retrieval') + ' signed off by ' + name + '.\nThe HANDS team has been notified.';
+    btn.style.display = 'none';
+    document.getElementById('submitNote').style.display = 'none';
+    document.getElementById('successCard').scrollIntoView({ behavior: 'smooth' });
+
+  } catch(err) {
+    alert('Submission failed: ' + err.message + '\nPlease try again or contact HANDS dispatch.');
+    btn.disabled = false; btn.classList.remove('loading');
+    document.getElementById('submitLabel').textContent = phase === 'install' ? '✓ Submit Install Sign-Off' : '✓ Submit Retrieval Sign-Off';
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function formatTime(t) {
+  if (!t) return '—';
+  var m = t.match(/(\d+):(\d+)/);
+  if (!m) return t;
+  var h = parseInt(m[1]), min = m[2], ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + min + ' ' + ampm;
+}
+function formatDate(d) {
+  if (!d) return '';
+  try { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }); } catch { return d; }
+}
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
