@@ -1877,6 +1877,101 @@
   .tv-fade-out { opacity: 0; transition: opacity .35s ease; }
   .tv-fade-in  { opacity: 1; transition: opacity .35s ease; }
 
+  /* ─── PIN LOGIN OVERLAY ─── */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--text);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-overlay.open { display: flex; }
+  .login-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(160,214,180,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .login-card {
+    position: relative;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 48px 44px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-mark {
+    font-family: var(--display);
+    font-size: 36px;
+    letter-spacing: 0.18em;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .login-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 32px;
+  }
+  .login-sub {
+    font-family: var(--body);
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 22px;
+    min-height: 18px;
+  }
+  .login-pin {
+    width: 100%;
+    background: transparent;
+    color: var(--white);
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--display);
+    font-size: 38px;
+    text-align: center;
+    letter-spacing: 0.4em;
+    padding: 12px 0 14px;
+    margin-bottom: 26px;
+    outline: none;
+    transition: border-color .14s;
+  }
+  .login-pin:focus {
+    border-bottom-color: var(--green);
+  }
+  .login-pin::placeholder { color: rgba(255,255,255,0.18); letter-spacing: 0.4em; }
+  .login-btn {
+    width: 100%;
+    background: var(--green);
+    color: var(--text);
+    border: none;
+    padding: 13px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .login-btn:hover:not(:disabled) { background: var(--green-d); color: var(--white); }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-foot {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-top: 22px;
+  }
+
   /* ──────────────────────────────────────────── */
   /* DEEP MODE — terminal, data-dense              */
   /* ──────────────────────────────────────────── */
@@ -3345,6 +3440,28 @@
   <div class="deep-footer" id="deepFooter">— ready —</div>
 </div>
 
+<!-- ─── PIN LOGIN OVERLAY (fullscreen, blocks everything until authed) ─── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-mark">HANDS</div>
+    <div class="login-title">Operations Hub</div>
+    <div class="login-sub" id="loginSub">Enter PIN to continue</div>
+    <input
+      type="password"
+      class="login-pin"
+      id="loginPin"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      autocomplete="off"
+      maxlength="10"
+      placeholder="••••"
+      onkeydown="if(event.key==='Enter')submitLoginPin();"
+    />
+    <button class="login-btn" id="loginBtn" onclick="submitLoginPin()">Unlock</button>
+    <div class="login-foot">PIN session lasts 30 days on this device</div>
+  </div>
+</div>
+
 <script>
 
 // ─────────────────────────────────────────────
@@ -4180,12 +4297,105 @@ function wireBoardTabs() {
 
 
 // ─────────────────────────────────────────────
-// CHAT BACKEND — wires v3 drawer to existing /api/claude-chat
+// CHAT BACKEND — wires v3 drawer to /api/claude-chat with JWT auth
 // ─────────────────────────────────────────────
 var CLAUDE_CHAT_ENDPOINT = '/api/claude-chat';
-var CLAUDE_CHAT_SECRET   = 'HANDS-HUB-2026';
+var HUB_LOGIN_ENDPOINT   = '/api/hub-login';
+var HUB_TOKEN_KEY        = 'hands_hub_token';
 var DCCONFIRM_BASE       = '';
 var chatHistory = [];
+
+// ── Auth gate ──
+function getHubToken() {
+  try { return localStorage.getItem(HUB_TOKEN_KEY) || ''; }
+  catch (e) { return ''; }
+}
+function setHubToken(t) {
+  try { localStorage.setItem(HUB_TOKEN_KEY, t); } catch (e) {}
+}
+function clearHubToken() {
+  try { localStorage.removeItem(HUB_TOKEN_KEY); } catch (e) {}
+}
+// Decode JWT payload (no verification — server verifies; this is just to read exp client-side)
+function jwtPayload(token) {
+  try {
+    var parts = token.split('.');
+    if (parts.length !== 3) return null;
+    var p = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (p.length % 4) p += '=';
+    return JSON.parse(atob(p));
+  } catch (e) { return null; }
+}
+function isHubTokenValid() {
+  var t = getHubToken();
+  if (!t) return false;
+  var p = jwtPayload(t);
+  if (!p || !p.exp) return false;
+  var now = Math.floor(Date.now() / 1000);
+  return p.exp > now + 60; // 60s grace
+}
+
+function showLoginOverlay(reason) {
+  var ov = document.getElementById('loginOverlay');
+  if (!ov) return;
+  ov.classList.add('open');
+  var sub = document.getElementById('loginSub');
+  if (sub) {
+    sub.textContent = reason === 'expired' ? 'Session expired — re-enter PIN'
+                    : reason === 'bad'     ? 'Incorrect PIN'
+                    : 'Enter PIN to continue';
+  }
+  setTimeout(function(){
+    var pin = document.getElementById('loginPin');
+    if (pin) { pin.value = ''; pin.focus(); }
+  }, 100);
+}
+function hideLoginOverlay() {
+  var ov = document.getElementById('loginOverlay');
+  if (ov) ov.classList.remove('open');
+}
+
+function submitLoginPin() {
+  var pinEl = document.getElementById('loginPin');
+  var btn   = document.getElementById('loginBtn');
+  var sub   = document.getElementById('loginSub');
+  if (!pinEl) return;
+  var pin = (pinEl.value || '').trim();
+  if (!pin) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+
+  fetch(HUB_LOGIN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin: pin })
+  })
+  .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; }); })
+  .then(function(out){
+    if (btn) { btn.disabled = false; btn.textContent = 'Unlock'; }
+    if (!out.ok) {
+      if (sub) sub.textContent = (out.body && out.body.error) || 'Login failed';
+      pinEl.value = '';
+      pinEl.focus();
+      return;
+    }
+    setHubToken(out.body.token);
+    hideLoginOverlay();
+    // If chat drawer was open before, retry the last input
+    var inp = document.getElementById('chatInput');
+    if (inp) inp.focus();
+  })
+  .catch(function(err){
+    if (btn) { btn.disabled = false; btn.textContent = 'Unlock'; }
+    if (sub) sub.textContent = 'Network error — try again';
+  });
+}
+
+// On load, if no valid token, show overlay
+function ensureHubAuth() {
+  if (!isHubTokenValid()) {
+    showLoginOverlay('initial');
+  }
+}
 
 function openChat() {
   document.getElementById('drawer').classList.add('open');
@@ -4262,11 +4472,20 @@ function sendChat() {
   if (sendBtn) sendBtn.disabled = true;
   renderTyping();
 
+  var token = getHubToken();
+  if (!token) {
+    removeTyping();
+    showLoginOverlay('initial');
+    return;
+  }
+
   fetch(CLAUDE_CHAT_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
     body: JSON.stringify({
-      secret: CLAUDE_CHAT_SECRET,
       messages: chatHistory,
       pipelineContext: buildPipelineContext()
     })
@@ -4274,6 +4493,13 @@ function sendChat() {
     return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; });
   }).then(function(out){
     removeTyping();
+    if (out.status === 401) {
+      // Token rejected — clear and re-prompt
+      clearHubToken();
+      var reason = (out.body && out.body.code === 'expired') ? 'expired' : 'initial';
+      showLoginOverlay(reason);
+      return;
+    }
     if (!out.ok) {
       if (errEl) {
         errEl.style.display = 'block';
@@ -5217,11 +5443,17 @@ document.addEventListener('DOMContentLoaded', function(){
     wireChat();
     wireModals();
     wireCalendarNav();
+    ensureHubAuth();
     // No tools sidebar in daily mode — drawer + Esc handler handle it
   } else if (HUB_MODE === 'tv') {
     startTVMode();
+    // TV mode is meant for an unattended Chromecast — don't gate it with PIN.
+    // The function still requires JWT auth, so the chat won't work in TV mode
+    // without manually navigating away first. That's acceptable given TV mode is
+    // read-only by intent.
   } else if (HUB_MODE === 'deep') {
     wireDeepToolbar();
+    ensureHubAuth();
     // Re-render deep on every loadAllV3 cycle
     var origLoad = loadAllV3;
   }
