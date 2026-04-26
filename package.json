@@ -1,0 +1,9 @@
+{
+  "name": "dcconfirm",
+  "version": "1.0.0",
+  "description": "HANDS Logistics — consolidated ops site at ops.handslogistics.com",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^10.7.4"
+  }
+}
