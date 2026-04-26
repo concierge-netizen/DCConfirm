@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track your request — William Grant &amp; Sons · HANDS Logistics</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f8f7f4;
+    --paper-2: #efeee9;
+    --text: #1a1a1a;
+    --text-soft: #555;
+    --text-mute: #888;
+    --line: #e2e0d8;
+    --green: #a0d6b4;
+    --green-deep: #3f8c63;
+    --bad: #c75450;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'DM Mono', ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Gate (same as portal) */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--text);
+    color: #fff;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    transition: opacity .3s;
+  }
+  .gate.hidden { opacity: 0; pointer-events: none; }
+  .gate-card { width: 100%; max-width: 400px; text-align: center; }
+  .gate-brand img { height: 60px; margin-bottom: 32px; }
+  .gate-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; color: var(--green); margin-bottom: 14px;
+  }
+  .gate-title { font-family: var(--serif); font-size: 36px; font-weight: 400; line-height: 1.15; margin: 0 0 12px; }
+  .gate-sub { font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 32px; line-height: 1.6; }
+  .gate-input {
+    width: 100%; background: transparent; border: none;
+    border-bottom: 1px solid rgba(255,255,255,.25);
+    color: #fff; font-family: var(--mono); font-size: 18px;
+    text-align: center; letter-spacing: .15em; padding: 12px 0;
+    outline: none; transition: border-color .15s;
+  }
+  .gate-input:focus { border-bottom-color: var(--green); }
+  .gate-input.shake { animation: shake .35s; border-bottom-color: var(--bad); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-8px); }
+    40%,80% { transform: translateX(8px); }
+  }
+  .gate-btn {
+    margin-top: 20px; background: var(--green); color: var(--text);
+    border: none; padding: 14px 36px; font-family: var(--mono);
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px;
+  }
+  .gate-btn:hover { background: #6dba96; }
+  .gate-err { color: var(--bad); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-top: 12px; height: 14px; }
+  .gate-foot { font-family: var(--mono); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-top: 48px; }
+
+  /* Nav */
+  .nav {
+    background: var(--text); color: #fff;
+    border-bottom: 2px solid var(--green);
+    padding: 18px 32px;
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 24px;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 16px; }
+  .nav-brand img { height: 40px; display: block; }
+  .nav-divider { width: 1px; height: 32px; background: rgba(255,255,255,.2); }
+  .nav-client { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .nav-client-sub { font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--green); margin-top: 4px; }
+  .nav-cta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; color: #fff; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.3); padding: 8px 14px;
+    border-radius: 2px; transition: all .15s;
+  }
+  .nav-cta:hover { background: var(--green); color: var(--text); border-color: var(--green); }
+
+  .wrap { max-width: 600px; margin: 0 auto; padding: 60px 32px; flex: 1; width: 100%; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; color: var(--green-deep); margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif); font-size: clamp(36px, 5vw, 56px);
+    font-weight: 400; line-height: 1.1; margin: 0 0 32px;
+  }
+  .card { background: #fff; border: 1px solid var(--line); padding: 32px; border-radius: 4px; }
+  .form-field { margin-bottom: 18px; }
+  .form-label {
+    display: block; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .15em; text-transform: uppercase;
+    color: var(--text-mute); margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; padding: 12px; border: 1px solid var(--line);
+    background: #fff; font-family: var(--sans); font-size: 14px;
+    outline: none; border-radius: 2px;
+  }
+  .form-input:focus { border-color: var(--green-deep); }
+  .submit {
+    width: 100%; background: var(--text); color: #fff; border: none;
+    padding: 14px; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .2em; text-transform: uppercase; cursor: pointer;
+    margin-top: 8px;
+  }
+  .submit:hover:not(:disabled) { background: var(--green-deep); }
+  .submit:disabled { background: var(--paper-2); color: var(--text-mute); cursor: not-allowed; }
+  .err { background: #fef0ef; border-left: 3px solid var(--bad); padding: 12px 16px; margin-top: 16px; font-size: 13px; color: var(--bad); display: none; }
+  .err.show { display: block; }
+
+  .status-panel { display: none; }
+  .status-panel.show { display: block; }
+  .status-head { border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 20px; }
+  .status-ref { font-family: var(--mono); font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--text-mute); }
+  .status-name { font-family: var(--serif); font-size: 28px; font-weight: 400; margin: 4px 0 0; }
+  .status-pill {
+    display: inline-block; padding: 6px 14px; border-radius: 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .status-pill.concept { background: #f3eedd; color: #8a6d1f; }
+  .status-pill.reserved { background: #e8f3ec; color: var(--green-deep); }
+  .status-pill.started { background: #1a1a1a; color: var(--green); }
+  .status-pill.stopped { background: var(--paper-2); color: var(--text-soft); }
+  .status-pill.archived { background: #fef0ef; color: var(--bad); }
+  .timeline { margin: 24px 0; }
+  .timeline-step {
+    display: grid; grid-template-columns: 24px 1fr; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .timeline-step:last-child { border-bottom: none; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin-top: 6px; margin-left: 7px; }
+  .timeline-step.done .timeline-dot { background: var(--green-deep); }
+  .timeline-step.current .timeline-dot { background: var(--green); box-shadow: 0 0 0 4px rgba(160, 214, 180, 0.3); }
+  .timeline-label { font-family: var(--mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 2px; }
+  .timeline-step.done .timeline-label, .timeline-step.current .timeline-label { color: var(--text); }
+  .timeline-text { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+  .meta-grid { display: grid; grid-template-columns: 120px 1fr; gap: 8px 16px; font-size: 13px; margin-top: 16px; }
+  .meta-grid dt { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-mute); padding-top: 2px; }
+  .meta-grid dd { margin: 0; }
+
+  .foot {
+    background: var(--text); color: rgba(255,255,255,.6);
+    padding: 32px; text-align: center; margin-top: auto;
+  }
+  .foot-tag { font-family: var(--serif); font-size: 20px; color: var(--green); }
+  .foot-meta { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; margin-top: 6px; }
+
+  @media (max-width: 720px) {
+    .nav { grid-template-columns: 1fr auto; padding: 14px 18px; }
+    .nav-brand img { height: 32px; }
+    .nav-divider { height: 26px; }
+    .nav-client { font-size: 16px; }
+    .wrap { padding: 32px 18px; }
+    .card { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-brand"><img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics"></div>
+    <div class="gate-eyebrow">William Grant &amp; Sons · Asset Tracking</div>
+    <h1 class="gate-title">Restricted access</h1>
+    <p class="gate-sub">Enter the access code to track a request.</p>
+    <input class="gate-input" id="gateInput" type="password" placeholder="Access code" autocomplete="off">
+    <div class="gate-err" id="gateErr"></div>
+    <button class="gate-btn" id="gateBtn">Enter portal</button>
+    <div class="gate-foot">Operated by HANDS Logistics · Las Vegas</div>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics">
+    <div class="nav-divider"></div>
+    <div>
+      <div class="nav-client">William Grant &amp; Sons</div>
+      <div class="nav-client-sub">Asset Tracking</div>
+    </div>
+  </div>
+  <div></div>
+  <a href="/clients/wgs" class="nav-cta">Browse assets</a>
+</nav>
+
+<main class="wrap">
+  <div class="eyebrow">Asset tracking</div>
+  <h1 id="pageTitle">Check your request</h1>
+
+  <div class="card" id="lookupCard">
+    <div class="form-field">
+      <label class="form-label" for="ref">Reference number</label>
+      <input class="form-input" id="ref" type="text" placeholder="BQ-WGS-12345" autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="email">Email used on request</label>
+      <input class="form-input" id="email" type="email" placeholder="you@email.com">
+    </div>
+    <button class="submit" id="lookupBtn">Look up my request</button>
+    <div class="err" id="errMsg"></div>
+  </div>
+
+  <div class="card status-panel" id="statusPanel">
+    <div class="status-head">
+      <div class="status-ref" id="srRef"></div>
+      <div class="status-name" id="srName"></div>
+    </div>
+    <div class="status-pill" id="srPill"></div>
+    <div class="timeline" id="timeline"></div>
+    <dl class="meta-grid" id="srMeta"></dl>
+    <button class="submit" id="resetBtn" style="margin-top:24px;background:transparent;color:var(--text);border:1px solid var(--line);">Look up another</button>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-tag">Events and Production. In Better HANDS.</div>
+  <div class="foot-meta">William Grant &amp; Sons × HANDS Logistics</div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+  var SLUG = 'wgs';
+  var WBS_PREFIX = 'WGS';
+  var PASSWORD_HASH = 'd05d6f0708fe70a3e8568e8d7a867cae428cb5a744f49cd49bc99727610b0090';
+  var SESSION_KEY = 'hands.client.wgs.unlocked';
+
+  var $ = function(id) { return document.getElementById(id); };
+
+  // ── Gate ───────────────────────────────────────────────────────
+  async function sha256Hex(text) {
+    var d = new TextEncoder().encode(text);
+    var h = await crypto.subtle.digest('SHA-256', d);
+    return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function unlock() {
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    $('gate').classList.add('hidden');
+    setTimeout(function() { $('gate').style.display = 'none'; }, 320);
+    boot();
+  }
+  function checkGate() {
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        $('gate').classList.add('hidden');
+        $('gate').style.display = 'none';
+        boot();
+        return;
+      }
+    } catch (e) {}
+    setTimeout(function() { $('gateInput').focus(); }, 200);
+  }
+  $('gateBtn').addEventListener('click', tryUnlock);
+  $('gateInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') tryUnlock(); });
+  async function tryUnlock() {
+    var v = $('gateInput').value.trim();
+    if (!v) return;
+    $('gateErr').textContent = '';
+    try {
+      var h = await sha256Hex(v);
+      if (h === PASSWORD_HASH) unlock();
+      else {
+        $('gateInput').classList.add('shake');
+        $('gateErr').textContent = 'Incorrect access code';
+        setTimeout(function() { $('gateInput').classList.remove('shake'); }, 400);
+        $('gateInput').select();
+      }
+    } catch (err) {
+      $('gateErr').textContent = 'Browser error — please refresh';
+    }
+  }
+
+  function boot() {
+    // Pre-fill from URL params
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get('ref')) $('ref').value = qs.get('ref');
+    if (qs.get('email')) $('email').value = qs.get('email');
+  }
+
+  function showError(msg) { $('errMsg').textContent = msg; $('errMsg').classList.add('show'); }
+  function clearError() { $('errMsg').classList.remove('show'); }
+
+  function statusLabel(s) {
+    return ({
+      concept: 'Quote pending', reserved: 'Confirmed',
+      started: 'In Service', stopped: 'Returned',
+      archived: 'Cancelled'
+    })[s] || (s || 'Unknown');
+  }
+  function statusBlurb(s) {
+    return ({
+      concept:  'We\'ve received your request and our team is preparing logistics. You\'ll hear from us within one business day.',
+      reserved: 'Your deployment is confirmed. We\'ll reach out closer to the date with delivery details.',
+      started:  'Your assets are out for deployment or currently on-site.',
+      stopped:  'Your deployment has been returned and closed out.',
+      archived: 'This request has been cancelled. If this is a mistake, please contact us at jon@handslogistics.com.'
+    })[s] || '';
+  }
+  function renderTimeline(currentStatus) {
+    var steps = [
+      { key: 'concept',  label: 'Submitted',  text: 'Request received' },
+      { key: 'reserved', label: 'Confirmed',  text: 'Logistics confirmed, dates locked' },
+      { key: 'started',  label: 'In Service', text: 'Assets deployed for your activation' },
+      { key: 'stopped',  label: 'Returned',   text: 'Deployment complete' }
+    ];
+    if (currentStatus === 'archived') {
+      return '<div class="timeline-step current"><div class="timeline-dot"></div><div><div class="timeline-label">Cancelled</div><div class="timeline-text">This request was cancelled.</div></div></div>';
+    }
+    var currentIdx = steps.findIndex(function(s) { return s.key === currentStatus; });
+    if (currentIdx === -1) currentIdx = 0;
+    return steps.map(function(s, i) {
+      var cls = i < currentIdx ? 'done' : (i === currentIdx ? 'current' : '');
+      return '<div class="timeline-step ' + cls + '"><div class="timeline-dot"></div><div><div class="timeline-label">' + s.label + '</div><div class="timeline-text">' + s.text + '</div></div></div>';
+    }).join('');
+  }
+
+  function lookup() {
+    clearError();
+    var refInput = $('ref').value.trim();
+    var email    = $('email').value.trim().toLowerCase();
+    if (!refInput) { showError('Please enter your reference number.'); return; }
+    if (!email)    { showError('Please enter the email used on your request.'); return; }
+
+    // Strip slug-specific prefixes only — defensive against Booqable IDs that may contain dashes
+    var orderId = refInput
+      .replace(/^BQ-WGS-/i, '')
+      .replace(/^WGS-/i, '')
+      .replace(/^BQ-/i, '')
+      .trim();
+    if (!orderId) { showError('Reference number doesn\'t look right.'); return; }
+
+    var btn = $('lookupBtn');
+    btn.disabled = true;
+    btn.textContent = 'Looking up…';
+
+    fetch('/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) +
+          '&endpoint=' + encodeURIComponent('orders/' + orderId) +
+          '&include=customer')
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, body: j }; }); })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.textContent = 'Look up my request';
+        if (!res.ok || !res.body || !res.body.data) {
+          showError('We couldn\'t find a request with that reference. Please check and try again.');
+          return;
+        }
+        var order = res.body.data;
+        var attrs = order.attributes || {};
+        var included = res.body.included || [];
+        var customer = included.find(function(i) { return i.type === 'customers'; });
+        var custEmail = customer && customer.attributes && (customer.attributes.email || '').toLowerCase();
+        if (!custEmail || custEmail !== email) {
+          showError('That email doesn\'t match the one on this request. Please use the email you submitted with.');
+          return;
+        }
+
+        $('lookupCard').style.display = 'none';
+        $('statusPanel').classList.add('show');
+        $('srRef').textContent = 'Reference ' + WBS_PREFIX + '-' + order.id;
+        $('srName').textContent = (customer.attributes.name || 'Your request');
+        var st = attrs.status || 'concept';
+        $('srPill').className = 'status-pill ' + st;
+        $('srPill').textContent = statusLabel(st);
+        $('timeline').innerHTML = renderTimeline(st);
+
+        var startsAt = attrs.starts_at ? new Date(attrs.starts_at) : null;
+        var stopsAt  = attrs.stops_at ? new Date(attrs.stops_at) : null;
+        var meta = '';
+        if (startsAt) meta += '<dt>From</dt><dd>' + startsAt.toLocaleDateString('en-US', {weekday:'short', month:'long', day:'numeric', year:'numeric'}) + '</dd>';
+        if (stopsAt)  meta += '<dt>To</dt><dd>'   + stopsAt.toLocaleDateString('en-US',  {weekday:'short', month:'long', day:'numeric', year:'numeric'}) + '</dd>';
+        meta += '<dt>Status</dt><dd>' + statusBlurb(st) + '</dd>';
+        $('srMeta').innerHTML = meta;
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Look up my request';
+        showError('Network error: ' + err.message);
+      });
+  }
+
+  $('lookupBtn').addEventListener('click', lookup);
+  $('ref').addEventListener('keydown', function(e) { if (e.key === 'Enter') lookup(); });
+  $('email').addEventListener('keydown', function(e) { if (e.key === 'Enter') lookup(); });
+  $('resetBtn').addEventListener('click', function() {
+    $('statusPanel').classList.remove('show');
+    $('lookupCard').style.display = '';
+  });
+
+  checkGate();
+})();
+</script>
+</body>
+</html>
