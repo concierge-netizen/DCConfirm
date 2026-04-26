@@ -40,3 +40,6 @@
 /api/save-quote       /.netlify/functions/save-quote       200
 /api/load-quotes      /.netlify/functions/load-quotes      200
 /procure              /procure.html                        200
+
+# Path swap — / now serves hub.html (copied to index.html), DC confirm flow moved to /confirmations
+/confirmations         /confirmations.html                   200
