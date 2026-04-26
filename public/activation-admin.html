@@ -240,12 +240,172 @@
     display: flex; gap: 12px; margin-top: 14px;
   }
 
+  /* ── SOW template controls ── */
+  .sow-controls {
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: var(--off-white);
+    border-left: 2px solid var(--green);
+    border-radius: 0;
+  }
+  .sow-control-row {
+    display: flex; gap: 16px; align-items: end;
+    flex-wrap: wrap;
+  }
+  .sow-control-actions {
+    display: flex; gap: 10px;
+    flex-shrink: 0;
+  }
+  .sow-control-actions .btn-ghost {
+    padding: 10px 16px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* ── Template/Addon modal ── */
+  .sow-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(17, 17, 16, 0.6);
+    z-index: 999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 60px 24px;
+    overflow-y: auto;
+  }
+  .sow-modal-backdrop.open {
+    display: flex;
+  }
+  .sow-modal {
+    background: var(--white);
+    width: 100%;
+    max-width: 920px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    margin: 0 auto;
+  }
+  .sow-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--light-grey);
+  }
+  .sow-modal-head h3 {
+    font-family: var(--font-display); font-size: 24px; font-weight: 400;
+  }
+  .sow-modal-head .modal-close {
+    background: transparent; border: none; cursor: pointer;
+    font-size: 28px; color: var(--text-grey);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sow-modal-head .modal-close:hover { color: var(--dark); }
+  .sow-modal-body {
+    padding: 24px 32px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .sow-modal-foot {
+    padding: 18px 32px;
+    border-top: 1px solid var(--light-grey);
+    display: flex; gap: 12px; justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  /* Template cards inside modal */
+  .template-card {
+    border: 1px solid var(--light-grey);
+    background: var(--white);
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .template-card:hover {
+    border-color: var(--green-dark);
+  }
+  .template-card-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--light-grey);
+    background: var(--off-white);
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px;
+  }
+  .template-card-head .tc-text {
+    flex: 1; min-width: 0;
+  }
+  .template-card-head .tc-name {
+    font-family: var(--font-display); font-size: 18px; font-weight: 400;
+    color: var(--dark); margin-bottom: 4px;
+  }
+  .template-card-head .tc-blurb {
+    font-size: 13px; font-weight: 300;
+    color: var(--text-grey); line-height: 1.5;
+  }
+  .template-card-head .tc-use {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+  .template-card-preview {
+    padding: 14px 20px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-grey);
+    white-space: pre-wrap;
+    border-top: 1px solid var(--light-grey);
+  }
+
+  /* Add-on checkbox grid */
+  .addon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .addon-card {
+    border: 1px solid var(--light-grey);
+    padding: 14px 16px;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .addon-card:hover {
+    border-color: var(--green-dark);
+    background: var(--off-white);
+  }
+  .addon-card.checked {
+    border-color: var(--green-dark);
+    background: rgba(160, 214, 180, 0.10);
+  }
+  .addon-card input[type="checkbox"] {
+    margin: 2px 0 0 0;
+    width: 16px; height: 16px;
+    accent-color: var(--green-dark);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .addon-card-text {
+    flex: 1; min-width: 0;
+  }
+  .addon-card-name {
+    font-size: 13px; font-weight: 500; color: var(--dark);
+    margin-bottom: 3px;
+  }
+  .addon-card-blurb {
+    font-size: 11px; font-weight: 300;
+    color: var(--text-grey); line-height: 1.5;
+  }
+
   @media (max-width: 1024px) {
     .line-item-row, .line-item-header {
       grid-template-columns: 1fr 1fr;
     }
     .line-item-row .field, .line-item-row .item-total, .line-item-row .item-remove {
       grid-column: span 1;
+    }
+    .addon-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
@@ -419,10 +579,27 @@
       <div class="card">
         <div class="section-eyebrow">Step 04 — Scope of Work</div>
         <h3 class="section-title" style="font-size: 22px;">What are we doing for them?</h3>
-        <p class="section-sub">The narrative center of the proposal. What HANDS is delivering &mdash; the operational story, told in plain English. Use line breaks for paragraphs.</p>
+        <p class="section-sub">The narrative center of the proposal. Pick a template to start, browse all options, or add-on optional sections. Then edit freely.</p>
+
+        <!-- Template controls -->
+        <div class="sow-controls">
+          <div class="sow-control-row">
+            <div class="field" style="margin-bottom: 0; flex: 1;">
+              <label for="templatePicker">Start from template</label>
+              <select id="templatePicker" onchange="applyTemplate(this.value)">
+                <option value="">— choose a template —</option>
+              </select>
+            </div>
+            <div class="sow-control-actions">
+              <button class="btn-ghost" type="button" onclick="openTemplateBrowser()">Browse templates</button>
+              <button class="btn-ghost" type="button" onclick="openAddonPicker()">+ Add-ons</button>
+            </div>
+          </div>
+        </div>
+
         <div class="field" style="margin-top: 16px;">
           <label for="scopeOfWork">Scope</label>
-          <textarea id="scopeOfWork" rows="8" placeholder="HANDS will produce the on-site execution for the Bombay Sapphire House Pop-Up at The Cosmopolitan. This includes:&#10;&#10;• Pre-event: warehouse staging of all POSM, custom bar build inspection, equipment prep&#10;• Load-in: 4-person crew on-site by 2pm to install bar, signage, lighting tower&#10;• Live event: 2 brand ambassadors, 1 lead bartender, full bar service for 6-hour window&#10;• Strike: complete teardown, materials returned to HANDS warehouse same night&#10;&#10;All custom builds, signage, and POSM are coordinated through HANDS. Client provides ice, garnish, and brand product."></textarea>
+          <textarea id="scopeOfWork" rows="14" placeholder="Pick a template above to start, or write from scratch. The scope of work is the narrative center of the proposal — what HANDS is delivering, in plain English."></textarea>
         </div>
       </div>
 
@@ -522,6 +699,42 @@
   </footer>
 </div>
 
+<!-- Template Browser Modal -->
+<div class="sow-modal-backdrop" id="templateBrowser" onclick="if(event.target===this) closeTemplateBrowser()">
+  <div class="sow-modal">
+    <div class="sow-modal-head">
+      <h3>Browse Scope of Work Templates</h3>
+      <button class="modal-close" onclick="closeTemplateBrowser()">&times;</button>
+    </div>
+    <div class="sow-modal-body" id="templateBrowserBody">
+      <div class="empty-state">Loading templates…</div>
+    </div>
+    <div class="sow-modal-foot">
+      <button class="btn-secondary" onclick="closeTemplateBrowser()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add-on Picker Modal -->
+<div class="sow-modal-backdrop" id="addonPicker" onclick="if(event.target===this) closeAddonPicker()">
+  <div class="sow-modal">
+    <div class="sow-modal-head">
+      <h3>Add-On Sections</h3>
+      <button class="modal-close" onclick="closeAddonPicker()">&times;</button>
+    </div>
+    <div class="sow-modal-body">
+      <p style="font-size: 13px; color: var(--text-grey); margin-bottom: 16px; line-height: 1.6;">Select add-ons to append to the bottom of the scope of work. Each one is a self-contained paragraph with placeholders to fill in. You can edit the text after applying.</p>
+      <div class="addon-grid" id="addonGrid">
+        <div class="empty-state">Loading add-ons…</div>
+      </div>
+    </div>
+    <div class="sow-modal-foot">
+      <button class="btn-secondary" onclick="closeAddonPicker()">Cancel</button>
+      <button class="btn-primary" onclick="applySelectedAddons()">Apply Selected</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -567,6 +780,7 @@
     addLineItem(); // start with one empty line
     renderTotals();
     loadProposalList();
+    loadSowTemplates(); // populate template picker dropdown + cache for browser modal
 
     // Live schedule summary
     ['loadinDate','loadinTime','eventStartDate','eventStartTime','eventEndDate','eventEndTime','strikeDate','strikeTime'].forEach(id => {
@@ -578,6 +792,135 @@
     // Skip login gate entirely — go straight to admin.
     initAdmin();
   });
+
+  // ── SOW TEMPLATES & ADD-ONS ──
+  let sowTemplates = [];
+  let sowAddons = [];
+
+  async function loadSowTemplates() {
+    try {
+      const res = await fetch("/sow-templates.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      sowTemplates = data.templates || [];
+      sowAddons = data.addons || [];
+
+      // Populate the dropdown
+      const sel = document.getElementById("templatePicker");
+      sel.innerHTML = '<option value="">— choose a template —</option>' +
+        sowTemplates.map(t => `<option value="${escapeAttr(t.id)}">${escapeHtml(t.name)}</option>`).join("");
+    } catch (err) {
+      console.error("Failed to load SOW templates:", err);
+      // Soft fail — picker just stays disabled, user can still write freely
+      const sel = document.getElementById("templatePicker");
+      sel.innerHTML = '<option value="">(templates unavailable — type freely)</option>';
+      sel.disabled = true;
+    }
+  }
+
+  function applyTemplate(templateId) {
+    if (!templateId) return; // empty option
+    const tpl = sowTemplates.find(t => t.id === templateId);
+    if (!tpl) return;
+
+    const ta = document.getElementById("scopeOfWork");
+    const existing = ta.value.trim();
+
+    if (existing && !confirm("This will replace your current Scope of Work. Continue?")) {
+      // Reset the dropdown so the user can pick again
+      document.getElementById("templatePicker").value = "";
+      return;
+    }
+
+    ta.value = tpl.scope;
+    showToast(`Loaded: ${tpl.name}`);
+    // Reset picker so user can pick same template again later if desired
+    document.getElementById("templatePicker").value = "";
+  }
+
+  // ── Template Browser Modal ──
+  function openTemplateBrowser() {
+    const body = document.getElementById("templateBrowserBody");
+    if (sowTemplates.length === 0) {
+      body.innerHTML = '<div class="empty-state">Templates not loaded. Try refreshing the page.</div>';
+    } else {
+      body.innerHTML = sowTemplates.map(t => `
+        <div class="template-card">
+          <div class="template-card-head">
+            <div class="tc-text">
+              <div class="tc-name">${escapeHtml(t.name)}</div>
+              <div class="tc-blurb">${escapeHtml(t.blurb || "")}</div>
+            </div>
+            <button class="btn-primary tc-use" onclick="useTemplateFromBrowser('${escapeAttr(t.id)}')">Use this</button>
+          </div>
+          <div class="template-card-preview">${escapeHtml(t.scope)}</div>
+        </div>
+      `).join("");
+    }
+    document.getElementById("templateBrowser").classList.add("open");
+  }
+
+  function closeTemplateBrowser() {
+    document.getElementById("templateBrowser").classList.remove("open");
+  }
+
+  function useTemplateFromBrowser(templateId) {
+    const tpl = sowTemplates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const ta = document.getElementById("scopeOfWork");
+    const existing = ta.value.trim();
+    if (existing && !confirm("This will replace your current Scope of Work. Continue?")) return;
+    ta.value = tpl.scope;
+    showToast(`Loaded: ${tpl.name}`);
+    closeTemplateBrowser();
+  }
+
+  // ── Add-on Picker Modal ──
+  function openAddonPicker() {
+    const grid = document.getElementById("addonGrid");
+    if (sowAddons.length === 0) {
+      grid.innerHTML = '<div class="empty-state">Add-ons not loaded. Try refreshing.</div>';
+    } else {
+      grid.innerHTML = sowAddons.map(a => `
+        <label class="addon-card" data-addon-id="${escapeAttr(a.id)}">
+          <input type="checkbox" value="${escapeAttr(a.id)}" onchange="this.closest('.addon-card').classList.toggle('checked', this.checked)" />
+          <div class="addon-card-text">
+            <div class="addon-card-name">${escapeHtml(a.name)}</div>
+            <div class="addon-card-blurb">${escapeHtml(a.blurb || "")}</div>
+          </div>
+        </label>
+      `).join("");
+    }
+    document.getElementById("addonPicker").classList.add("open");
+  }
+
+  function closeAddonPicker() {
+    document.getElementById("addonPicker").classList.remove("open");
+    // Clear all checkboxes for next open
+    document.querySelectorAll("#addonGrid input[type=checkbox]").forEach(cb => {
+      cb.checked = false;
+      cb.closest('.addon-card').classList.remove('checked');
+    });
+  }
+
+  function applySelectedAddons() {
+    const checked = Array.from(document.querySelectorAll("#addonGrid input[type=checkbox]:checked"));
+    if (checked.length === 0) {
+      showToast("No add-ons selected", true);
+      return;
+    }
+    const selectedTexts = checked
+      .map(cb => sowAddons.find(a => a.id === cb.value))
+      .filter(a => !!a)
+      .map(a => a.text);
+
+    const ta = document.getElementById("scopeOfWork");
+    const existing = ta.value.trimEnd();
+    const separator = existing ? "\n\n" : "";
+    ta.value = existing + separator + selectedTexts.join("\n\n");
+    showToast(`Added ${selectedTexts.length} add-on${selectedTexts.length > 1 ? 's' : ''}`);
+    closeAddonPicker();
+  }
 
   // ── TABS ──
   function switchTab(panel) {
