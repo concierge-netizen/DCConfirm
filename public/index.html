@@ -2,132 +2,2432 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HANDS — Client Emails</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HANDS — Internal Tools Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#0a0a0a; color:#e8e8e8; min-height:100vh; padding:40px 20px; }
-  .wrap { max-width:640px; margin:0 auto; }
-  .hdr { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .dot { width:10px; height:10px; border-radius:50%; background:#a0d6b4; }
-  .brand { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a0d6b4; }
-  h1 { font-size:24px; font-weight:800; margin-bottom:32px; letter-spacing:-0.5px; }
-  .card { background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:32px; margin-bottom:20px; }
-  .card h2 { font-size:16px; font-weight:700; margin-bottom:4px; }
-  .card .sub { color:#888; font-size:13px; margin-bottom:20px; line-height:1.5; }
-  label { display:block; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#a0d6b4; margin-bottom:8px; }
-  input { width:100%; background:#1a1a1a; border:1px solid #2a2a2a; color:#fff; padding:12px 14px; border-radius:8px; font-size:15px; font-family:inherit; }
-  input:focus { outline:none; border-color:#a0d6b4; }
-  .row { display:flex; gap:10px; margin-top:14px; }
-  button { flex:1; background:#a0d6b4; border:none; color:#0a0a0a; padding:12px; border-radius:8px; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
-  button:hover { background:#8cc4a1; }
-  button.ghost { background:transparent; color:#a0d6b4; border:1px solid #a0d6b4; }
-  button.ghost:hover { background:rgba(160,214,180,0.1); }
-  button:disabled { opacity:0.5; cursor:not-allowed; }
-  .result { margin-top:16px; padding:14px; border-radius:8px; font-size:12px; line-height:1.6; display:none; }
-  .result.show { display:block; }
-  .result.ok { background:rgba(160,214,180,0.1); border:1px solid #a0d6b4; color:#a0d6b4; }
-  .result.err { background:rgba(255,100,100,0.1); border:1px solid #d84040; color:#ff8080; }
-  .result pre { font-family:ui-monospace, monospace; font-size:11px; margin-top:6px; white-space:pre-wrap; word-break:break-all; color:#aaa; }
-  .endpoints { margin-top:16px; font-size:11px; color:#666; line-height:1.8; }
-  .endpoints code { background:#1a1a1a; padding:2px 6px; border-radius:4px; color:#a0d6b4; font-family:ui-monospace, monospace; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --dark:#0a0a0a; --card:#161616; --card-hover:#1c1c1c; --border:#2a2a2a;
+    --border-h:#333333; --green:#a0d6b4; --muted:#555555; --label:#888888;
+    --body:#e0e0e0; --white:#ffffff;
+  }
+  body { background:var(--dark); color:var(--body); font-family:'DM Sans',sans-serif; font-weight:400; min-height:100vh; }
+
+  /* HEADER */
+  .header { background:var(--dark); border-bottom:1px solid var(--border); padding:0 32px; display:flex; align-items:center; justify-content:space-between; height:64px; position:sticky; top:0; z-index:100; }
+  .header-accent { position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--dark) 68%,var(--green) 68%); }
+  .header-left { display:flex; align-items:center; gap:14px; }
+  .header-logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; color:var(--white); }
+  .header-tag { font-size:10px; font-weight:500; letter-spacing:1.5px; color:var(--green); text-transform:uppercase; margin-top:2px; }
+  .header-clock { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:var(--label); letter-spacing:1px; }
+
+  /* QUICKBAR */
+  .quickbar { background:#111111; border-bottom:1px solid var(--border); padding:0 32px; display:flex; align-items:center; gap:4px; height:44px; overflow-x:auto; }
+  .ql { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:500; color:var(--label); text-decoration:none; transition:background .15s,color .15s; white-space:nowrap; }
+  .ql:hover { background:var(--card); color:var(--body); }
+  .ql svg { width:14px; height:14px; flex-shrink:0; }
+  .ql-sep { width:1px; height:20px; background:var(--border); margin:0 4px; }
+
+  /* MAIN */
+  .main { max-width:1440px; margin:0 auto; padding:40px 40px 80px; }
+  .section { margin-bottom:48px; }
+  .section-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--white); }
+  .section-line { flex:1; height:1px; background:var(--border); }
+
+  /* TOOL CARDS */
+  .tool-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+  .tc { display:flex; flex-direction:column; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px 22px 20px; text-decoration:none; color:inherit; transition:border-color .15s,background .15s; position:relative; overflow:hidden; cursor:pointer; }
+  .tc:hover { border-color:var(--border-h); background:var(--card-hover); }
+  .tc-disabled { cursor:default; opacity:.5; }
+  .tc-icon { width:52px; height:52px; border-radius:10px; background:#1a1a0a; border:1px solid #2e2a1a; display:flex; align-items:center; justify-content:center; margin-bottom:18px; flex-shrink:0; }
+  .tc-icon svg { width:22px; height:22px; color:#c8a84b; stroke:#c8a84b; }
+  .tc-badge { font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .badge-live{color:var(--green);} .badge-soon{color:var(--muted);} .badge-client{color:#c8a84b;}
+  .pulse-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; flex-shrink:0; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);} }
+  .tc-name { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1.5px; color:var(--white); margin-bottom:10px; line-height:1.1; }
+  .tc-desc { font-size:13px; color:var(--label); line-height:1.65; flex:1; }
+  .tc-footer { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+  .tc-live-pill { display:flex; align-items:center; gap:6px; background:rgba(160,214,180,.1); border:1px solid rgba(160,214,180,.2); border-radius:20px; padding:4px 10px; font-size:10px; font-weight:700; letter-spacing:1.2px; color:var(--green); text-transform:uppercase; }
+  .tc-soon-pill { display:flex; align-items:center; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:10px; font-weight:600; letter-spacing:1.2px; color:var(--muted); text-transform:uppercase; }
+  .tc-arrow-btn { width:32px; height:32px; border-radius:6px; background:#1e1e1e; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; transition:border-color .15s,background .15s; flex-shrink:0; }
+  .tc:hover .tc-arrow-btn { border-color:var(--green); background:rgba(160,214,180,.08); }
+  .tc-arrow-btn svg { width:14px; height:14px; color:var(--label); }
+  .tc:hover .tc-arrow-btn svg { color:var(--green); }
+
+  /* ═══════════════════════════════════════
+     YEARLY PROGRESS TRACKER
+  ═══════════════════════════════════════ */
+  .ypt-block {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:22px 24px 20px;
+    margin-bottom:12px;
+  }
+  .ypt-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .ypt-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:14px; letter-spacing:2px; color:var(--white);
+  }
+  .ypt-year {
+    font-size:10px; font-weight:600; color:var(--label);
+    letter-spacing:1px;
+  }
+
+  /* Each activity row: label | bar track | count */
+  .ypt-rows { display:flex; flex-direction:column; gap:11px; }
+  .ypt-row { display:flex; align-items:center; gap:14px; }
+  .ypt-label {
+    font-size:9px; font-weight:700; letter-spacing:1.2px;
+    text-transform:uppercase; width:82px; flex-shrink:0;
+    white-space:nowrap;
+  }
+  .ypt-track {
+    flex:1; height:8px; background:#1a1a1a;
+    border-radius:4px; overflow:hidden;
+    position:relative;
+  }
+  .ypt-fill {
+    height:100%; border-radius:4px;
+    transition:width .7s cubic-bezier(.4,0,.2,1);
+    position:relative;
+  }
+  /* Subtle shimmer on the fill */
+  .ypt-fill::after {
+    content:'';
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.12) 50%,transparent 100%);
+    border-radius:4px;
+  }
+  .ypt-meta {
+    display:flex; align-items:center; gap:8px;
+    flex-shrink:0; min-width:90px; justify-content:flex-end;
+  }
+  .ypt-count {
+    font-size:11px; font-weight:600; color:var(--white);
+    font-variant-numeric:tabular-nums;
+  }
+  .ypt-goal {
+    font-size:10px; color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .ypt-pct {
+    font-size:9px; font-weight:700; letter-spacing:.5px;
+    min-width:32px; text-align:right;
+  }
+
+  /* ═══════════════════════════════════════
+     KPI ROW: rings + goals
+  ═══════════════════════════════════════ */
+  .kpi-wrap { display:flex; gap:12px; margin-bottom:12px; align-items:stretch; }
+
+  .kpi-bar { display:flex; align-items:center; gap:20px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 24px; flex:1; overflow-x:auto; min-width:0; }
+  .kpi-bar-label { font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); white-space:nowrap; margin-right:4px; flex-shrink:0; }
+  .kpi-vsep { width:1px; height:40px; background:var(--border); flex-shrink:0; }
+  .kpi-rings { display:flex; align-items:center; gap:16px; }
+  .kpi-ring-wrap { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; }
+  .kpi-ring { position:relative; width:52px; height:52px; flex-shrink:0; }
+  .kpi-ring svg { width:52px; height:52px; transform:rotate(-90deg); }
+  .kpi-ring .ring-bg { fill:none; stroke:#222; stroke-width:4; }
+  .kpi-ring .ring-fill { fill:none; stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+  .kpi-ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; line-height:1; }
+  .kpi-ring-count { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:.5px; color:var(--white); }
+  .kpi-ring-name { font-size:9px; font-weight:600; letter-spacing:.8px; text-transform:uppercase; color:var(--label); text-align:center; max-width:60px; line-height:1.2; }
+  .kpi-ring-done { font-size:8px; font-weight:500; color:var(--muted); text-align:center; }
+
+  /* Goals panel */
+  .kpi-goals { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; display:flex; flex-direction:column; gap:0; min-width:300px; flex-shrink:0; }
+  .kpi-goals-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .kpi-goals-title { font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); }
+  .month-nav { display:flex; align-items:center; gap:6px; }
+  .month-nav-btn { background:none; border:1px solid var(--border); border-radius:4px; color:var(--label); font-size:13px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s,color .15s; padding:0; line-height:1; }
+  .month-nav-btn:hover:not(:disabled) { border-color:var(--green); color:var(--green); }
+  .month-nav-btn:disabled { opacity:.25; cursor:default; }
+  .month-label { font-size:10px; font-weight:600; color:var(--white); letter-spacing:.5px; white-space:nowrap; min-width:76px; text-align:center; }
+
+  .kpi-tabs { display:flex; gap:2px; margin-bottom:12px; }
+  .kpi-tab { font-size:9px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; padding:4px 10px; border-radius:4px; cursor:pointer; border:1px solid transparent; color:var(--muted); transition:all .15s; background:none; }
+  .kpi-tab.active { background:rgba(160,214,180,.1); border-color:rgba(160,214,180,.25); color:var(--green); }
+  .kpi-tab:hover:not(.active) { color:var(--body); border-color:var(--border); }
+
+  .goal-rows { display:flex; flex-direction:column; gap:9px; }
+  .goal-row { display:flex; flex-direction:column; gap:4px; }
+  .goal-row-top { display:flex; align-items:center; justify-content:space-between; }
+  .goal-label { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .goal-nums { font-size:10px; color:var(--label); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .goal-nums strong { color:var(--white); }
+  .goal-track { height:4px; background:#1e1e1e; border-radius:2px; overflow:hidden; }
+  .goal-fill { height:100%; border-radius:2px; transition:width .5s ease; }
+
+  /* YTD month strip */
+  .ytd-strip { display:flex; gap:2px; margin-top:5px; }
+  .ytd-month { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .ytd-month.has-goal { cursor:pointer; }
+  .ytd-month.has-goal:hover .ytd-bar { opacity:0.85 !important; }
+  .ytd-bar-wrap { width:100%; height:28px; display:flex; align-items:flex-end; }
+  .ytd-bar { width:100%; border-radius:2px 2px 0 0; transition:height .4s ease; min-height:2px; }
+  .ytd-mo-label { font-size:7px; color:var(--muted); letter-spacing:.3px; }
+  .ytd-mo-label.active-mo { color:var(--white); font-weight:600; }
+
+  .no-goal-msg { font-size:11px; color:var(--muted); padding:6px 0; }
+  .no-goal-msg span { font-size:10px; display:block; margin-top:2px; color:#3a3a3a; }
+
+  /* ── GROUP ROW HEADERS in delivery table ── */
+  .dt-group-row td { padding:8px 12px 6px; background:#111; border-bottom:2px solid var(--border); }
+  .dt-group-label { font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:2px; display:flex; align-items:center; gap:8px; }
+  .dt-group-label.today    { color:#e07070; }
+  .dt-group-label.due-today { color:var(--green); }
+  .dt-group-label.tomorrow { color:#c8a84b; }
+  .dt-group-label.upcoming { color:var(--label); }
+  .dt-group-count { font-size:9px; font-weight:700; letter-spacing:1.5px; padding:2px 8px; border-radius:8px; }
+  .dt-group-count.today    { background:rgba(224,112,112,.12); color:#e07070; border:1px solid rgba(224,112,112,.2); }
+  .dt-group-count.due-today { background:rgba(160,214,180,.12); color:var(--green); border:1px solid rgba(160,214,180,.2); }
+  .dt-group-count.tomorrow { background:rgba(200,168,75,.10); color:#c8a84b; border:1px solid rgba(200,168,75,.18); }
+  .dt-group-count.upcoming { background:rgba(255,255,255,.04); color:var(--muted); border:1px solid var(--border); }
+
+  /* STATUS PANEL */
+  .status-panel { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .sp-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .sp-title { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:1.5px; color:var(--white); display:flex; align-items:center; gap:8px; }
+  .sp-refresh { font-size:11px; font-weight:500; background:none; border:1px solid var(--border); border-radius:5px; padding:4px 10px; cursor:pointer; color:var(--label); transition:border-color .15s,color .15s; }
+  .sp-refresh:hover { border-color:var(--green); color:var(--green); }
+  .sp-loading { padding:32px 20px; text-align:center; font-size:12px; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:8px; }
+  .sp-error { padding:20px; font-size:12px; color:#e07070; display:none; }
+  .sp-empty { padding:32px 20px; text-align:center; font-size:12px; color:var(--muted); display:none; }
+
+  .delivery-table { width:100%; border-collapse:collapse; }
+  .delivery-table th { font-size:10px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); padding:10px 20px; text-align:left; border-bottom:1px solid var(--border); background:#111; }
+  .delivery-table td { padding:12px 20px; font-size:12px; color:var(--body); border-bottom:1px solid #1a1a1a; vertical-align:middle; }
+  .delivery-table tr:last-child td { border-bottom:none; }
+  .delivery-table tr:hover td { background:#181818; }
+
+  .dt-urgency { width:90px; padding-right:8px !important; }
+  .urgency-badge { display:inline-block; font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .u-overdue  { background:rgba(224,112,112,.15); color:#e07070; border:1px solid rgba(224,112,112,.3); }
+  .u-today    { background:rgba(240,192,64,.15);  color:#f0c040; border:1px solid rgba(240,192,64,.3); }
+  .u-upcoming { background:rgba(240,192,64,.12);  color:#f0c040; border:1px solid rgba(240,192,64,.25); }
+  .u-scheduled{ background:rgba(112,170,255,.12); color:#70aaff; border:1px solid rgba(112,170,255,.25); }
+  .u-none     { background:rgba(255,255,255,.04); color:var(--muted); border:1px solid var(--border); }
+  .dt-po { font-weight:600; color:var(--white); font-size:11px; }
+  .dt-name { color:var(--body); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dt-account { color:var(--label); }
+  .dt-date { color:var(--label); white-space:nowrap; }
+
+  .activity-tag { display:inline-block; font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+  .act-delivery    { background:rgba(160,214,180,.12); color:#a0d6b4; border:1px solid rgba(160,214,180,.25); }
+  .act-activation  { background:rgba(200,168,75,.12);  color:#c8a84b; border:1px solid rgba(200,168,75,.25); }
+  .act-io-shipping { background:rgba(112,170,255,.12); color:#70aaff; border:1px solid rgba(112,170,255,.25); }
+  .act-production  { background:rgba(255,144,96,.12);  color:#ff9060; border:1px solid rgba(255,144,96,.25); }
+  .act-sourcing    { background:rgba(200,143,239,.12); color:#c88fef; border:1px solid rgba(200,143,239,.25); }
+  .act-blank       { background:rgba(255,255,255,.04); color:var(--muted); border:1px solid var(--border); }
+
+  .status-pill { display:inline-block; font-size:9px; font-weight:600; letter-spacing:.8px; text-transform:uppercase; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .s-unconfirmed  { background:rgba(255,255,255,.07); color:#999; }
+  .s-in-progress  { background:rgba(255,200,80,.12);  color:#f0c040; }
+  .s-scheduled    { background:rgba(80,160,255,.12);  color:#70aaff; }
+  .s-out-delivery { background:rgba(255,140,50,.12);  color:#ffaa60; }
+  .s-complete     { background:rgba(160,214,180,.12); color:var(--green); }
+  .s-cancelled    { background:rgba(255,80,80,.10);   color:#e07070; }
+  .s-on-hold      { background:rgba(200,80,255,.10);  color:#c88fef; }
+  .s-default      { background:rgba(255,255,255,.05); color:var(--label); }
+
+  .sp-footer { padding:10px 20px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); display:flex; align-items:center; justify-content:space-between; }
+
+  .footer { border-top:1px solid var(--border); padding:24px 32px; text-align:center; font-size:11px; color:var(--muted); background:linear-gradient(90deg,var(--dark) 68%,rgba(160,214,180,.04) 68%); }
+  .footer a { color:var(--muted); text-decoration:none; }
+  .footer a:hover { color:var(--green); }
+
+  /* ── Ops Calendar ── */
+  .hcal { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .hcal-head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px 10px; border-bottom:1px solid var(--border); }
+  .hcal-month { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--white); }
+  .hcal-nav { display:flex; gap:6px; }
+  .hcal-nav button { background:none; border:1px solid var(--border); border-radius:4px; color:var(--label); width:26px; height:26px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:border-color .15s,color .15s; padding:0; line-height:1; }
+  .hcal-nav button:hover { border-color:var(--green); color:var(--green); }
+  .hcal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+  .hcal-dow { font-size:9px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); text-align:center; padding:8px 4px; border-bottom:1px solid var(--border); }
+  .hcal-cell { min-height:80px; border-right:1px solid #1a1a1a; border-bottom:1px solid #1a1a1a; padding:6px 6px 4px; position:relative; vertical-align:top; }
+  .hcal-cell:nth-child(7n) { border-right:none; }
+  .hcal-cell.other-month { opacity:.3; }
+  .hcal-cell.today .hcal-day { background:var(--green); color:#0a0a0a; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .hcal-day { font-size:11px; font-weight:600; color:var(--label); margin-bottom:4px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+  .hcal-event { font-size:9px; font-weight:600; letter-spacing:.3px; border-radius:3px; padding:2px 5px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default; line-height:1.4; }
+  .hcal-event.ev-delivery    { background:rgba(160,214,180,.15); color:#a0d6b4; border-left:2px solid #a0d6b4; }
+  .hcal-event.ev-activation  { background:rgba(200,168,75,.15);  color:#c8a84b; border-left:2px solid #c8a84b; }
+  .hcal-event.ev-io          { background:rgba(112,170,255,.15); color:#70aaff; border-left:2px solid #70aaff; }
+  .hcal-event.ev-production  { background:rgba(255,144,96,.15);  color:#ff9060; border-left:2px solid #ff9060; }
+  .hcal-event.ev-sourcing    { background:rgba(200,143,239,.15); color:#c88fef; border-left:2px solid #c88fef; }
+  .hcal-event.ev-default     { background:rgba(255,255,255,.06); color:var(--label); border-left:2px solid var(--border); }
+  .hcal-more { font-size:9px; color:var(--muted); padding:1px 4px; cursor:default; }
+  .hcal-legend { display:flex; flex-wrap:wrap; gap:10px; padding:10px 18px; border-top:1px solid var(--border); }
+  .hcal-leg-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--label); }
+  .hcal-leg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .hcal-loading { padding:60px 20px; text-align:center; font-size:12px; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:8px; }
+  @media(max-width:860px){ .hcal-cell{min-height:54px;} .hcal-event{display:none;} .hcal-cell.has-events::after{content:'●';font-size:6px;color:var(--green);position:absolute;bottom:4px;left:50%;transform:translateX(-50%);} }
+
+  .spinner { width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width:860px) {
+    .kpi-wrap { flex-direction:column; }
+    .kpi-goals { min-width:0; }
+    .header,.quickbar { padding:0 16px; }
+    .main { padding:28px 16px 60px; }
+    .ypt-label { width:64px; font-size:8px; }
+    .delivery-table th:nth-child(4),.delivery-table td:nth-child(4),
+    .delivery-table th:nth-child(5),.delivery-table td:nth-child(5) { display:none; }
+  }
+
+  /* ── STATUS PIPELINE ───────────────────────────────────────── */
+  .pipeline-wrap { margin-bottom:28px; }
+  .pipeline {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; margin-bottom:12px;
+  }
+  .pipeline-head {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:10px;
+  }
+  .pipeline-title {
+    font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:2px; color:var(--white);
+    display:flex; align-items:center; gap:8px;
+  }
+  .pipeline-title .pt-dot { width:8px; height:8px; border-radius:50%; }
+  .pipeline-summary { font-size:11px; color:var(--label); }
+  .pipeline-summary strong { color:var(--body); }
+  .stages { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .stages.seven { grid-template-columns:repeat(7,1fr); }
+  @media (max-width:1100px) { .stages.seven { grid-template-columns:repeat(4,1fr); } }
+  @media (max-width:900px) { .stages, .stages.seven { grid-template-columns:repeat(2,1fr); } }
+  .stage {
+    background:#0a0a0a; border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; min-height:78px; position:relative; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .stage.has-attn { border-color:#f0c040; background:rgba(240,192,64,0.04); }
+  .stage.empty { opacity:0.55; }
+  .stage-top { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; }
+  .stage-label { font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:1.5px; color:var(--label); }
+  .stage.has-attn .stage-label { color:#f0c040; }
+  .stage-count { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--white); line-height:1; }
+  .stage-hint { font-size:10px; color:var(--label); margin-top:6px; line-height:1.35; }
+  .stage-hint .attn { color:#f0c040; font-weight:600; }
+  .stage.clickable { cursor:pointer; transition:all .12s ease; }
+  .stage.clickable:hover { border-color:var(--green); }
+
+  /* Action items drawer */
+  .pipeline-actions {
+    margin-top:12px; padding-top:12px; border-top:1px solid var(--border);
+    display:none;
+  }
+  .pipeline-actions.show { display:block; }
+  .action-item {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px; background:#0a0a0a; border:1px solid var(--border);
+    border-radius:8px; margin-bottom:6px;
+  }
+  .action-item:last-child { margin-bottom:0; }
+  .ai-left { flex:1; min-width:0; }
+  .ai-po { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1px; color:var(--green); }
+  .ai-name { font-size:13px; color:var(--body); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ai-meta { font-size:11px; color:var(--label); margin-top:2px; }
+  .ai-btn {
+    background:var(--green); color:#0a0a0a; border:none; padding:7px 12px;
+    border-radius:6px; font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:1px;
+    cursor:pointer; white-space:nowrap;
+  }
+  .ai-btn:hover { filter:brightness(1.08); }
+  .ai-btn.ghost { background:transparent; color:var(--green); border:1px solid var(--green); }
+  .ai-btn.ghost:hover { background:rgba(160,214,180,0.08); }
+  .ai-btn + .ai-btn { margin-left:6px; }
+
+  /* ── ACTION BUTTONS (Delivery Ops quick actions) ─────────────── */
+  .action-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+  @media (max-width:720px) { .action-row { grid-template-columns:1fr; } }
+  .action-btn {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer;
+    transition:all .15s ease; color:var(--body); font-family:inherit; text-align:left;
+  }
+  .action-btn:hover { background:var(--card-hover); border-color:var(--green); transform:translateY(-1px); }
+  .action-btn .ab-icon {
+    width:40px; height:40px; min-width:40px; border-radius:8px;
+    background:#0a1a0f; border:1px solid #1a3a20; display:flex; align-items:center; justify-content:center;
+  }
+  .action-btn .ab-icon svg { width:20px; height:20px; stroke:var(--green); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .action-btn .ab-title { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px; color:var(--white); }
+  .action-btn .ab-desc { font-size:11px; color:var(--label); margin-top:2px; }
+
+  /* ── MODAL ──────────────────────────────────────────────────── */
+  .modal-overlay {
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.78); backdrop-filter:blur(4px);
+    display:none; align-items:flex-start; justify-content:center;
+    z-index:9999; padding:40px 16px; overflow-y:auto;
+  }
+  .modal-overlay.show { display:flex; }
+  .modal {
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    width:100%; max-width:560px; color:var(--body);
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    animation:modalIn .18s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:none; } }
+  .modal-head {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 22px; border-bottom:1px solid var(--border);
+  }
+  .modal-title { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--white); }
+  .modal-close {
+    background:transparent; border:none; color:var(--label); font-size:22px; cursor:pointer;
+    width:32px; height:32px; border-radius:6px; line-height:1;
+  }
+  .modal-close:hover { background:rgba(255,255,255,0.06); color:var(--white); }
+  .modal-body { padding:22px; }
+
+  /* Tabs */
+  .tabs { display:flex; gap:4px; margin-bottom:20px; background:#0a0a0a; border:1px solid var(--border); border-radius:8px; padding:4px; }
+  .tab {
+    flex:1; padding:10px 12px; background:transparent; border:none; color:var(--label);
+    font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:2px; cursor:pointer;
+    border-radius:6px; transition:all .12s ease;
+  }
+  .tab:hover { color:var(--body); }
+  .tab.active { background:var(--card-hover); color:var(--green); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* Form fields */
+  .f-group { margin-bottom:14px; }
+  .f-label { display:block; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--green); margin-bottom:6px; }
+  .f-label .opt { color:var(--label); font-weight:400; letter-spacing:0; text-transform:none; margin-left:4px; font-size:11px; }
+  .f-input, .f-textarea {
+    width:100%; background:#0a0a0a; border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; color:var(--white); font-family:inherit; font-size:14px;
+    color-scheme:dark;
+  }
+  .f-input:focus, .f-textarea:focus { outline:none; border-color:var(--green); }
+  .f-textarea { resize:vertical; min-height:60px; }
+  .f-row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* Fetched item summary panel */
+  .fetch-summary {
+    background:#0a0a0a; border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; margin-top:8px; font-size:12px; color:var(--body);
+    display:none;
+  }
+  .fetch-summary.show { display:block; }
+  .fetch-summary .fs-row { display:flex; justify-content:space-between; padding:3px 0; }
+  .fetch-summary .fs-label { color:var(--label); }
+  .fetch-summary.err { border-color:#c8544b; color:#ff9a92; }
+
+  /* Action row in modal */
+  .modal-actions { display:flex; gap:10px; margin-top:4px; }
+  .btn-primary, .btn-ghost {
+    flex:1; padding:12px; border-radius:8px; font-family:'Bebas Neue',sans-serif;
+    font-size:13px; letter-spacing:2px; cursor:pointer; border:1px solid transparent;
+    transition:all .12s ease;
+  }
+  .btn-primary { background:var(--green); color:#0a0a0a; border-color:var(--green); }
+  .btn-primary:hover { filter:brightness(1.08); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--green); border-color:var(--green); }
+  .btn-ghost:hover { background:rgba(160,214,180,0.08); }
+
+  /* Result/status messages */
+  .m-result {
+    margin-top:14px; padding:12px; border-radius:8px; font-size:12px; line-height:1.5;
+    display:none;
+  }
+  .m-result.show { display:block; }
+  .m-result.ok  { background:rgba(160,214,180,0.08); border:1px solid var(--green); color:var(--green); }
+  .m-result.err { background:rgba(200,100,100,0.08); border:1px solid #c8544b; color:#ff9a92; }
+  .m-result pre { font-family:ui-monospace,monospace; font-size:10px; margin-top:6px; color:var(--label); white-space:pre-wrap; word-break:break-all; }
+
+  /* ── CLAUDE CHAT BUBBLE ──────────────────────────────────────── */
+  .chat-fab {
+    position:fixed; bottom:24px; right:24px; z-index:9998;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--green); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    transition:all .15s ease;
+  }
+  .chat-fab:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(0,0,0,0.5); }
+  .chat-fab svg { width:24px; height:24px; stroke:#0a0a0a; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .chat-fab.open { background:var(--card); border:1px solid var(--border); }
+  .chat-fab.open svg { stroke:var(--green); }
+
+  .chat-panel {
+    position:fixed; bottom:92px; right:24px; z-index:9998;
+    width:380px; max-width:calc(100vw - 32px); height:560px; max-height:calc(100vh - 120px);
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    display:none; flex-direction:column; overflow:hidden;
+  }
+  .chat-panel.show { display:flex; }
+  .chat-head {
+    padding:14px 16px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:#0a0a0a;
+  }
+  .chat-title { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:2px; color:var(--white); display:flex; align-items:center; gap:8px; }
+  .chat-title .chat-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+  .chat-clear { background:transparent; border:none; color:var(--label); font-size:11px; cursor:pointer; padding:4px 8px; border-radius:4px; }
+  .chat-clear:hover { background:rgba(255,255,255,0.06); color:var(--white); }
+
+  .chat-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .chat-empty { font-size:12px; color:var(--label); line-height:1.6; padding:6px 4px; }
+  .chat-empty strong { color:var(--green); }
+  .chat-empty .ce-chip {
+    display:inline-block; padding:5px 10px; background:#0a0a0a; border:1px solid var(--border);
+    border-radius:14px; font-size:11px; color:var(--body); margin:4px 4px 0 0; cursor:pointer;
+  }
+  .chat-empty .ce-chip:hover { border-color:var(--green); color:var(--green); }
+
+  .chat-msg { max-width:85%; padding:9px 12px; border-radius:10px; font-size:13px; line-height:1.5; word-wrap:break-word; }
+  .chat-msg.user { background:var(--green); color:#0a0a0a; align-self:flex-end; }
+  .chat-msg.assistant { background:#0a0a0a; color:var(--body); align-self:flex-start; border:1px solid var(--border); }
+  .chat-msg.assistant p { margin:0 0 8px 0; }
+  .chat-msg.assistant p:last-child { margin-bottom:0; }
+  .chat-msg.assistant code { background:var(--card-hover); padding:1px 5px; border-radius:3px; font-size:12px; color:var(--green); font-family:ui-monospace,monospace; }
+  .chat-msg.assistant a { color:var(--green); text-decoration:underline; }
+  .chat-msg.assistant ul, .chat-msg.assistant ol { margin:4px 0 8px 18px; padding:0; }
+  .chat-msg.assistant li { margin-bottom:3px; }
+  .chat-typing { align-self:flex-start; color:var(--label); font-size:12px; padding:4px 12px; display:flex; gap:4px; align-items:center; }
+  .chat-typing .td { width:5px; height:5px; background:var(--label); border-radius:50%; animation:typ 1.4s infinite; }
+  .chat-typing .td:nth-child(2){animation-delay:.2s}.chat-typing .td:nth-child(3){animation-delay:.4s}
+
+  /* Agent action log — shows tool calls in real time as small chips */
+  .chat-actions { align-self:flex-start; max-width:85%; font-size:11px; color:var(--label); padding:4px 0 6px 4px; display:flex; flex-direction:column; gap:3px; }
+  .chat-action { display:flex; align-items:center; gap:6px; padding:3px 8px; background:rgba(255,255,255,0.03); border-radius:4px; }
+  .chat-action .ca-tool { color:var(--green); font-family:ui-monospace,monospace; font-size:10px; }
+  .chat-action.fail { color:#ff9a92; }
+  .chat-action.fail .ca-tool { color:#ff9a92; }
+  .chat-action .ca-icon { font-size:11px; }
+
+  /* Pending-confirmation card — replaces input briefly when Claude needs approval */
+  .chat-pending {
+    align-self:stretch; background:rgba(240,192,64,0.06); border:1px solid #f0c040;
+    border-radius:8px; padding:12px; margin:6px 0;
+  }
+  .chat-pending .cp-title { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1.5px; color:#f0c040; margin-bottom:8px; }
+  .chat-pending .cp-list { font-size:12px; color:var(--body); margin-bottom:10px; line-height:1.6; }
+  .chat-pending .cp-list .cp-item { padding:4px 0; }
+  .chat-pending .cp-list .cp-po { color:var(--green); font-family:ui-monospace,monospace; font-size:11px; }
+  .chat-pending .cp-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  .chat-pending .cp-btn {
+    padding:7px 14px; border-radius:6px; font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:1px;
+    cursor:pointer; border:1px solid transparent;
+  }
+  .chat-pending .cp-btn.ok    { background:var(--green); color:#0a0a0a; border-color:var(--green); }
+  .chat-pending .cp-btn.skip  { background:transparent; color:#f0c040; border-color:#f0c040; }
+  .chat-pending .cp-btn.cancel{ background:transparent; color:var(--label); border-color:var(--border); }
+  .chat-pending .cp-btn:hover { filter:brightness(1.1); }
+  @keyframes typ { 0%,60%,100% { opacity:0.3; } 30% { opacity:1; } }
+
+  .chat-foot { padding:12px; border-top:1px solid var(--border); background:#0a0a0a; }
+  .chat-input-wrap { display:flex; gap:8px; align-items:flex-end; }
+  .chat-input {
+    flex:1; background:var(--card); border:1px solid var(--border); border-radius:8px;
+    color:var(--white); padding:9px 12px; font-family:inherit; font-size:13px;
+    resize:none; min-height:38px; max-height:120px;
+  }
+  .chat-input:focus { outline:none; border-color:var(--green); }
+  .chat-send {
+    background:var(--green); color:#0a0a0a; border:none; padding:9px 14px; border-radius:8px;
+    font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1px; cursor:pointer;
+  }
+  .chat-send:disabled { opacity:0.4; cursor:not-allowed; }
+  .chat-send:hover:not(:disabled) { filter:brightness(1.08); }
+  .chat-err { font-size:11px; color:#ff9a92; margin-top:6px; }
+  .chat-footnote { font-size:10px; color:var(--muted); margin-top:6px; text-align:center; letter-spacing:0.5px; }
+
+  @media (max-width:480px) {
+    .chat-panel { bottom:82px; right:12px; left:12px; width:auto; height:70vh; }
+    .chat-fab { bottom:16px; right:16px; }
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hdr"><span class="dot"></span><span class="brand">HANDS Logistics</span></div>
-    <h1>Client Emails</h1>
 
-    <!-- DC CARD -->
-    <div class="card" data-kind="dc">
-      <h2>Delivery Confirmation</h2>
-      <p class="sub">Sends before delivery. Monday auto-fires when <strong>SEND DC</strong> flips to Yes.</p>
-      <label>Monday Item ID (PO#)</label>
-      <input type="text" class="po-input" placeholder="e.g. 1234567890" autocomplete="off" />
-      <label style="margin-top:14px;">CC Additional Recipients <span style="opacity:0.5;font-weight:normal;text-transform:none;letter-spacing:0;">(optional, comma-separated)</span></label>
-      <input type="text" class="cc-input" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email" />
-      <div class="row">
-        <button class="ghost preview">Preview</button>
-        <button class="send">Send DC</button>
-      </div>
-      <div class="result"></div>
+<header class="header">
+  <div class="header-left">
+    <div><div class="header-logo">HANDS LOGISTICS</div><div class="header-tag">Internal Operations Hub</div></div>
+  </div>
+  <div class="header-clock" id="clock">--:-- --</div>
+  <div class="header-accent"></div>
+</header>
+
+<nav class="quickbar">
+  <a class="ql" href="https://handslogistics.monday.com" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Monday.com
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="https://cloudinary.com/console" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>Cloudinary
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="https://app.netlify.com" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>Netlify
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="https://zapier.com/app/dashboard" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Zapier
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="mailto:concierge@handslogistics.com">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Concierge Email
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="https://quickbooks.intuit.com" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M12 8v8"/></svg>QuickBooks
+  </a><div class="ql-sep"></div>
+  <a class="ql" href="https://calendar.google.com/calendar/r" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>Ops Calendar
+  </a>
+</nav>
+
+<main class="main">
+
+  <!-- ══════════════════════════════════════
+       HANDS PIPELINE — status bars (Deliveries + Activations)
+  ══════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">HANDS Pipeline</div>
+      <div class="section-line"></div>
     </div>
 
-    <!-- POD CARD -->
-    <div class="card" data-kind="pod">
-      <h2>Proof of Delivery</h2>
-      <p class="sub">Sends after delivery, with POD photo links. Monday auto-fires when <strong>SEND POD</strong> flips to YES.</p>
-      <label>Monday Item ID (PO#)</label>
-      <input type="text" class="po-input" placeholder="e.g. 1234567890" autocomplete="off" />
-      <label style="margin-top:14px;">CC Additional Recipients <span style="opacity:0.5;font-weight:normal;text-transform:none;letter-spacing:0;">(optional, comma-separated)</span></label>
-      <input type="text" class="cc-input" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email" />
-      <div class="row">
-        <button class="ghost preview">Preview</button>
-        <button class="send">Send POD</button>
+    <div class="pipeline-wrap">
+
+      <!-- DELIVERY PIPELINE -->
+      <div class="pipeline" id="pipe-delivery">
+        <div class="pipeline-head">
+          <div class="pipeline-title"><span class="pt-dot" style="background:#a0d6b4;"></span>Delivery Pipeline</div>
+          <div class="pipeline-summary" id="pipe-delivery-summary">—</div>
+        </div>
+        <div class="stages" id="pipe-delivery-stages">
+          <div class="stage clickable" data-pipe="delivery" data-stage="intake">
+            <div class="stage-top"><div class="stage-label">01 Intake</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Unconfirmed · needs triage</div>
+          </div>
+          <div class="stage clickable" data-pipe="delivery" data-stage="scheduled">
+            <div class="stage-top"><div class="stage-label">02 Scheduled</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">DC email pending</div>
+          </div>
+          <div class="stage clickable" data-pipe="delivery" data-stage="inmotion">
+            <div class="stage-top"><div class="stage-label">03 In Motion</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Out for delivery</div>
+          </div>
+          <div class="stage clickable" data-pipe="delivery" data-stage="delivered">
+            <div class="stage-top"><div class="stage-label">04 Delivered</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">POD email pending</div>
+          </div>
+          <div class="stage clickable" data-pipe="delivery" data-stage="billed">
+            <div class="stage-top"><div class="stage-label">05 Billed</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Complete · ready to invoice</div>
+          </div>
+        </div>
+        <div class="pipeline-actions" id="pipe-delivery-actions"></div>
       </div>
-      <div class="result"></div>
+
+      <!-- ACTIVATION PIPELINE -->
+      <div class="pipeline" id="pipe-activation">
+        <div class="pipeline-head">
+          <div class="pipeline-title"><span class="pt-dot" style="background:#c8a84b;"></span>Activation Pipeline</div>
+          <div class="pipeline-summary" id="pipe-activation-summary">—</div>
+        </div>
+        <div class="stages seven" id="pipe-activation-stages">
+          <div class="stage clickable" data-pipe="activation" data-stage="proposal">
+            <div class="stage-top"><div class="stage-label">01 Proposal</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Estimate pending</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="approved">
+            <div class="stage-top"><div class="stage-label">02 Approved</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Production / sourcing</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="procurement">
+            <div class="stage-top"><div class="stage-label">03 Procurement</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Sourcing in progress</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="setup">
+            <div class="stage-top"><div class="stage-label">04 Setup</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Logistics + staffing</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="live">
+            <div class="stage-top"><div class="stage-label">05 Live</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Onsite execution</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="strike">
+            <div class="stage-top"><div class="stage-label">06 Strike</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Retrieval / pickup</div>
+          </div>
+          <div class="stage clickable" data-pipe="activation" data-stage="wrapped">
+            <div class="stage-top"><div class="stage-label">07 Wrapped</div><div class="stage-count">—</div></div>
+            <div class="stage-hint">Ready to invoice</div>
+          </div>
+        </div>
+        <div class="pipeline-actions" id="pipe-activation-actions"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       KPI TRACKER SECTION
+  ══════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">HANDS Logistics KPI Tracker</div>
+      <div class="section-line"></div>
     </div>
 
-    <div class="endpoints">
-      Endpoints: <code>POST /api/send-confirmation</code> · <code>POST /api/send-pod</code> · <code>POST /api/monday-webhook</code> · <code>GET /api/preview?po=...&amp;kind=dc|pod</code>
+    <!-- YEARLY PROGRESS TRACKER — full-width bar block -->
+    <!-- KPI ROW: activity rings + monthly/YTD goals -->
+    <div class="kpi-wrap">
+      <div class="kpi-bar">
+        <div class="kpi-bar-label">Activity</div>
+        <div class="kpi-vsep"></div>
+        <div class="kpi-rings" id="kpi-rings">
+          <div class="sp-loading" style="padding:0;"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div class="kpi-goals" id="kpi-goals-panel">
+        <div class="kpi-goals-header">
+          <div class="kpi-goals-title">Goals</div>
+          <div class="month-nav">
+            <button class="month-nav-btn" id="month-prev" onclick="shiftMonth(-1)">&#8249;</button>
+            <div class="month-label" id="month-label">—</div>
+            <button class="month-nav-btn" id="month-next" onclick="shiftMonth(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="kpi-tabs">
+          <button class="kpi-tab active" id="tab-monthly" onclick="switchTab('monthly')">Monthly</button>
+          <button class="kpi-tab" id="tab-ytd" onclick="switchTab('ytd')">Year to Date</button>
+        </div>
+        <div class="goal-rows" id="goal-rows">
+          <div class="sp-loading" style="padding:4px 0;justify-content:flex-start;gap:8px;">
+            <div class="spinner"></div><span style="font-size:11px;">Loading…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YEARLY PROGRESS TRACKER -->
+    <div class="ypt-block">
+      <div class="ypt-header">
+        <div class="ypt-title">Yearly Progress</div>
+        <div class="ypt-year" id="ypt-year">— 2026</div>
+      </div>
+      <div class="ypt-rows" id="ypt-rows">
+        <div class="sp-loading" style="padding:8px 0;justify-content:flex-start;gap:8px;">
+          <div class="spinner"></div><span style="font-size:11px;">Loading…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING DELIVERIES SUB-HEADER -->
+    <div class="section-header" style="margin-bottom:0;">
+      <div class="section-title">Pending Deliveries</div>
+      <div class="section-line"></div>
+    </div>
+
+    <!-- ACTIVE & SCHEDULED TABLE -->
+    <div class="status-panel" style="margin-top:12px;">
+      <div class="sp-header">
+        <div class="sp-title"><span class="pulse-dot"></span>Active &amp; Scheduled</div>
+        <button class="sp-refresh" onclick="loadAll()">&#8635; Refresh</button>
+      </div>
+      <div class="sp-body">
+        <div class="sp-loading" id="sp-loading"><div class="spinner"></div>Loading deliveries from Monday…</div>
+        <div class="sp-error" id="sp-error"></div>
+        <div class="sp-empty" id="sp-empty">No pending deliveries found.</div>
+        <div id="sp-table-wrap" style="display:none;overflow-x:auto;">
+          <table class="delivery-table">
+            <thead>
+              <tr>
+                <th class="dt-urgency"></th><th>PO #</th><th>Item / Job</th>
+                <th>Account</th><th>Delivery Date</th><th>Activity</th><th>Status</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="sp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="sp-footer">
+        <span id="sp-count" style="color:var(--muted);">—</span>
+        <span id="sp-last-updated">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPS CALENDAR -->
+  <section class="section">
+    <div class="section-header"><div class="section-title">Operations Calendar</div><div class="section-line"></div></div>
+
+    <!-- Action bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="tc-live-pill" style="font-size:9px;padding:3px 9px;"><span class="pulse-dot"></span>Live</div>
+        <span style="font-size:11px;color:var(--label);">Synced from Monday · Start &amp; Strike columns</span>
+      </div>
+      <a href="https://calendar.google.com/calendar/r" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:6px;background:#1a1a0a;border:1px solid #2e2a1a;border-radius:6px;padding:6px 13px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#c8a84b;text-decoration:none;transition:border-color .15s,background .15s;"
+         onmouseover="this.style.borderColor='#c8a84b';this.style.background='rgba(200,168,75,.08)'"
+         onmouseout="this.style.borderColor='#2e2a1a';this.style.background='#1a1a0a'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Open in Google Calendar
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+    </div>
+
+    <!-- Custom dark calendar -->
+    <div class="hcal" id="hcal">
+      <div class="hcal-head">
+        <div class="hcal-month" id="hcal-month">—</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="hcal-event-count" style="font-size:10px;color:var(--muted);">—</span>
+          <div class="hcal-nav">
+            <button onclick="hcalShift(-1)" title="Previous month">&#8249;</button>
+            <button onclick="hcalToday()" title="Today" style="font-size:9px;letter-spacing:.5px;width:auto;padding:0 8px;font-weight:700;font-family:'DM Sans',sans-serif;">TODAY</button>
+            <button onclick="hcalShift(1)" title="Next month">&#8250;</button>
+          </div>
+        </div>
+      </div>
+      <div class="hcal-grid" id="hcal-grid">
+        <div class="hcal-dow">Sun</div><div class="hcal-dow">Mon</div><div class="hcal-dow">Tue</div>
+        <div class="hcal-dow">Wed</div><div class="hcal-dow">Thu</div><div class="hcal-dow">Fri</div><div class="hcal-dow">Sat</div>
+        <div class="hcal-loading" style="grid-column:1/-1;"><div class="spinner"></div>Loading calendar…</div>
+      </div>
+      <div class="hcal-legend">
+        <div class="hcal-leg-item"><div class="hcal-leg-dot" style="background:#a0d6b4;"></div>Delivery</div>
+        <div class="hcal-leg-item"><div class="hcal-leg-dot" style="background:#c8a84b;"></div>Activation</div>
+        <div class="hcal-leg-item"><div class="hcal-leg-dot" style="background:#70aaff;"></div>I/O Shipping</div>
+        <div class="hcal-leg-item"><div class="hcal-leg-dot" style="background:#ff9060;"></div>Production</div>
+        <div class="hcal-leg-item"><div class="hcal-leg-dot" style="background:#c88fef;"></div>Sourcing</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DELIVERY OPS -->
+  <section class="section">
+    <div class="section-header"><div class="section-title">Delivery Operations</div><div class="section-line"></div></div>
+    <div class="action-row">
+      <button class="action-btn" id="btnOpenSendEmail" type="button">
+        <div class="ab-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 6l8 7 8-7"/></svg></div>
+        <div>
+          <div class="ab-title">Send Client Email</div>
+          <div class="ab-desc">Delivery Confirmation or Proof of Delivery by PO number</div>
+        </div>
+      </button>
+      <button class="action-btn" id="btnOpenNewDelivery" type="button">
+        <div class="ab-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div>
+          <div class="ab-title">New Delivery</div>
+          <div class="ab-desc">Add a delivery directly to the Unconfirmed group on Monday</div>
+        </div>
+      </button>
+    </div>
+    <div class="tool-grid">
+      <a class="tc" href="/pod">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><polyline points="16 3 16 10 19 8 22 10 22 3"/><circle cx="18" cy="18" r="3"/><path d="m22 22-1.5-1.5"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">POD Upload Portal</div>
+        <div class="tc-desc">Driver-facing photo upload. Captures proof of delivery photos + received-by info and writes back to Monday.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/schedule">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="tc-badge badge-client">Client Form</div>
+        <div class="tc-name">Schedule a Delivery</div>
+        <div class="tc-desc">Client-facing delivery request form. Submits directly to the monday Operations board in the Unconfirmed group.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/confirmations">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/><polyline points="9,15 11,17 15,13"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">DC Confirm</div>
+        <div class="tc-desc">Send Delivery Confirmation or Proof of Delivery emails to clients by PO number. Manual send with optional CC, plus preview.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/dispatch">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Driver Dispatch</div>
+        <div class="tc-desc">Build multi-stop dispatch emails for drivers. Auto-populates delivery details from Monday by item ID. Sends via Resend with POD upload links per stop.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/workorders">
+        <div class="tc-icon" style="background:#0a1a0f;border-color:#1a3a20;"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#a0d6b4;stroke:#a0d6b4;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Work Order Admin</div>
+        <div class="tc-desc">Internal work order management — create, assign, and track work orders across active jobs. Admin view with full order history and status control.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- WAREHOUSE OPS -->
+  <section class="section">
+    <div class="section-header"><div class="section-title">Warehouse Operations</div><div class="section-line"></div></div>
+    <div class="tool-grid">
+      <a class="tc" href="/label">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Label Generator</div>
+        <div class="tc-desc">4×6 thermal label printer for inbound and outbound shipments. Pulls item data from Monday by PO number.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/assign-purpose">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Warehouse I/O Client Portal</div>
+        <div class="tc-desc">Client assignment portal for Inbound/Outbound board. Purpose assignment, billing record, and CSV export.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/warehouse">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Warehouse I/O Form</div>
+        <div class="tc-desc">Internal intake form for logging inbound and outbound shipments, uploading photos, and triggering client notifications.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- BILLING -->
+  <section class="section">
+    <div class="section-header"><div class="section-title">Billing</div><div class="section-line"></div></div>
+    <div class="tool-grid">
+      <a class="tc" href="/estimates">
+        <div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg></div>
+        <div class="tc-badge badge-client">Client Tool</div>
+        <div class="tc-name">Estimate Generator</div>
+        <div class="tc-desc">Build itemized estimates from the QBO product catalog. Clients accept digitally — approvals push line items directly to Monday as subitems.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/ceo">
+        <div class="tc-icon" style="background:#0a0f1a;border-color:#1a2a3a;"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#70aaff;stroke:#70aaff;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">CEO Dashboard</div>
+        <div class="tc-desc">Billing pipeline — invoice queue, FP&amp;A revenue/SG&amp;A from Google Sheets, live monday board stats, AI advisor.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+      <a class="tc" href="/procure">
+        <div class="tc-icon" style="background:#0f0a1a;border-color:#2a1a3a;"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#c88fef;stroke:#c88fef;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div class="tc-badge badge-live"><span class="pulse-dot"></span>Live</div>
+        <div class="tc-name">Procurement Tool</div>
+        <div class="tc-desc">Source client purchases with AI price lookup, per-item shipping, Nevada tax calc, quote builder, and branded PDF export.</div>
+        <div class="tc-footer"><div class="tc-live-pill"><span class="pulse-dot"></span>Live</div><div class="tc-arrow-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div></div>
+      </a>
+    </div>
+  </section>
+
+
+</main>
+
+<footer class="footer">
+  Concierge Desk | HANDS Logistics &nbsp;·&nbsp;
+  <a href="mailto:concierge@handslogistics.com">concierge&#64;handslogistics.com</a> &nbsp;·&nbsp;
+  <a href="https://www.handslogistics.com" target="_blank">www.handslogistics.com</a><br>
+  <span style="color:#3a3a3a;margin-top:4px;display:block;">8540 Dean Martin Drive, Suite 160 · Las Vegas, NV 89139</span>
+</footer>
+
+<!-- ────────────────────────────── -->
+<!-- CLAUDE CHAT BUBBLE -->
+<!-- ────────────────────────────── -->
+<button class="chat-fab" id="chatFab" type="button" aria-label="Open HANDS assistant">
+  <svg viewBox="0 0 24 24" id="chatFabIcon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="HANDS assistant">
+  <div class="chat-head">
+    <div class="chat-title"><span class="chat-dot"></span>HANDS Assistant</div>
+    <button class="chat-clear" id="chatClear" type="button">Clear</button>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-empty" id="chatEmpty">
+      <p style="margin:0 0 10px 0;">Full agent — I can read the board, change statuses, send DC/POD emails, create deliveries.<br><br>Try one of these:</p>
+      <div>
+        <span class="ce-chip" data-prompt="What needs my attention right now?">What needs attention?</span>
+        <span class="ce-chip" data-prompt="Send DC emails for everything in the Scheduled stage that hasn't gotten one yet.">Send pending DCs</span>
+        <span class="ce-chip" data-prompt="Audit deliveries from the past week and tell me what's stuck.">Audit last week</span>
+        <span class="ce-chip" data-prompt="Which items are sitting in procurement and why?">Procurement check</span>
+      </div>
     </div>
   </div>
+  <div class="chat-foot">
+    <div class="chat-input-wrap">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about the pipeline..." rows="1"></textarea>
+      <button class="chat-send" id="chatSend" type="button">Send</button>
+    </div>
+    <div class="chat-err" id="chatErr" style="display:none;"></div>
+    <div class="chat-footnote">Powered by Claude Opus 4.7 · agent with Monday read/write</div>
+  </div>
+</div>
+
+<!-- ────────────────────────────── -->
+<!-- SEND EMAIL MODAL (DC + POD) -->
+<!-- ────────────────────────────── -->
+<div class="modal-overlay" id="modalSendEmail">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Send Client Email</div>
+      <button class="modal-close" data-close="modalSendEmail" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" data-kind="dc" type="button">Delivery Confirmation</button>
+        <button class="tab" data-kind="pod" type="button">Proof of Delivery</button>
+      </div>
+
+      <!-- DC PANEL -->
+      <div class="tab-panel active" data-panel="dc">
+        <div class="f-group">
+          <label class="f-label">Monday PO#</label>
+          <input type="text" class="f-input" id="em_po_dc" placeholder="e.g. 1234567890" autocomplete="off" inputmode="numeric">
+          <div class="fetch-summary" id="em_summary_dc"></div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">CC Additional Recipients <span class="opt">(optional, comma-separated)</span></label>
+          <input type="text" class="f-input" id="em_cc_dc" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="em_send_dc" type="button">Send DC</button>
+        </div>
+        <div class="m-result" id="em_result_dc"></div>
+      </div>
+
+      <!-- POD PANEL -->
+      <div class="tab-panel" data-panel="pod">
+        <div class="f-group">
+          <label class="f-label">Monday PO#</label>
+          <input type="text" class="f-input" id="em_po_pod" placeholder="e.g. 1234567890" autocomplete="off" inputmode="numeric">
+          <div class="fetch-summary" id="em_summary_pod"></div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">CC Additional Recipients <span class="opt">(optional, comma-separated)</span></label>
+          <input type="text" class="f-input" id="em_cc_pod" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="em_send_pod" type="button">Send POD</button>
+        </div>
+        <div class="m-result" id="em_result_pod"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────────────────────────── -->
+<!-- NEW DELIVERY MODAL -->
+<!-- ────────────────────────────── -->
+<div class="modal-overlay" id="modalNewDelivery">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New Delivery</div>
+      <button class="modal-close" data-close="modalNewDelivery" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px 0;font-size:12px;color:var(--label);line-height:1.5;">Creates an item in the <strong style="color:var(--green);">Unconfirmed</strong> group on the Operations Board. The intake protocol will promote it to the right group.</p>
+
+      <div class="f-group">
+        <label class="f-label">Client Name</label>
+        <input type="text" class="f-input" id="nd_client" placeholder="e.g. Bacardi" autocomplete="off">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Project Name</label>
+        <input type="text" class="f-input" id="nd_project" placeholder="e.g. Summit Club Activation" autocomplete="off">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Delivery Address</label>
+        <textarea class="f-textarea" id="nd_address" placeholder="Full street address, suite, city, state, zip"></textarea>
+      </div>
+      <div class="f-row2">
+        <div class="f-group">
+          <label class="f-label">Delivery Date</label>
+          <input type="date" class="f-input" id="nd_date">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Delivery Time</label>
+          <input type="time" class="f-input" id="nd_time">
+        </div>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Client Email</label>
+        <input type="email" class="f-input" id="nd_email" placeholder="client@company.com" autocomplete="off" inputmode="email">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="nd_submit" type="button">Create Delivery</button>
+      </div>
+      <div class="m-result" id="nd_result"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-  const ENDPOINTS = { dc: '/api/send-confirmation', pod: '/api/send-pod' };
-  const LABELS    = { dc: 'Send DC',                pod: 'Send POD' };
+var OPS_BOARD     = '4550650855';
+var GOALS_BOARD   = '18406032754';
+var ACTIVITY_COL  = 'color_mm1wxn5k';
+var GOALS_NUM_COL = 'numeric_mm1wqa26';
+var GOALS_ANN_COL = 'numeric_mm1w9yck';
+var GOALS_DATE_COL= 'date_mm1w3zdc';
+var PENDING_STATUSES = ['Unconfirmed','IN PROGRESS','DELIVERY SCHEDULED','OUT FOR DELIVERY','ON HOLD'];
+var EXCLUDE_STATUSES = ['COMPLETE','Proposal Need'];
 
-  document.querySelectorAll('.card').forEach(card => {
-    const kind    = card.dataset.kind;
-    const input   = card.querySelector('.po-input');
-    const ccInput = card.querySelector('.cc-input');
-    const preview = card.querySelector('.preview');
-    const send    = card.querySelector('.send');
-    const result  = card.querySelector('.result');
+var ACTIVITY_TYPES = [
+  { label:'Delivery',     color:'#a0d6b4', cls:'act-delivery'    },
+  { label:'Activation',   color:'#c8a84b', cls:'act-activation'  },
+  { label:'I/O Shipping', color:'#70aaff', cls:'act-io-shipping' },
+  { label:'Production',   color:'#ff9060', cls:'act-production'  },
+  { label:'Sourcing',     color:'#c88fef', cls:'act-sourcing'    }
+];
+var MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var CIRC = 125.66;
 
-    function show(ok, msg, detail) {
-      result.className = 'result show ' + (ok ? 'ok' : 'err');
-      result.innerHTML = msg + (detail ? '<pre>' + JSON.stringify(detail, null, 2) + '</pre>' : '');
+// State
+var viewYear  = new Date().getFullYear();
+var viewMonth = new Date().getMonth();
+var activeTab = 'monthly';
+var cachedAllItems  = [];
+var cachedGoalRows  = [];
+var availableMonths = [];
+
+// ── Clock ──
+function updateClock() {
+  var el=document.getElementById('clock'); if(!el) return;
+  var now=new Date(),h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
+  var ampm=h>=12?'PM':'AM'; h=h%12||12;
+  el.textContent=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' '+ampm;
+}
+
+// ── Monday API (via /api/monday-proxy) ──
+function mondayQuery(q) {
+  return fetch('/api/monday-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+}
+
+// ── Date helpers ──
+function parseMondayDate(text) {
+  if(!text) return null;
+  var p=text.split('-'); if(p.length!==3) return null;
+  return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+}
+var MMAP={JANUARY:0,FEBRUARY:1,MARCH:2,APRIL:3,MAY:4,JUNE:5,JULY:6,AUGUST:7,SEPTEMBER:8,OCTOBER:9,NOVEMBER:10,DECEMBER:11};
+function parseDeliveryDate(text) {
+  if(!text||text==='—') return null;
+  var m=text.trim().toUpperCase().match(/^([A-Z]+)\s+(\d+),\s*(\d{4})$/);
+  if(m&&MMAP[m[1]]!==undefined){var d=new Date(parseInt(m[3]),MMAP[m[1]],parseInt(m[2]));return isNaN(d.getTime())?null:d;}
+  var d2=new Date(text); return isNaN(d2.getTime())?null:d2;
+}
+function monthKey(yr,mo){return yr*100+mo;}
+
+// ── Month nav ──
+function buildAvailableMonths() {
+  var seen={},list=[];
+  cachedGoalRows.forEach(function(row){
+    if(!row.date) return;
+    var d=parseMondayDate(row.date); if(!d) return;
+    var k=monthKey(d.getFullYear(),d.getMonth());
+    if(!seen[k]){seen[k]=true;list.push({year:d.getFullYear(),month:d.getMonth()});}
+  });
+  list.sort(function(a,b){return monthKey(a.year,a.month)-monthKey(b.year,b.month);});
+  availableMonths=list;
+}
+function currentIdx() {
+  for(var i=0;i<availableMonths.length;i++){
+    if(availableMonths[i].year===viewYear&&availableMonths[i].month===viewMonth) return i;
+  }
+  return -1;
+}
+function shiftMonth(delta) {
+  var idx=currentIdx(), ni=idx+delta;
+  if(ni<0||ni>=availableMonths.length) return;
+  viewYear=availableMonths[ni].year; viewMonth=availableMonths[ni].month;
+  updateMonthNav(); renderGoalPanel();
+}
+function updateMonthNav() {
+  var el=document.getElementById('month-label');
+  if(el) el.textContent=MONTH_SHORT[viewMonth]+' '+viewYear;
+  var idx=currentIdx();
+  var pb=document.getElementById('month-prev'),nb=document.getElementById('month-next');
+  if(pb) pb.disabled=(idx<=0);
+  if(nb) nb.disabled=(idx>=availableMonths.length-1);
+}
+function switchTab(tab) {
+  activeTab=tab;
+  document.getElementById('tab-monthly').classList.toggle('active',tab==='monthly');
+  document.getElementById('tab-ytd').classList.toggle('active',tab==='ytd');
+  renderGoalPanel();
+}
+
+// ── Count completed items ──
+function countCompleted(actLabel,yr,mo) {
+  return cachedAllItems.filter(function(item){
+    var sc=item.column_values.find(function(c){return c.id==='color';});
+    if(!sc||(sc.text||'').toUpperCase()!=='COMPLETE') return false;
+    var ac=item.column_values.find(function(c){return c.id===ACTIVITY_COL;});
+    if(!ac||(ac.text||'').toLowerCase()!==actLabel.toLowerCase()) return false;
+    if(yr===null) return true;
+    var dc=item.column_values.find(function(c){return c.id==='date6';});
+    var raw=(dc&&dc.text)?dc.text:null;
+    if(!raw){var tc=item.column_values.find(function(c){return c.id==='text2';});raw=tc?tc.text:null;}
+    if(!raw||raw==='—') return false;
+    var d=parseMondayDate(raw)||parseDeliveryDate(raw); if(!d) return false;
+    if(mo===null) return d.getFullYear()===yr;
+    return d.getFullYear()===yr&&d.getMonth()===mo;
+  }).length;
+}
+
+// ── Goal lookups ──
+function getMonthlyGoal(actLabel,yr,mo) {
+  var total=0,seen={};
+  cachedGoalRows.forEach(function(row){
+    if(row.name.toLowerCase()!==actLabel.toLowerCase()) return;
+    var d=row.date?parseMondayDate(row.date):null; if(!d) return;
+    if(d.getFullYear()===yr&&d.getMonth()===mo&&!seen[row._id]){seen[row._id]=true;total+=row.monthly;}
+  });
+  return total;
+}
+function getAnnualGoal(actLabel) {
+  var best=0;
+  cachedGoalRows.forEach(function(row){
+    if(row.name.toLowerCase()!==actLabel.toLowerCase()) return;
+    if(row.annual>best) best=row.annual;
+  });
+  return best;
+}
+
+// ── RENDER: Yearly Progress Tracker ──
+function renderYPT() {
+  var yr = new Date().getFullYear();
+  var yrEl = document.getElementById('ypt-year');
+  if(yrEl) yrEl.textContent = yr;
+
+  var container = document.getElementById('ypt-rows');
+  if(!container) return;
+
+  // Find max annual goal across all activities for proportional scaling
+  var maxGoal = 0;
+  ACTIVITY_TYPES.forEach(function(act){ var g=getAnnualGoal(act.label); if(g>maxGoal) maxGoal=g; });
+  if(maxGoal===0) maxGoal=1;
+
+  var html='';
+  ACTIVITY_TYPES.forEach(function(act){
+    var done = countCompleted(act.label, yr, null);
+    var goal = getAnnualGoal(act.label);
+    // Bar width: proportional to (done / maxGoal) so all bars share the same scale
+    // But cap at 100% of the track
+    var pct  = goal>0 ? Math.min(done/goal,1) : 0;
+    var barW = (pct*100).toFixed(1)+'%';
+    // Color: act color normally, green when >= 80%, amber pulse when overdue (<20% at midyear)
+    var fillColor = pct>=1?'#a0d6b4':act.color;
+    var goalTxt  = goal>0?goal:'—';
+    var pctTxt   = goal>0?Math.round(pct*100)+'%':'—';
+    // Percentage label color matches fill
+    var pctColor = pct>=0.8?'#a0d6b4':pct>=0.4?act.color:'#555';
+
+    html+='<div class="ypt-row">';
+    html+='<div class="ypt-label" style="color:'+act.color+'">'+act.label+'</div>';
+    html+='<div class="ypt-track">';
+    html+='<div class="ypt-fill" style="width:'+barW+';background:'+fillColor+'"></div>';
+    html+='</div>';
+    html+='<div class="ypt-meta">';
+    html+='<span class="ypt-count">'+done+'</span>';
+    html+='<span class="ypt-goal">/ '+goalTxt+'</span>';
+    html+='<span class="ypt-pct" style="color:'+pctColor+'">'+pctTxt+'</span>';
+    html+='</div>';
+    html+='</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ── RENDER: KPI Rings ──
+function renderKPI(pendingItems) {
+  var completed=cachedAllItems.filter(function(item){
+    var c=item.column_values.find(function(c){return c.id==='color';});
+    return c&&(c.text||'').toUpperCase()==='COMPLETE';
+  });
+  var html='';
+  ACTIVITY_TYPES.forEach(function(act,i){
+    var active=pendingItems.filter(function(item){
+      var c=item.column_values.find(function(c){return c.id===ACTIVITY_COL;});
+      return c&&(c.text||'').toLowerCase()===act.label.toLowerCase();
+    }).length;
+    var done=completed.filter(function(item){
+      var c=item.column_values.find(function(c){return c.id===ACTIVITY_COL;});
+      return c&&(c.text||'').toLowerCase()===act.label.toLowerCase();
+    }).length;
+    var tot=active+done,pct=tot>0?done/tot:0,offset=(CIRC*(1-pct)).toFixed(2);
+    var short=act.label==='I/O Shipping'?'I/O Ship':act.label;
+    html+='<div class="kpi-ring-wrap">';
+    html+='<div class="kpi-ring"><svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">';
+    html+='<circle class="ring-bg" cx="22" cy="22" r="20"/>';
+    html+='<circle class="ring-fill" cx="22" cy="22" r="20" stroke="'+act.color+'" stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+offset+'"/>';
+    html+='</svg><div class="kpi-ring-center"><div class="kpi-ring-count">'+active+'</div></div></div>';
+    html+='<div class="kpi-ring-name">'+short+'</div>';
+    html+='<div class="kpi-ring-done">'+done+' done</div>';
+    html+='</div>';
+    if(i<ACTIVITY_TYPES.length-1) html+='<div style="width:1px;height:44px;background:var(--border);flex-shrink:0;"></div>';
+  });
+  document.getElementById('kpi-rings').innerHTML=html;
+}
+
+// ── RENDER: Goal panel ──
+function renderGoalPanel() {
+  updateMonthNav();
+  var container=document.getElementById('goal-rows'); if(!container) return;
+  if(availableMonths.length===0){
+    container.innerHTML='<div class="no-goal-msg">No goal data found.<span>Add rows to the KPI Goals board in Monday.</span></div>';
+    return;
+  }
+  var html='';
+  if(activeTab==='monthly'){
+    ACTIVITY_TYPES.forEach(function(act){
+      var done=countCompleted(act.label,viewYear,viewMonth);
+      var goal=getMonthlyGoal(act.label,viewYear,viewMonth);
+      var pct=goal>0?Math.min(done/goal,1):0;
+      var fill=pct>=0.8?'#a0d6b4':pct>=0.4?'#f0c040':act.color;
+      html+='<div class="goal-row">';
+      html+='<div class="goal-row-top"><span class="goal-label" style="color:'+act.color+'">'+act.label+'</span>';
+      html+='<span class="goal-nums"><strong>'+done+'</strong> / '+(goal||'—')+'</span></div>';
+      html+='<div class="goal-track"><div class="goal-fill" style="width:'+(pct*100).toFixed(1)+'%;background:'+fill+'"></div></div>';
+      html+='</div>';
+    });
+  } else {
+    var curYear=viewYear;
+    var yearMonths=availableMonths.filter(function(m){return m.year===curYear;});
+    ACTIVITY_TYPES.forEach(function(act){
+      var ytdDone=countCompleted(act.label,curYear,null);
+      var annGoal=getAnnualGoal(act.label);
+      var pct=annGoal>0?Math.min(ytdDone/annGoal,1):0;
+      var fill=pct>=0.8?'#a0d6b4':pct>=0.4?'#f0c040':act.color;
+      var counts=yearMonths.map(function(m){return countCompleted(act.label,m.year,m.month);});
+      var maxC=Math.max.apply(null,counts.concat([1]));
+      html+='<div class="goal-row">';
+      html+='<div class="goal-row-top"><span class="goal-label" style="color:'+act.color+'">'+act.label+'</span>';
+      html+='<span class="goal-nums"><strong>'+ytdDone+'</strong> / '+(annGoal||'—')+' ytd</span></div>';
+      html+='<div class="goal-track"><div class="goal-fill" style="width:'+(pct*100).toFixed(1)+'%;background:'+fill+'"></div></div>';
+      if(yearMonths.length>0){
+        html+='<div class="ytd-strip">';
+        yearMonths.forEach(function(m,mi){
+          var cnt=counts[mi],barH=Math.max(2,Math.round((cnt/maxC)*28));
+          var isActive=(m.year===viewYear&&m.month===viewMonth);
+          html+='<div class="ytd-month has-goal" onclick="jumpToMonth('+m.year+','+m.month+')" title="'+MONTH_SHORT[m.month]+' '+m.year+': '+cnt+'">';
+          html+='<div class="ytd-bar-wrap"><div class="ytd-bar" style="height:'+barH+'px;background:'+act.color+';opacity:'+(isActive?'1':'0.4')+'"></div></div>';
+          html+='<div class="ytd-mo-label'+(isActive?' active-mo':'')+'">'+MONTH_SHORT[m.month]+'</div>';
+          html+='</div>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+  }
+  container.innerHTML=html;
+}
+
+function jumpToMonth(yr,mo){viewYear=yr;viewMonth=mo;updateMonthNav();renderGoalPanel();}
+
+// ── Table helpers ──
+function statusPill(label){
+  var cls='s-default',l=(label||'').toUpperCase();
+  if(l==='UNCONFIRMED')cls='s-unconfirmed';
+  else if(l==='IN PROGRESS')cls='s-in-progress';
+  else if(l==='DELIVERY SCHEDULED')cls='s-scheduled';
+  else if(l==='OUT FOR DELIVERY')cls='s-out-delivery';
+  else if(l==='COMPLETE')cls='s-complete';
+  else if(l==='CANCELLED')cls='s-cancelled';
+  else if(l==='ON HOLD')cls='s-on-hold';
+  return '<span class="status-pill '+cls+'">'+(label||'—')+'</span>';
+}
+function activityTag(label){
+  if(!label||label==='—') return '<span class="activity-tag act-blank">—</span>';
+  var cfg=ACTIVITY_TYPES.find(function(a){return a.label.toLowerCase()===label.toLowerCase();});
+  return '<span class="activity-tag '+(cfg?cfg.cls:'act-blank')+'">'+label+'</span>';
+}
+function urgencyDot(dateText){
+  if(!dateText||dateText==='—') return '<td class="dt-urgency"><span class="urgency-badge u-none">No Date</span></td>';
+  var d=parseDeliveryDate(dateText);if(!d)return '<td class="dt-urgency"><span class="urgency-badge u-none">No Date</span></td>';
+  var today=new Date();today.setHours(0,0,0,0);d.setHours(0,0,0,0);
+  var diff=Math.round((d-today)/86400000),cls,lbl;
+  if(diff<0){cls='u-overdue';lbl='Overdue';}
+  else if(diff===0){cls='u-today';lbl='Today';}
+  else if(diff<=3){cls='u-upcoming';lbl='Upcoming';}
+  else{cls='u-scheduled';lbl='Scheduled';}
+  return '<td class="dt-urgency"><span class="urgency-badge '+cls+'">'+lbl+'</span></td>';
+}
+function renderTable(items){
+  var tbody=document.getElementById('sp-tbody');tbody.innerHTML='';
+  var today=new Date();today.setHours(0,0,0,0);
+  var tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
+
+  // Bucket items into groups
+  var groups={overdue:[],dueToday:[],tomorrow:[],upcoming:[]};
+  items.forEach(function(item){
+    var gc=function(id){var c=item.column_values.find(function(c){return c.id===id;});return(c&&c.text)?c.text:'—';};
+    var d=parseDeliveryDate(gc('text2'));
+    if(!d)                                               groups.upcoming.push(item);
+    else if(d<today)                                     groups.overdue.push(item);
+    else if(d.getTime()===today.getTime())               groups.dueToday.push(item);
+    else if(d.getTime()===tomorrow.getTime())            groups.tomorrow.push(item);
+    else                                                 groups.upcoming.push(item);
+  });
+
+  function addGroupHeader(label, cls, count) {
+    if(count===0) return;
+    var tr=document.createElement('tr');
+    tr.className='dt-group-row';
+    tr.innerHTML='<td colspan="8"><div class="dt-group-label '+cls+'">'+label+
+      '<span class="dt-group-count '+cls+'">'+count+'</span></div></td>';
+    tbody.appendChild(tr);
+  }
+
+  function addItem(item){
+    var gc=function(id){var c=item.column_values.find(function(c){return c.id===id;});return(c&&c.text)?c.text:'—';};
+    var tr=document.createElement('tr');
+    tr.innerHTML=urgencyDot(gc('text2'))+
+      '<td><span class="dt-po">#'+item.id+'</span></td>'+
+      '<td><span class="dt-name" title="'+item.name+'">'+item.name+'</span></td>'+
+      '<td><span class="dt-account">'+gc('text4')+'</span></td>'+
+      '<td><span class="dt-date">'+gc('text2')+'</span></td>'+
+      '<td>'+activityTag(gc(ACTIVITY_COL))+'</td>'+
+      '<td>'+statusPill(gc('color'))+'</td>'+
+      '<td><a href="https://handslogistics.monday.com/boards/'+OPS_BOARD+'/pulses/'+item.id+'" target="_blank" style="font-size:11px;color:var(--green);text-decoration:none;">View &#8594;</a></td>';
+    tbody.appendChild(tr);
+  }
+
+  // Overdue flows into Due Today visually
+  var todayTotal = groups.overdue.length + groups.dueToday.length;
+  if(groups.overdue.length>0){
+    addGroupHeader('⚠ Overdue — Rolling to Today', 'today', groups.overdue.length);
+    groups.overdue.forEach(addItem);
+  }
+  if(groups.dueToday.length>0){
+    addGroupHeader('Due Today', 'due-today', groups.dueToday.length);
+    groups.dueToday.forEach(addItem);
+  }
+  if(groups.tomorrow.length>0){
+    addGroupHeader('Due Tomorrow', 'tomorrow', groups.tomorrow.length);
+    groups.tomorrow.forEach(addItem);
+  }
+  if(groups.upcoming.length>0){
+    addGroupHeader('Upcoming', 'upcoming', groups.upcoming.length);
+    groups.upcoming.forEach(addItem);
+  }
+
+  document.getElementById('sp-table-wrap').style.display='block';
+  document.getElementById('sp-count').textContent=items.length+' pending deliveri'+(items.length===1?'y':'es')+
+    (todayTotal>0?' · '+todayTotal+' due today':'');
+}
+
+// ── Load all ──
+function loadAll(){
+  document.getElementById('sp-loading').style.display='flex';
+  document.getElementById('sp-error').style.display='none';
+  document.getElementById('sp-empty').style.display='none';
+  document.getElementById('sp-table-wrap').style.display='none';
+  document.getElementById('sp-count').textContent='—';
+  document.getElementById('sp-last-updated').textContent='—';
+  document.getElementById('kpi-rings').innerHTML='<div class="sp-loading" style="padding:0;"><div class="spinner"></div></div>';
+  document.getElementById('goal-rows').innerHTML='<div class="sp-loading" style="padding:4px 0;justify-content:flex-start;gap:8px;"><div class="spinner"></div><span style="font-size:11px;">Loading…</span></div>';
+  document.getElementById('ypt-rows').innerHTML='<div class="sp-loading" style="padding:8px 0;justify-content:flex-start;gap:8px;"><div class="spinner"></div><span style="font-size:11px;">Loading…</span></div>';
+
+  var opsQ='{ boards(ids:['+OPS_BOARD+']) { items_page(limit:200) { items { id name column_values(ids:["text","text4","text5","text2","text9","date6","color","'+ACTIVITY_COL+'","boolean_mm1jv595","boolean_mm1jr3gr","link_mm1pgr61","client_email1"]) { id text value } } } } }';
+  var goalsQ='{ boards(ids:['+GOALS_BOARD+']) { items_page(limit:200) { items { id name column_values(ids:["'+GOALS_NUM_COL+'","'+GOALS_ANN_COL+'","'+GOALS_DATE_COL+'"]) { id text } } } } }';
+
+  Promise.all([mondayQuery(opsQ),mondayQuery(goalsQ)])
+  .then(function(res){
+    var od=res[0];
+    if(!od||!od.data) throw new Error('Bad ops response');
+    if(od.errors&&od.errors.length) throw new Error(od.errors[0].message);
+    cachedAllItems=(od.data.boards[0].items_page&&od.data.boards[0].items_page.items)||[];
+
+    cachedGoalRows=[];
+    try{
+      var gi=(res[1].data.boards[0].items_page&&res[1].data.boards[0].items_page.items)||[];
+      gi.forEach(function(row){
+        var monthly=0,annual=0,date=null;
+        row.column_values.forEach(function(c){
+          if(c.id===GOALS_NUM_COL) monthly=parseFloat(c.text)||0;
+          if(c.id===GOALS_ANN_COL) annual=parseFloat(c.text)||0;
+          if(c.id===GOALS_DATE_COL) date=c.text||null;
+        });
+        cachedGoalRows.push({_id:row.id,name:row.name,monthly:monthly,annual:annual,date:date});
+      });
+    }catch(e){}
+
+    buildAvailableMonths();
+
+    // Default to closest upcoming month with goals
+    if(availableMonths.length>0){
+      var todayKey=monthKey(new Date().getFullYear(),new Date().getMonth());
+      var chosen=availableMonths[availableMonths.length-1];
+      for(var i=0;i<availableMonths.length;i++){
+        if(monthKey(availableMonths[i].year,availableMonths[i].month)>=todayKey){chosen=availableMonths[i];break;}
+      }
+      viewYear=chosen.year; viewMonth=chosen.month;
     }
 
-    preview.onclick = () => {
-      const po = input.value.trim();
-      if (!po) { input.focus(); return; }
-      window.open('/api/preview?po=' + encodeURIComponent(po) + '&kind=' + kind, '_blank');
-    };
+    var pending=cachedAllItems.filter(function(item){
+      var c=item.column_values.find(function(c){return c.id==='color';});
+      if(!c) return false;
+      var st=c.text||'';
+      return PENDING_STATUSES.indexOf(st)!==-1 && EXCLUDE_STATUSES.indexOf(st)===-1;
+    });
+    var now2=new Date();now2.setHours(0,0,0,0);
+    pending.sort(function(a,b){
+      var gd=function(item){var c=item.column_values.find(function(c){return c.id==='text2';});return c?parseDeliveryDate(c.text):null;};
+      var da=gd(a),db=gd(b);
+      if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1;
+      var aF=da>=now2,bF=db>=now2;
+      if(aF&&bF)return da-db;if(!aF&&!bF)return db-da;return aF?-1:1;
+    });
 
-    send.onclick = async () => {
-      const po = input.value.trim();
-      if (!po) { input.focus(); return; }
-      // Parse CC field — split on , or ;, trim, filter empty
-      const ccRaw = (ccInput.value || '').trim();
-      const ccEmails = ccRaw ? ccRaw.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
-      send.disabled = true;
-      send.textContent = 'Sending...';
-      result.className = 'result';
-      try {
-        const r = await fetch(ENDPOINTS[kind], {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId: po, ccEmails })
-        });
-        const j = await r.json();
-        if (r.ok && j.success) {
-          const ccLine = (j.ccSentTo && j.ccSentTo.length) ? ' (cc: ' + j.ccSentTo.join(', ') + ')' : '';
-          show(true, 'Sent to ' + j.sentTo + ccLine + ' ✓', { emailId: j.emailId, itemId: j.itemId, writeBackError: j.writeBackError });
-        } else {
-          show(false, 'Failed: ' + (j.error || r.status), j);
-        }
-      } catch (err) {
-        show(false, 'Network error: ' + err.message);
-      } finally {
-        send.disabled = false;
-        send.textContent = LABELS[kind];
-      }
-    };
+    renderYPT();
+    renderKPI(pending);
+    renderGoalPanel();
 
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') send.click(); });
+    document.getElementById('sp-loading').style.display='none';
+    if(!pending.length){
+      document.getElementById('sp-empty').style.display='block';
+      document.getElementById('sp-count').textContent='0 pending deliveries';
+    } else { renderTable(pending); }
+
+    var ts=new Date();
+    document.getElementById('sp-last-updated').textContent='Updated '+ts.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  })
+  .catch(function(err){
+    document.getElementById('sp-loading').style.display='none';
+    document.getElementById('kpi-rings').innerHTML='';
+    document.getElementById('goal-rows').innerHTML='<span style="font-size:11px;color:#e07070;">Could not load goals</span>';
+    document.getElementById('ypt-rows').innerHTML='<span style="font-size:11px;color:#e07070;">Could not load</span>';
+    var e=document.getElementById('sp-error');
+    e.style.display='block';
+    e.innerHTML='<strong style="color:#e07070;">Could not load data</strong><br><span style="color:var(--muted);font-size:11px;">'+err.message+'</span>';
+    document.getElementById('sp-last-updated').textContent='—';
   });
+}
+
+loadAll();
+
+// ── Custom Dark Ops Calendar ──────────────────────────────────────────
+var hcalYear=new Date().getFullYear(), hcalMonth=new Date().getMonth();
+var hcalItems=[];
+var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var MONTH_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function hcalActivityClass(act){
+  if(!act)return'ev-default';
+  var a=(act||'').toLowerCase();
+  if(a==='delivery')return'ev-delivery';
+  if(a==='activation')return'ev-activation';
+  if(a==='i/o shipping')return'ev-io';
+  if(a==='production')return'ev-production';
+  if(a==='sourcing')return'ev-sourcing';
+  return'ev-default';
+}
+
+function hcalParseDate(text){
+  if(!text)return null;
+  // ISO date from start/strike columns
+  if(/^\d{4}-\d{2}-\d{2}$/.test(text.trim()))return new Date(text.trim()+'T00:00:00');
+  // Text date field e.g. "MARCH 30, 2026" / "May, 5, 2026" / "April 5, 2026"
+  var months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11,
+              jan:0,feb:1,mar:2,apr:3,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  var t=text.trim().toLowerCase().replace(/,/g,' ').replace(/\s+/g,' ');
+  var parts=t.split(' ');
+  for(var i=0;i<parts.length;i++){
+    if(months[parts[i]]!==undefined){
+      var mo=months[parts[i]];
+      var nums=parts.filter(function(p){return /^\d+$/.test(p);});
+      if(nums.length>=2){
+        var day=parseInt(nums[0]),yr=parseInt(nums[1]);
+        if(yr<100)yr+=2000;
+        if(day>31){var tmp=day;day=yr;yr=tmp;}
+        return new Date(yr,mo,day);
+      }
+    }
+  }
+  return null;
+}
+
+function hcalBuildEvents(items){
+  var evs=[];
+  items.forEach(function(item){
+    var act=null,text2=null,startD=null,strikeD=null;
+    item.column_values.forEach(function(c){
+      if(c.id==='color_mm1wxn5k')act=c.text||null;
+      if(c.id==='text2')text2=c.text||null;
+      if(c.id==='start')startD=c.text||null;
+      if(c.id==='strike')strikeD=c.text||null;
+    });
+    if(!act)return;
+    var d=null;
+    if(startD){d=hcalParseDate(startD);}
+    if(!d&&text2){d=hcalParseDate(text2);}
+    if(!d)return;
+    var endD=d;
+    if(strikeD&&startD){var ed=hcalParseDate(strikeD);if(ed)endD=ed;}
+    evs.push({name:item.name,act:act,cls:hcalActivityClass(act),start:d,end:endD,id:item.id});
+  });
+  return evs;
+}
+
+function hcalRender(){
+  var grid=document.getElementById('hcal-grid');
+  var monthLabel=document.getElementById('hcal-month');
+  monthLabel.textContent=MONTH_NAMES[hcalMonth]+' '+hcalYear;
+
+  // Day-of-week headers
+  var html='<div class="hcal-dow">Sun</div><div class="hcal-dow">Mon</div><div class="hcal-dow">Tue</div><div class="hcal-dow">Wed</div><div class="hcal-dow">Thu</div><div class="hcal-dow">Fri</div><div class="hcal-dow">Sat</div>';
+
+  var firstDay=new Date(hcalYear,hcalMonth,1).getDay();
+  var daysInMonth=new Date(hcalYear,hcalMonth+1,0).getDate();
+  var daysInPrev=new Date(hcalYear,hcalMonth,0).getDate();
+  var today=new Date();today.setHours(0,0,0,0);
+
+  // Build events lookup by date key
+  var evsByDay={};
+  hcalItems.forEach(function(ev){
+    var cur=new Date(ev.start.getTime());
+    var end=new Date(ev.end.getTime());
+    cur.setHours(0,0,0,0);end.setHours(0,0,0,0);
+    while(cur<=end){
+      var key=cur.getFullYear()+'-'+(cur.getMonth()+1)+'-'+cur.getDate();
+      if(!evsByDay[key])evsByDay[key]=[];
+      evsByDay[key].push(ev);
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+
+  var totalEventsThisMonth=0;
+  var cellCount=0;
+  // Prev month padding
+  for(var i=0;i<firstDay;i++){
+    var prevDay=daysInPrev-firstDay+1+i;
+    html+='<div class="hcal-cell other-month"><div class="hcal-day">'+prevDay+'</div></div>';
+    cellCount++;
+  }
+  // Current month days
+  for(var d=1;d<=daysInMonth;d++){
+    var dt=new Date(hcalYear,hcalMonth,d);
+    dt.setHours(0,0,0,0);
+    var key=hcalYear+'-'+(hcalMonth+1)+'-'+d;
+    var evs=evsByDay[key]||[];
+    var isToday=dt.getTime()===today.getTime();
+    var hasEvCls=evs.length>0?' has-events':'';
+    html+='<div class="hcal-cell'+hasEvCls+(isToday?' today':'')+'"><div class="hcal-day">'+d+'</div>';
+    var shown=Math.min(evs.length,3);
+    for(var e=0;e<shown;e++){
+      var ev=evs[e];
+      var short=ev.name.length>24?ev.name.substring(0,22)+'…':ev.name;
+      html+='<div class="hcal-event '+ev.cls+'" title="'+ev.name+' ('+ev.act+')">'+short+'</div>';
+      totalEventsThisMonth++;
+    }
+    if(evs.length>3)html+='<div class="hcal-more">+' +(evs.length-3)+' more</div>';
+    html+='</div>';
+    cellCount++;
+  }
+  // Next month padding
+  var remaining=(7-((cellCount)%7))%7;
+  for(var n=1;n<=remaining;n++){
+    html+='<div class="hcal-cell other-month"><div class="hcal-day">'+n+'</div></div>';
+  }
+
+  grid.innerHTML=html;
+  // Deduplicate event count
+  var uniqueEvIds={};
+  hcalItems.forEach(function(ev){
+    var s=ev.start,e=ev.end;
+    if(s.getMonth()===hcalMonth&&s.getFullYear()===hcalYear)uniqueEvIds[ev.id]=1;
+    if(e.getMonth()===hcalMonth&&e.getFullYear()===hcalYear)uniqueEvIds[ev.id]=1;
+  });
+  var cnt=Object.keys(uniqueEvIds).length;
+  document.getElementById('hcal-event-count').textContent=cnt+' event'+(cnt!==1?'s':'');
+}
+
+function hcalShift(dir){hcalMonth+=dir;if(hcalMonth>11){hcalMonth=0;hcalYear++;}else if(hcalMonth<0){hcalMonth=11;hcalYear--;}hcalRender();}
+function hcalToday(){hcalYear=new Date().getFullYear();hcalMonth=new Date().getMonth();hcalRender();}
+
+function hcalLoad(){
+  var q='{ boards(ids:['+OPS_BOARD+']) { items_page(limit:200) { items { id name column_values(ids:["color_mm1wxn5k","text2","start","strike"]) { id text } } } } }';
+  mondayQuery(q).then(function(res){
+    var items=(res.data.boards[0].items_page&&res.data.boards[0].items_page.items)||[];
+    hcalItems=hcalBuildEvents(items);
+    hcalRender();
+  }).catch(function(){
+    document.getElementById('hcal-grid').innerHTML='<div class="hcal-loading" style="grid-column:1/-1;color:#e07070;">Could not load calendar data</div>';
+  });
+}
+hcalLoad();
+// ─────────────────────────────────────────────────────────────────────
+setInterval(function(){
+  var d=new Date();
+  document.getElementById('clock').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+},1000);
+(function(){var d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});})();
+
+// ─────────────────────────────────────────────────────────────────────
+// HANDS PIPELINE — Delivery + Activation status bars
+// ─────────────────────────────────────────────────────────────────────
+
+// Helper: fetch column text by id from an item's column_values
+function pipeGet(item, id){
+  var c = (item.column_values||[]).find(function(x){return x.id===id;});
+  return c && c.text ? c.text.trim() : '';
+}
+function pipeGetValue(item, id){
+  var c = (item.column_values||[]).find(function(x){return x.id===id;});
+  return c && c.value ? c.value : '';
+}
+function pipeIsChecked(item, id){
+  var v = pipeGetValue(item, id);
+  if (!v) return false;
+  try { var p = JSON.parse(v); return !!(p && p.checked); } catch(e) { return false; }
+}
+function pipeHasPhoto(item){
+  var v = pipeGetValue(item, 'link_mm1pgr61');
+  if (!v) return false;
+  try { var p = JSON.parse(v); return !!(p && p.url); } catch(e) { return false; }
+}
+
+// Classify an item into its delivery stage.
+// Returns null if it doesn't belong in the delivery pipeline.
+function classifyDelivery(item){
+  var status = pipeGet(item, 'color');
+  var activity = pipeGet(item, 'color_mm1wxn5k');
+  var completedOn = pipeGet(item, 'date6');
+  var orderSent = pipeIsChecked(item, 'boolean_mm1jv595');
+  var podSent   = pipeIsChecked(item, 'boolean_mm1jr3gr');
+  var hasPhoto  = pipeHasPhoto(item);
+
+  // Exclude non-delivery activities (Activation, Production, Sourcing)
+  if (activity && activity !== 'Delivery' && activity !== 'I/O Shipping') return null;
+  // Exclude cancelled / unable
+  if (status === 'CANCELLED' || status === 'UNABLE TO DELIVER') return null;
+
+  // Stage 5: Billed — complete AND POD sent
+  if (status === 'COMPLETE' && podSent) return { stage:'billed', needsAttn:false };
+  // Stage 4: Delivered — POD photo uploaded OR completed-on set, but POD email NOT yet sent
+  if ((hasPhoto || completedOn) && !podSent && status !== 'COMPLETE') {
+    return { stage:'delivered', needsAttn:true };
+  }
+  if (status === 'COMPLETE' && !podSent) {
+    return { stage:'delivered', needsAttn:true };
+  }
+  // Stage 3: In Motion — out for delivery / partial
+  if (status === 'OUT FOR DELIVERY' || status === 'Partial Delivery' || status === 'Picked Up') {
+    return { stage:'inmotion', needsAttn:false };
+  }
+  // Stage 2: Scheduled — scheduled statuses. Attn if DC email not sent yet.
+  if (status === 'DELIVERY SCHEDULED' || status === 'Pick Up Scheduled' || status === 'Needs Scheduling' || status === 'SHIPPED') {
+    return { stage:'scheduled', needsAttn: !orderSent };
+  }
+  // Stage 1: Intake — Unconfirmed, Tentative, blank, or anything else pre-scheduling
+  return { stage:'intake', needsAttn:true };
+}
+
+// Classify an item into its activation stage.
+function classifyActivation(item){
+  var status = pipeGet(item, 'color');
+  var activity = pipeGet(item, 'color_mm1wxn5k');
+  // Only Activation + Production + Sourcing land here
+  if (activity !== 'Activation' && activity !== 'Production' && activity !== 'Sourcing') return null;
+  if (status === 'CANCELLED') return null;
+
+  // Sourcing activity type → always Procurement stage.
+  // Attention if in a pre-production status (pending orders, not yet received).
+  if (activity === 'Sourcing') {
+    if (status === 'COMPLETE') return { stage:'wrapped', needsAttn:false };
+    return { stage:'procurement', needsAttn: (status === 'Proposal Need' || status === '' || status === 'INFORMATION NEEDED' || status === 'URGENT HELP NEEDED') };
+  }
+
+  if (status === 'COMPLETE') return { stage:'wrapped', needsAttn:false };
+  if (status === 'Retrieval Required' || status === 'Requestor to Return') return { stage:'strike', needsAttn:true };
+  if (status === 'IN PROGRESS' || status === 'OUT FOR DELIVERY') return { stage:'live', needsAttn:false };
+  if (status === 'Setup Scheduled' || status === 'Staffing Needed') return { stage:'setup', needsAttn: status === 'Staffing Needed' };
+  if (status === 'Proposal Need' || status === 'Proposal Submitted') return { stage:'proposal', needsAttn: status === 'Proposal Need' };
+  // Default: if activity is set but no clear stage → proposal (pre-approval bucket)
+  return { stage:'proposal', needsAttn:true };
+}
+
+// Stage action labels + what the primary button does
+var DELIVERY_STAGE_ACTIONS = {
+  intake:    { btn:'Triage', action:'triage' },
+  scheduled: { btn:'Send DC', action:'senddc' },
+  inmotion:  { btn:'View',   action:'open' },
+  delivered: { btn:'Send POD', action:'sendpod' },
+  billed:    { btn:'View',   action:'open' }
+};
+var ACTIVATION_STAGE_ACTIONS = {
+  proposal:    { btn:'Open', action:'open' },
+  approved:    { btn:'Open', action:'open' },
+  procurement: { btn:'Open', action:'open' },
+  setup:       { btn:'Open', action:'open' },
+  live:        { btn:'Open', action:'open' },
+  strike:      { btn:'Open', action:'open' },
+  wrapped:     { btn:'Open', action:'open' }
+};
+
+// Render pipeline bars based on cachedAllItems
+function renderPipelines(){
+  if (!cachedAllItems || !cachedAllItems.length) return;
+
+  var delv = { intake:[], scheduled:[], inmotion:[], delivered:[], billed:[] };
+  var actv = { proposal:[], approved:[], procurement:[], setup:[], live:[], strike:[], wrapped:[] };
+
+  cachedAllItems.forEach(function(item){
+    var d = classifyDelivery(item);
+    if (d) { delv[d.stage].push({ item:item, needsAttn:d.needsAttn }); return; }
+    var a = classifyActivation(item);
+    if (a) actv[a.stage].push({ item:item, needsAttn:a.needsAttn });
+  });
+
+  // Summary line: total active + total needing attention
+  function countAttn(obj){
+    var total=0, attn=0;
+    Object.keys(obj).forEach(function(k){
+      obj[k].forEach(function(row){ total++; if (row.needsAttn) attn++; });
+    });
+    return { total:total, attn:attn };
+  }
+  var delSum = countAttn(delv);
+  var actSum = countAttn(actv);
+
+  var delSumEl = document.getElementById('pipe-delivery-summary');
+  var actSumEl = document.getElementById('pipe-activation-summary');
+  delSumEl.innerHTML = '<strong>'+delSum.total+'</strong> active · ' +
+    (delSum.attn ? '<span style="color:#f0c040;font-weight:600;">'+delSum.attn+' need attention</span>' : '<span style="color:var(--green);">all clear</span>');
+  actSumEl.innerHTML = '<strong>'+actSum.total+'</strong> active · ' +
+    (actSum.attn ? '<span style="color:#f0c040;font-weight:600;">'+actSum.attn+' need attention</span>' : '<span style="color:var(--green);">all clear</span>');
+
+  // Populate stage counts + attn indicators
+  function paintStages(pipe, buckets, stageActions){
+    Array.prototype.forEach.call(document.querySelectorAll('#pipe-'+pipe+'-stages .stage'), function(stEl){
+      var stage = stEl.getAttribute('data-stage');
+      var rows = buckets[stage] || [];
+      var attnCount = rows.filter(function(r){return r.needsAttn;}).length;
+      stEl.querySelector('.stage-count').textContent = rows.length;
+      stEl.classList.toggle('has-attn', attnCount > 0);
+      stEl.classList.toggle('empty', rows.length === 0);
+      // Update hint line if there's attention needed
+      var hint = stEl.querySelector('.stage-hint');
+      var baseHint = hint.getAttribute('data-base');
+      if (!baseHint) { baseHint = hint.textContent; hint.setAttribute('data-base', baseHint); }
+      if (attnCount > 0) {
+        hint.innerHTML = '<span class="attn">' + attnCount + ' ' + (attnCount===1?'needs':'need') + ' action</span><br>' + baseHint;
+      } else {
+        hint.textContent = baseHint;
+      }
+    });
+  }
+  paintStages('delivery', delv, DELIVERY_STAGE_ACTIONS);
+  paintStages('activation', actv, ACTIVATION_STAGE_ACTIONS);
+
+  // Store buckets globally for the drawer
+  window._pipeBuckets = { delivery: delv, activation: actv };
+}
+
+// Expand/collapse action drawer for a stage
+function openStageDrawer(pipe, stage){
+  var drawer = document.getElementById('pipe-'+pipe+'-actions');
+  var buckets = (window._pipeBuckets && window._pipeBuckets[pipe]) || {};
+  var rows = buckets[stage] || [];
+  var stageActions = pipe === 'delivery' ? DELIVERY_STAGE_ACTIONS : ACTIVATION_STAGE_ACTIONS;
+  var primary = stageActions[stage] || { btn:'Open', action:'open' };
+
+  if (!rows.length) { drawer.classList.remove('show'); drawer.innerHTML=''; return; }
+
+  // Prioritize attention rows first, then cap at 6
+  rows.sort(function(a,b){ return (b.needsAttn?1:0) - (a.needsAttn?1:0); });
+  var visible = rows.slice(0, 6);
+
+  var html = '<div style="font-size:11px;color:var(--label);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Stage: <strong style="color:var(--white);">' +
+    stage.toUpperCase() + '</strong> · showing ' + visible.length + ' of ' + rows.length + '</div>';
+
+  visible.forEach(function(row){
+    var it = row.item;
+    var po = it.id;
+    var clientName = pipeGet(it, 'text') || '—';
+    var project    = pipeGet(it, 'text5') || it.name || '—';
+    var account    = pipeGet(it, 'text4') || '';
+    var dDate      = pipeGet(it, 'text2') || '';
+    var attnDot    = row.needsAttn ? '<span style="color:#f0c040;margin-right:4px;">●</span>' : '';
+    var metaLine   = [account, dDate].filter(Boolean).join(' · ');
+
+    html += '<div class="action-item">' +
+      '<div class="ai-left">' +
+        '<div class="ai-po">'+attnDot+'PO #'+po+'</div>' +
+        '<div class="ai-name">'+project+' &mdash; '+clientName+'</div>' +
+        (metaLine ? '<div class="ai-meta">'+metaLine+'</div>' : '') +
+      '</div>' +
+      '<div>' +
+        '<button class="ai-btn ghost" onclick="window.open(\'https://handslogistics.monday.com/boards/4550650855/pulses/'+po+'\',\'_blank\')">Open</button>' +
+        (primary.action !== 'open' ? '<button class="ai-btn" data-action="'+primary.action+'" data-po="'+po+'">'+primary.btn+'</button>' : '') +
+      '</div>' +
+    '</div>';
+  });
+
+  drawer.innerHTML = html;
+  drawer.classList.add('show');
+
+  // Wire up action buttons
+  Array.prototype.forEach.call(drawer.querySelectorAll('.ai-btn[data-action]'), function(btn){
+    btn.addEventListener('click', function(){
+      var action = btn.getAttribute('data-action');
+      var po = btn.getAttribute('data-po');
+      runStageAction(action, po);
+    });
+  });
+}
+
+// Dispatch a stage action to the appropriate modal / endpoint
+function runStageAction(action, po){
+  if (action === 'senddc') {
+    openModal('modalSendEmail');
+    // Switch to DC tab + prefill PO
+    var dcTab = document.querySelector('#modalSendEmail .tab[data-kind="dc"]');
+    if (dcTab) dcTab.click();
+    var inp = document.getElementById('em_po_dc');
+    if (inp) { inp.value = po; inp.dispatchEvent(new Event('input')); inp.focus(); }
+  } else if (action === 'sendpod') {
+    openModal('modalSendEmail');
+    var podTab = document.querySelector('#modalSendEmail .tab[data-kind="pod"]');
+    if (podTab) podTab.click();
+    var inp2 = document.getElementById('em_po_pod');
+    if (inp2) { inp2.value = po; inp2.dispatchEvent(new Event('input')); inp2.focus(); }
+  } else if (action === 'triage') {
+    // No dedicated triage flow — just open the Monday item so Jon can edit directly
+    window.open('https://handslogistics.monday.com/boards/4550650855/pulses/'+po, '_blank');
+  }
+}
+
+// Wire up stage click-to-expand
+Array.prototype.forEach.call(document.querySelectorAll('#pipe-delivery-stages .stage, #pipe-activation-stages .stage'), function(stEl){
+  stEl.addEventListener('click', function(){
+    var pipe = stEl.getAttribute('data-pipe');
+    var stage = stEl.getAttribute('data-stage');
+    // Toggle: if same stage already open, close it
+    var drawer = document.getElementById('pipe-'+pipe+'-actions');
+    var currentStage = drawer.getAttribute('data-stage');
+    if (currentStage === stage && drawer.classList.contains('show')) {
+      drawer.classList.remove('show');
+      drawer.removeAttribute('data-stage');
+      return;
+    }
+    drawer.setAttribute('data-stage', stage);
+    openStageDrawer(pipe, stage);
+    // Visual: highlight active stage
+    Array.prototype.forEach.call(document.querySelectorAll('#pipe-'+pipe+'-stages .stage'), function(s){
+      s.style.borderColor = (s === stEl) ? 'var(--green)' : '';
+    });
+  });
+});
+
+// Hook renderPipelines() to run after loadAll completes.
+// We do this by wrapping the existing loadAll — a MutationObserver on the table
+// is the cleanest way to know fresh data landed.
+(function wireRender(){
+  // Re-render pipelines whenever the delivery table content changes (proxy for "data loaded")
+  var tableWrap = document.getElementById('sp-table-wrap');
+  if (!tableWrap) return;
+  var obs = new MutationObserver(function(){
+    try { renderPipelines(); } catch(e) { console.warn('pipeline render failed:', e); }
+  });
+  obs.observe(tableWrap, { childList:true, subtree:true });
+  // Also render once after initial loadAll settles
+  setTimeout(function(){ try { renderPipelines(); } catch(e){} }, 2500);
+})();
+
+// ─────────────────────────────────────────────────────────────────────
+// MODALS: Send Email (DC/POD) + New Delivery
+// ─────────────────────────────────────────────────────────────────────
+
+// The DC and POD send endpoints are now same-origin (this site).
+// Empty base = relative paths, served from whichever host the hub is on.
+var DCCONFIRM_BASE = '';
+
+// ── helpers ──────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function showResult(el, ok, msg, detail){
+  el.className = 'm-result show ' + (ok ? 'ok' : 'err');
+  el.innerHTML = msg + (detail ? '<pre>' + (typeof detail === 'string' ? detail : JSON.stringify(detail,null,2)) + '</pre>' : '');
+}
+function hideResult(el){ el.className = 'm-result'; el.innerHTML=''; }
+function parseCCs(raw){
+  if (!raw) return [];
+  var EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return raw.split(/[,;]/).map(function(s){return s.trim();}).filter(function(e){return e && EMAIL.test(e);});
+}
+
+// Bind open buttons
+document.getElementById('btnOpenSendEmail').addEventListener('click',function(){ openModal('modalSendEmail'); });
+document.getElementById('btnOpenNewDelivery').addEventListener('click',function(){ openModal('modalNewDelivery'); });
+// Close on overlay click / X
+Array.prototype.forEach.call(document.querySelectorAll('.modal-overlay'),function(ov){
+  ov.addEventListener('click',function(e){ if (e.target === ov) ov.classList.remove('show'); });
+});
+Array.prototype.forEach.call(document.querySelectorAll('.modal-close'),function(btn){
+  btn.addEventListener('click',function(){ var id=btn.getAttribute('data-close'); closeModal(id); });
+});
+// ESC closes
+document.addEventListener('keydown',function(e){
+  if (e.key === 'Escape') Array.prototype.forEach.call(document.querySelectorAll('.modal-overlay.show'),function(ov){ ov.classList.remove('show'); });
+});
+
+// ─────────────────────────────────────────────────────────────
+// SEND EMAIL MODAL — DC / POD tabs
+// ─────────────────────────────────────────────────────────────
+Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab'),function(tabEl){
+  tabEl.addEventListener('click',function(){
+    var kind = tabEl.getAttribute('data-kind');
+    Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab'),function(t){ t.classList.toggle('active', t===tabEl); });
+    Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab-panel'),function(p){
+      p.classList.toggle('active', p.getAttribute('data-panel')===kind);
+    });
+  });
+});
+
+// PO lookup → summary (shared helper)
+function lookupPO(poNum, summaryEl){
+  var q = '{items(ids:['+poNum+']){id name column_values(ids:["text","text4","text5","client_email1","text2","text9","long_text8"]){id text}}}';
+  mondayQuery(q).then(function(res){
+    var it = res && res.data && res.data.items && res.data.items[0];
+    if (!it) { summaryEl.className='fetch-summary show err'; summaryEl.innerHTML='No item found for PO #'+poNum; return null; }
+    var g = function(id){ var c=(it.column_values||[]).find(function(x){return x.id===id;}); return c && c.text ? c.text : ''; };
+    summaryEl.className='fetch-summary show';
+    summaryEl.innerHTML =
+      '<div class="fs-row"><span class="fs-label">Client</span><span>'+(g('text')||'—')+'</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Account</span><span>'+(g('text4')||'—')+'</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Project</span><span>'+(g('text5')||'—')+'</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Client Email</span><span>'+(g('client_email1')||'<em>(none)</em>')+'</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Delivery</span><span>'+(g('text2')||'TBD')+' · '+(g('text9')||'TBD')+'</span></div>';
+    return it;
+  }).catch(function(err){
+    summaryEl.className='fetch-summary show err';
+    summaryEl.innerHTML='Lookup failed: '+err.message;
+  });
+}
+
+// Debounced lookup on PO input for both DC and POD tabs
+['dc','pod'].forEach(function(kind){
+  var poInput = document.getElementById('em_po_'+kind);
+  var summary = document.getElementById('em_summary_'+kind);
+  var timer = null;
+  poInput.addEventListener('input',function(){
+    clearTimeout(timer);
+    hideResult(document.getElementById('em_result_'+kind));
+    var v = poInput.value.trim();
+    if (!v || v.length < 6) { summary.className='fetch-summary'; summary.innerHTML=''; return; }
+    timer = setTimeout(function(){ lookupPO(v, summary); }, 400);
+  });
+});
+
+// Send button for both DC + POD
+['dc','pod'].forEach(function(kind){
+  var sendBtn = document.getElementById('em_send_'+kind);
+  sendBtn.addEventListener('click', function(){
+    var po = document.getElementById('em_po_'+kind).value.trim();
+    var ccRaw = document.getElementById('em_cc_'+kind).value.trim();
+    var resEl = document.getElementById('em_result_'+kind);
+    if (!po) { showResult(resEl, false, 'Enter a PO number first.'); return; }
+    var ccEmails = parseCCs(ccRaw);
+    var endpoint = DCCONFIRM_BASE + (kind==='dc' ? '/api/send-confirmation' : '/api/send-pod');
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+    hideResult(resEl);
+    fetch(endpoint, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ itemId: po, ccEmails: ccEmails })
+    }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }); })
+      .then(function(out){
+        if (out.ok && out.body.success) {
+          var ccLine = (out.body.ccSentTo && out.body.ccSentTo.length) ? ' (cc: '+out.body.ccSentTo.join(', ')+')' : '';
+          showResult(resEl, true, '&#10003; Sent to <strong>'+out.body.sentTo+'</strong>'+ccLine);
+        } else {
+          showResult(resEl, false, 'Failed: '+(out.body.error || 'unknown'), out.body);
+        }
+      })
+      .catch(function(err){
+        showResult(resEl, false, 'Network error: '+err.message+'. Check that DCCONFIRM_BASE is set correctly.');
+      })
+      .then(function(){
+        sendBtn.disabled = false;
+        sendBtn.textContent = kind==='dc' ? 'Send DC' : 'Send POD';
+      });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// NEW DELIVERY MODAL — creates item in Unconfirmed group on Ops Board
+// ─────────────────────────────────────────────────────────────
+document.getElementById('nd_submit').addEventListener('click', function(){
+  var clientName      = document.getElementById('nd_client').value.trim();
+  var projectName     = document.getElementById('nd_project').value.trim();
+  var deliveryAddress = document.getElementById('nd_address').value.trim();
+  var deliveryDateISO = document.getElementById('nd_date').value;  // YYYY-MM-DD
+  var deliveryTime    = document.getElementById('nd_time').value;  // HH:MM (24h)
+  var clientEmail     = document.getElementById('nd_email').value.trim();
+  var resEl = document.getElementById('nd_result');
+
+  if (!clientName || !projectName || !deliveryAddress || !deliveryDateISO || !deliveryTime || !clientEmail) {
+    showResult(resEl, false, 'All fields are required.');
+    return;
+  }
+  var EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!EMAIL.test(clientEmail)) { showResult(resEl, false, 'Client email looks invalid.'); return; }
+
+  // Convert "YYYY-MM-DD" to "MONTH D, YYYY" format (matches existing text2 convention).
+  var MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  var parts = deliveryDateISO.split('-');
+  var dateFormatted = MONTHS[parseInt(parts[1],10)-1] + ' ' + parseInt(parts[2],10) + ', ' + parts[0];
+  // Convert 24h HH:MM to 12h format
+  var timeParts = deliveryTime.split(':');
+  var hh = parseInt(timeParts[0],10);
+  var mm = timeParts[1];
+  var ampm = hh >= 12 ? 'PM' : 'AM';
+  var h12 = hh % 12 || 12;
+  var timeFormatted = h12 + ':' + mm + ' ' + ampm;
+
+  // Name the item after the project (same as existing PO creation pattern)
+  var itemName = projectName;
+
+  var columnValues = {
+    text:            clientName,
+    text5:           projectName,
+    long_text8:      { text: deliveryAddress },
+    text2:           dateFormatted,
+    text9:           timeFormatted,
+    client_email1:   { email: clientEmail, text: clientEmail },
+    color:           { label: 'Unconfirmed' },  // Logistics Status
+    color_mm1wxn5k:  { label: 'Delivery' }       // Activity Type
+  };
+
+  var mutation = 'mutation { create_item (board_id: 4550650855, group_id: "new_group84798", item_name: ' +
+    JSON.stringify(itemName) + ', column_values: ' + JSON.stringify(JSON.stringify(columnValues)) + ') { id } }';
+
+  var btn = document.getElementById('nd_submit');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  hideResult(resEl);
+
+  mondayQuery(mutation).then(function(res){
+    if (res && res.data && res.data.create_item && res.data.create_item.id) {
+      var newId = res.data.create_item.id;
+      showResult(resEl, true, '&#10003; Delivery created &mdash; PO #<strong>'+newId+'</strong> added to the Unconfirmed group. It will appear in the pending deliveries table once Monday syncs.');
+      // Clear form for next entry
+      ['nd_client','nd_project','nd_address','nd_date','nd_time','nd_email'].forEach(function(id){ document.getElementById(id).value=''; });
+      // Refresh the hub data so the new item shows up
+      if (typeof loadAll === 'function') setTimeout(loadAll, 1500);
+    } else {
+      showResult(resEl, false, 'Create failed', res);
+    }
+  }).catch(function(err){
+    showResult(resEl, false, 'Create failed: '+err.message);
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = 'Create Delivery';
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// HANDS ASSISTANT — Claude chat bubble
+// ─────────────────────────────────────────────────────────────────────
+
+// Endpoint and shared secret (must match CLAUDE_CHAT_SECRET env var on DCConfirm)
+var CLAUDE_CHAT_ENDPOINT = DCCONFIRM_BASE + '/api/claude-chat';
+var CLAUDE_CHAT_SECRET   = 'HANDS-HUB-2026'; // shared secret — update both sides if rotated
+
+var chatHistory = []; // [{ role:'user'|'assistant', content:'...' }, ...]
+
+var chatFab   = document.getElementById('chatFab');
+var chatPanel = document.getElementById('chatPanel');
+var chatBody  = document.getElementById('chatBody');
+var chatInput = document.getElementById('chatInput');
+var chatSend  = document.getElementById('chatSend');
+var chatClear = document.getElementById('chatClear');
+var chatErr   = document.getElementById('chatErr');
+var chatEmpty = document.getElementById('chatEmpty');
+
+// Open/close
+function toggleChat(){
+  var isOpen = chatPanel.classList.toggle('show');
+  chatFab.classList.toggle('open', isOpen);
+  if (isOpen) { setTimeout(function(){ chatInput.focus(); }, 50); }
+}
+chatFab.addEventListener('click', toggleChat);
+
+// Starter chips
+Array.prototype.forEach.call(document.querySelectorAll('#chatEmpty .ce-chip'), function(chip){
+  chip.addEventListener('click', function(){
+    chatInput.value = chip.getAttribute('data-prompt');
+    chatInput.focus();
+  });
+});
+
+// Clear history
+chatClear.addEventListener('click', function(){
+  chatHistory = [];
+  chatBody.innerHTML = '';
+  chatBody.appendChild(chatEmpty);
+  chatEmpty.style.display = 'block';
+  chatErr.style.display = 'none';
+});
+
+// Auto-resize textarea
+chatInput.addEventListener('input', function(){
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
+
+// Enter to send (Shift+Enter for newline)
+chatInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// Send button
+chatSend.addEventListener('click', sendChat);
+
+// Build a compact pipeline snapshot for Claude's context.
+// Summarizes cachedAllItems into counts + a list of items needing attention.
+function buildPipelineContext(){
+  if (!cachedAllItems || !cachedAllItems.length) return null;
+
+  var deliveryBuckets = { intake:[], scheduled:[], inmotion:[], delivered:[], billed:[] };
+  var activationBuckets = { proposal:[], approved:[], procurement:[], setup:[], live:[], strike:[], wrapped:[] };
+
+  cachedAllItems.forEach(function(item){
+    var d = classifyDelivery(item);
+    if (d) { deliveryBuckets[d.stage].push({ item:item, needsAttn:d.needsAttn }); return; }
+    var a = classifyActivation(item);
+    if (a) activationBuckets[a.stage].push({ item:item, needsAttn:a.needsAttn });
+  });
+
+  function summarize(buckets){
+    var out = {};
+    Object.keys(buckets).forEach(function(stage){
+      var rows = buckets[stage];
+      var attn = rows.filter(function(r){return r.needsAttn;});
+      // Keep it compact: counts + attention items only (with minimal details)
+      out[stage] = {
+        count: rows.length,
+        needs_attention: attn.length,
+        attention_items: attn.slice(0, 8).map(function(r){
+          var it = r.item;
+          return {
+            po: it.id,
+            client: pipeGet(it,'text'),
+            project: pipeGet(it,'text5') || it.name,
+            account: pipeGet(it,'text4'),
+            delivery_date: pipeGet(it,'text2'),
+            delivery_time: pipeGet(it,'text9'),
+            status: pipeGet(it,'color')
+          };
+        })
+      };
+    });
+    return out;
+  }
+
+  return {
+    generated_at: new Date().toISOString(),
+    board: 'Operations 2026',
+    delivery_pipeline: summarize(deliveryBuckets),
+    activation_pipeline: summarize(activationBuckets)
+  };
+}
+
+// Very light Markdown → HTML (paragraphs, bold, inline code, lists).
+// Safe-escaped first to prevent script injection from model output.
+function mdToHtml(text){
+  var esc = String(text)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Inline code
+  esc = esc.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Bold
+  esc = esc.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Simple lists
+  var lines = esc.split('\n');
+  var out = [];
+  var inList = false;
+  lines.forEach(function(line){
+    if (/^\s*[-*]\s+/.test(line)) {
+      if (!inList) { out.push('<ul>'); inList = true; }
+      out.push('<li>' + line.replace(/^\s*[-*]\s+/, '') + '</li>');
+    } else if (/^\s*\d+\.\s+/.test(line)) {
+      if (!inList) { out.push('<ol>'); inList = true; }
+      out.push('<li>' + line.replace(/^\s*\d+\.\s+/, '') + '</li>');
+    } else {
+      if (inList) { out.push(inList === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+      if (line.trim()) out.push('<p>' + line + '</p>');
+    }
+  });
+  if (inList) out.push('</ul>');
+  return out.join('');
+}
+
+function renderMessage(role, content){
+  var el = document.createElement('div');
+  el.className = 'chat-msg ' + role;
+  el.innerHTML = role === 'assistant' ? mdToHtml(content) : String(content).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  chatBody.appendChild(el);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function renderTyping(){
+  var el = document.createElement('div');
+  el.className = 'chat-typing';
+  el.id = 'chatTyping';
+  el.innerHTML = '<span class="td"></span><span class="td"></span><span class="td"></span>';
+  chatBody.appendChild(el);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+function removeTyping(){
+  var el = document.getElementById('chatTyping');
+  if (el) el.remove();
+}
+
+// Render the small action log chips for tool calls
+function renderActions(actions){
+  if (!actions || !actions.length) return;
+  var wrap = document.createElement('div');
+  wrap.className = 'chat-actions';
+  actions.forEach(function(a){
+    var row = document.createElement('div');
+    row.className = 'chat-action' + (a.success ? '' : ' fail');
+    var icon = a.success ? '🔧' : '⚠️';
+    // Friendlier tool names
+    var labels = {
+      query_board_items: 'Searching board',
+      get_item: 'Fetching item',
+      update_item_status: 'Updating status',
+      create_delivery: 'Creating delivery',
+      add_monday_update: 'Posting note',
+      propose_email_send: 'Preparing email send',
+      send_dc_email: 'Sending DC',
+      send_pod_email: 'Sending POD'
+    };
+    var label = labels[a.tool] || a.tool;
+    var detail = '';
+    if (a.input && a.input.po) detail = ' · PO #' + a.input.po;
+    else if (a.input && a.input.kind) detail = ' · ' + (a.input.kind || '').toUpperCase() + ' (' + ((a.input.items||[]).length) + ')';
+    row.innerHTML = '<span class="ca-icon">'+icon+'</span><span class="ca-tool">'+label+'</span><span>'+detail+'</span>';
+    wrap.appendChild(row);
+  });
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Render a pending-confirmation card for email sends
+function renderPendingConfirmation(pc){
+  var wrap = document.createElement('div');
+  wrap.className = 'chat-pending';
+  var kindLabel = pc.kind === 'dc' ? 'Delivery Confirmation' : 'Proof of Delivery';
+  var html = '<div class="cp-title">Confirm: send '+pc.items.length+' '+kindLabel+' email'+(pc.items.length===1?'':'s')+'?</div>';
+  html += '<div class="cp-list">';
+  pc.items.forEach(function(item){
+    var line = '<span class="cp-po">PO #'+item.po+'</span>';
+    if (item.error) {
+      line += ' &mdash; <span style="color:#ff9a92;">'+item.error+'</span>';
+    } else {
+      line += ' &mdash; '+(item.project_name||'(no project)')+' · '+(item.client_email || '<span style="color:#ff9a92;">no client email</span>');
+      if (item.ccEmails && item.ccEmails.length) line += ' (cc: '+item.ccEmails.join(', ')+')';
+    }
+    html += '<div class="cp-item">'+line+'</div>';
+  });
+  html += '</div><div class="cp-actions">' +
+    '<button class="cp-btn ok" data-action="approve">Send All</button>' +
+    '<button class="cp-btn cancel" data-action="cancel">Cancel</button>' +
+    '</div>';
+  wrap.innerHTML = html;
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Wire buttons. They simulate the user typing a reply, then call sendChat.
+  wrap.querySelectorAll('.cp-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var act = btn.getAttribute('data-action');
+      // Disable card to prevent double-clicks
+      wrap.querySelectorAll('.cp-btn').forEach(function(b){ b.disabled = true; });
+      var msg;
+      if (act === 'approve') {
+        msg = 'Yes — send all the emails I just confirmed.';
+      } else {
+        msg = 'No — cancel that, do not send the emails.';
+      }
+      // Push the synthetic user message and fire
+      chatInput.value = msg;
+      sendChat();
+    });
+  });
+}
+
+function sendChat(){
+  var text = chatInput.value.trim();
+  if (!text) return;
+
+  // Hide empty state
+  chatEmpty.style.display = 'none';
+  chatErr.style.display = 'none';
+
+  // Append user message
+  chatHistory.push({ role:'user', content:text });
+  renderMessage('user', text);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+
+  chatSend.disabled = true;
+  renderTyping();
+
+  // Build context
+  var ctx = buildPipelineContext();
+
+  fetch(CLAUDE_CHAT_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      secret: CLAUDE_CHAT_SECRET,
+      messages: chatHistory,
+      pipelineContext: ctx
+    })
+  })
+  .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, body:j }; }); })
+  .then(function(out){
+    removeTyping();
+    if (out.ok && out.body.success) {
+      // Render action log first (chronologically: tools ran before the text)
+      if (out.body.actions && out.body.actions.length) renderActions(out.body.actions);
+      // Then the natural-language reply
+      if (out.body.reply) {
+        chatHistory.push({ role:'assistant', content: out.body.reply });
+        renderMessage('assistant', out.body.reply);
+      }
+      // Then any pending confirmation card
+      if (out.body.pendingConfirmation) {
+        renderPendingConfirmation(out.body.pendingConfirmation);
+      }
+    } else {
+      var errMsg = (out.body && out.body.error) ? out.body.error : 'Unknown error';
+      chatErr.textContent = 'Error: ' + errMsg;
+      chatErr.style.display = 'block';
+      chatHistory.pop();
+    }
+  })
+  .catch(function(err){
+    removeTyping();
+    chatErr.textContent = 'Network error: ' + err.message + '. Check DCCONFIRM_BASE and that the claude-chat function is deployed.';
+    chatErr.style.display = 'block';
+    chatHistory.pop();
+  })
+  .then(function(){
+    chatSend.disabled = false;
+    chatInput.focus();
+  });
+}
 </script>
 </body>
 </html>
