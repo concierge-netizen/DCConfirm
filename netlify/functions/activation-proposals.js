@@ -19,7 +19,30 @@
 //   MONDAY_TOKEN          — for Ops Board write-back on accept
 // ───────────────────────────────────────────────────────────────
 
-const { getStore } = require('@netlify/blobs');
+// Lazy-require so an import failure produces a clean 500 with details
+// (rather than a top-of-module crash that causes a generic 502).
+let _blobs = null;
+function getBlobsStore(name) {
+  if (!_blobs) {
+    try {
+      _blobs = require('@netlify/blobs');
+    } catch (e) {
+      throw new Error('@netlify/blobs not installed: ' + e.message);
+    }
+  }
+  // Newer @netlify/blobs auto-detects Netlify environment. If that fails,
+  // fall back to explicit config from env vars (which Netlify always sets).
+  try {
+    return _blobs.getStore(name);
+  } catch (e) {
+    const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+    const token  = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
+    if (siteID && token) {
+      return _blobs.getStore({ name, siteID, token });
+    }
+    throw new Error('getStore failed (auto-detect + explicit config both failed): ' + e.message);
+  }
+}
 
 const FROM_ADDRESS  = 'HANDS Logistics <concierge@handslogistics.com>';
 const JON_EMAIL     = 'concierge@handslogistics.com';
@@ -68,7 +91,22 @@ exports.handler = async (event) => {
   catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
   const { action } = payload;
-  const store = getStore('activation-proposals');
+
+  // Get blob store with detailed error reporting if it fails
+  let store;
+  try {
+    store = getBlobsStore('activation-proposals');
+  } catch (e) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Blob store unavailable',
+        detail: e.message,
+        hint: 'Check that @netlify/blobs installed correctly. If this persists, verify package.json was deployed and trigger a "Clear cache and deploy site" from Netlify dashboard.'
+      })
+    };
+  }
 
   try {
     if (action === 'save')    return await handleSave(payload, store, headers);
@@ -79,7 +117,14 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action: ' + action }) };
   } catch (err) {
     console.error('activation-proposals error:', err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Server error' }) };
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: err.message || 'Server error',
+        stack: err.stack ? err.stack.split('\n').slice(0, 5).join(' | ') : undefined
+      })
+    };
   }
 };
 
