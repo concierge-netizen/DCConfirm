@@ -2579,6 +2579,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span class="tool-tip">Estimates</span>
         </a>
+        <a class="tool-tile" title="Activation proposals" href="/activation-admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l2.39 6.95H22l-6.19 4.5 2.39 7.05L12 16l-6.19 4.5 2.39-7.05L2 8.95h7.61L12 2z"/></svg>
+          <span class="tool-tip">Activations</span>
+        </a>
         <a class="tool-tile" title="CEO dashboard" href="/ceo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="22" x2="21" y2="22"/></svg>
           <span class="tool-tip">CEO dash</span>
@@ -3307,6 +3311,11 @@
         <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
         <div class="td-tile-label">Estimates</div>
         <div class="td-tile-meta">Quote builder</div>
+      </a>
+      <a class="td-tile" href="/activation-admin">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l2.39 6.95H22l-6.19 4.5 2.39 7.05L12 16l-6.19 4.5 2.39-7.05L2 8.95h7.61L12 2z"/></svg></div>
+        <div class="td-tile-label">Activation proposals</div>
+        <div class="td-tile-meta">Build &amp; track</div>
       </a>
       <a class="td-tile" href="/ceo">
         <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="22" x2="21" y2="22"/></svg></div>
@@ -4472,13 +4481,20 @@ function sendChat() {
   if (sendBtn) sendBtn.disabled = true;
   renderTyping();
 
-  // Legacy fallback while /api/hub-login routing is being fixed.
-  // Function still accepts body.secret as a migration path.
+  var token = getHubToken();
+  if (!token) {
+    removeTyping();
+    showLoginOverlay('initial');
+    return;
+  }
+
   fetch(CLAUDE_CHAT_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
     body: JSON.stringify({
-      secret: 'HANDS-HUB-2026',
       messages: chatHistory,
       pipelineContext: buildPipelineContext()
     })
@@ -4486,6 +4502,13 @@ function sendChat() {
     return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; });
   }).then(function(out){
     removeTyping();
+    if (out.status === 401) {
+      // Token rejected — clear and re-prompt
+      clearHubToken();
+      var reason = (out.body && out.body.code === 'expired') ? 'expired' : 'initial';
+      showLoginOverlay(reason);
+      return;
+    }
     if (!out.ok) {
       if (errEl) {
         errEl.style.display = 'block';
@@ -5429,7 +5452,7 @@ document.addEventListener('DOMContentLoaded', function(){
     wireChat();
     wireModals();
     wireCalendarNav();
-    // ensureHubAuth();  // DISABLED: /api/hub-login is 404'ing — using legacy fallback
+    ensureHubAuth();
     // No tools sidebar in daily mode — drawer + Esc handler handle it
   } else if (HUB_MODE === 'tv') {
     startTVMode();
@@ -5439,7 +5462,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // read-only by intent.
   } else if (HUB_MODE === 'deep') {
     wireDeepToolbar();
-    // ensureHubAuth();  // DISABLED: /api/hub-login is 404'ing — using legacy fallback
+    ensureHubAuth();
     // Re-render deep on every loadAllV3 cycle
     var origLoad = loadAllV3;
   }
