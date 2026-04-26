@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HANDS — BOL Lookup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#a0d6b4; --green-hover:#7fc49e; --green-dim:#2a4a38;
+  --bg:#0a0a0a; --card:#161616; --card2:#1e1e1e;
+  --border:#2a2a2a; --border2:#333; --muted:#555; --label:#777;
+  --body:#e8e8e8; --danger:#df2f4a; --warn:#fdab3d; --info:#579bfc;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--body);font-family:'DM Sans',sans-serif;min-height:100vh;}
+h1,h2,h3,.bebas{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-weight:400;}
+
+.topbar{background:#0a0a0a;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar .brand{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:20px;letter-spacing:2px;color:var(--green);}
+.topbar .brand span{color:#444;font-size:14px;letter-spacing:1px;margin-left:10px;font-family:'DM Sans',sans-serif;font-weight:300;}
+.topbar a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+.topbar a:hover{color:var(--green);}
+
+.accent-bar{height:4px;display:flex;}
+.accent-bar .a1{flex:.68;background:#1a1a1a;}
+.accent-bar .a2{flex:.32;background:var(--green);}
+
+.page{max-width:780px;margin:0 auto;padding:32px 20px 80px;}
+
+.hero{background:#fdab3d18;border:1px solid #fdab3d44;border-radius:5px;padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:18px;}
+.hero .icon{font-size:36px;line-height:1;}
+.hero h1{font-size:28px;letter-spacing:2px;color:var(--warn);line-height:1;}
+.hero p{font-size:12px;font-weight:300;color:var(--label);margin-top:4px;}
+
+.section{background:var(--card);border:1px solid var(--border);border-radius:5px;margin-bottom:16px;overflow:hidden;}
+.section-head{background:var(--card2);padding:12px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.section-head .sh-num{width:22px;height:22px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;}
+.section-head .sh-title{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:14px;letter-spacing:2px;color:var(--green);}
+.section-body{padding:20px;}
+
+.lookup-row{display:flex;gap:10px;align-items:stretch;}
+.lookup-row input{
+  flex:1;background:#0d0d0d;border:1px solid var(--border2);border-radius:3px;
+  color:var(--body);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;outline:none;
+  letter-spacing:1px;
+}
+.lookup-row input:focus{border-color:var(--green);}
+.hint{font-size:11px;color:#444;font-weight:300;margin-top:8px;}
+
+.btn{padding:11px 22px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:none;white-space:nowrap;}
+.btn-primary{background:var(--green);color:#0a0a0a;}
+.btn-primary:hover{background:var(--green-hover);}
+.btn-primary:disabled{background:var(--green-dim);color:#555;cursor:not-allowed;}
+.btn-outline{background:transparent;color:var(--green);border:1px solid var(--green);}
+.btn-outline:hover{background:#a0d6b415;}
+.btn-warn{background:var(--warn);color:#0a0a0a;}
+.btn-warn:hover{filter:brightness(1.05);}
+.btn-info{background:var(--info);color:#0a0a0a;}
+.btn-info:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--body);}
+
+.status-msg{font-size:12px;padding:10px 14px;border-radius:3px;margin-top:12px;line-height:1.5;}
+.status-msg.info{background:#579bfc18;border:1px solid #579bfc44;color:var(--info);}
+.status-msg.success{background:#a0d6b418;border:1px solid #a0d6b444;color:var(--green);}
+.status-msg.error{background:#df2f4a18;border:1px solid #df2f4a44;color:var(--danger);}
+
+.record-card{display:none;}
+.record-card .r-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.record-card .r-dir{padding:4px 12px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.record-card .r-dir.inbound{background:var(--warn);color:#0a0a0a;}
+.record-card .r-dir.outbound{background:var(--info);color:#0a0a0a;}
+.record-card .r-po{font-family:'Bebas Neue',Impact,Arial,sans-serif;font-size:22px;letter-spacing:2px;color:var(--green);}
+.record-card .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.record-card .r-field{display:flex;flex-direction:column;gap:3px;}
+.record-card .r-label{font-size:9px;color:var(--label);letter-spacing:1.5px;text-transform:uppercase;}
+.record-card .r-value{font-size:13px;color:var(--body);font-weight:500;min-height:16px;}
+.record-card .r-actions{display:flex;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);margin-top:6px;}
+
+.loading{display:inline-block;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:600px){
+  .topbar{flex-direction:column;gap:10px;}
+  .lookup-row{flex-direction:column;}
+  .record-card .r-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <span class="brand">HANDS LOGISTICS <span>BOL Lookup &amp; Print</span></span>
+  </div>
+  <a href="/">← Back to I/O Form</a>
+</div>
+<div class="accent-bar"><div class="a1"></div><div class="a2"></div></div>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="icon">📄</div>
+    <div>
+      <h1>BOL LOOKUP</h1>
+      <p>Pull any existing record from Monday by PO # and print a Bill of Lading.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div class="sh-num">1</div>
+      <div class="sh-title">Enter PO #</div>
+    </div>
+    <div class="section-body">
+      <div class="lookup-row">
+        <input type="text" id="po-input" placeholder="e.g. 18405999999" autocomplete="off">
+        <button class="btn btn-primary" id="lookup-btn" onclick="lookupPo()">Look Up</button>
+      </div>
+      <div class="hint">Tip: you can also open this page with <code style="color:var(--green);">?po=12345</code> in the URL to auto-load.</div>
+      <div id="status-msg"></div>
+    </div>
+  </div>
+
+  <div class="section record-card" id="record-card">
+    <div class="section-head">
+      <div class="sh-num">2</div>
+      <div class="sh-title">Record Found</div>
+    </div>
+    <div class="section-body">
+      <div class="r-head">
+        <span class="r-dir" id="r-dir">—</span>
+        <span class="r-po" id="r-po">—</span>
+      </div>
+      <div class="r-grid">
+        <div class="r-field"><div class="r-label">Client</div><div class="r-value" id="r-client">—</div></div>
+        <div class="r-field"><div class="r-label">Account / Brand</div><div class="r-value" id="r-account">—</div></div>
+        <div class="r-field"><div class="r-label">Date</div><div class="r-value" id="r-date">—</div></div>
+        <div class="r-field"><div class="r-label">Carrier</div><div class="r-value" id="r-carrier">—</div></div>
+        <div class="r-field"><div class="r-label">Tracking</div><div class="r-value" id="r-tracking">—</div></div>
+        <div class="r-field"><div class="r-label">Cartons / Pallets / Weight</div><div class="r-value" id="r-qty">—</div></div>
+        <div class="r-field" style="grid-column:1 / -1;"><div class="r-label">Address</div><div class="r-value" id="r-address">—</div></div>
+        <div class="r-field" style="grid-column:1 / -1;"><div class="r-label">Contents</div><div class="r-value" id="r-contents">—</div></div>
+      </div>
+      <div class="r-actions">
+        <button class="btn btn-warn" onclick="openBol('full')">📄 Preview Full BOL (8.5×11)</button>
+        <button class="btn btn-info" onclick="openBol('condensed')">🏷️ Preview 4×6</button>
+        <button class="btn btn-ghost" onclick="clearRecord()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="bol.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════════════
+const CONFIG = {
+  // Monday token now lives server-side in /api/monday-proxy
+  BOARD_ID:         18405667848,
+};
+
+// ── Monday API (via /api/monday-proxy) ──
+async function mondayQuery(query, variables) {
+  const body = variables ? { query, variables } : { query };
+  const res = await fetch('/api/monday-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Proxy HTTP ' + res.status);
+  return res.json();
+}
+
+// Column IDs on NV I/O 2026 board (18405667848)
+const COLS = {
+  direction:    'color_mm1t2es',
+  clientName:   'text1',
+  account:      'text_mm1thc9z',
+  clientEmail:  'email_mm1t5t04',
+  clientPhone:  'phone_mm1td0rc',
+  project:      'text_mm1t684g',
+  purpose:      'color_mm1th2fd',
+  wbs:          'text0',
+  clientNotes:  'long_text_mm1t2fc',
+  shippingStatus:'status',
+  carrier:      'text_mm1txgg0',
+  tracking:     'text',
+  deliveryDate: 'date',
+  address:      'long_text_mm1t6mkn',
+  contents:     'long_text_mm1tft13',
+  instructions: 'long_text',
+  cartons:      'numeric_mm1t1786',
+  pallets:      'numeric_mm1tjxes',
+  weight:       'numeric_mm1tga5r',
+};
+
+let currentRecord = null;
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+function showMsg(type, text) {
+  const el = $('status-msg');
+  el.className = 'status-msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+function hideMsg() { $('status-msg').style.display = 'none'; $('status-msg').textContent = ''; }
+
+// ══════════════════════════════════════════════════════════════
+//  MONDAY LOOKUP
+// ══════════════════════════════════════════════════════════════
+async function lookupPo() {
+  const raw = $('po-input').value.trim();
+  if (!raw) { showMsg('error', 'Enter a PO # first.'); return; }
+  const itemId = raw.replace(/[^\d]/g, '');
+  if (!itemId) { showMsg('error', 'PO # should be numeric (e.g. 18405999999).'); return; }
+
+  const btn = $('lookup-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Looking up…';
+  hideMsg();
+
+  try {
+    const colIds = Object.values(COLS).map(c => '"' + c + '"').join(',');
+    const query = '{ items(ids: [' + itemId + ']) { id name column_values(ids: [' + colIds + ']) { id text value } } }';
+
+    const data = await mondayQuery(query);
+    if (data.errors) throw new Error(data.errors[0].message || 'Monday API error');
+    const item = data.data && data.data.items && data.data.items[0];
+    if (!item) throw new Error('No record found with PO # ' + itemId);
+
+    // Build a text-keyed map of column values
+    const cols = {};
+    (item.column_values || []).forEach(c => { cols[c.id] = c.text || ''; });
+
+    currentRecord = {
+      po:           item.id,
+      name:         item.name,
+      direction:    (cols[COLS.direction] || '').toLowerCase().includes('outbound') ? 'outbound' : 'inbound',
+      client:       cols[COLS.clientName] || '',
+      account:      cols[COLS.account] || '',
+      email:        cols[COLS.clientEmail] || '',
+      phone:        cols[COLS.clientPhone] || '',
+      project:      cols[COLS.project] || '',
+      purpose:      cols[COLS.purpose] || '',
+      wbs:          cols[COLS.wbs] || '',
+      handler:      (cols[COLS.clientNotes] || '').replace(/^Handled by:\s*/i, ''),
+      date:         cols[COLS.deliveryDate] || '',
+      time:         '',
+      status:       cols[COLS.shippingStatus] || '',
+      carrier:      cols[COLS.carrier] || '',
+      tracking:     cols[COLS.tracking] || '',
+      cartons:      cols[COLS.cartons] || '',
+      pallets:      cols[COLS.pallets] || '',
+      weight:       cols[COLS.weight] || '',
+      address:      cols[COLS.address] || '',
+      contents:     cols[COLS.contents] || '',
+      instructions: cols[COLS.instructions] || '',
+    };
+
+    renderRecord(currentRecord);
+    showMsg('success', 'Record loaded. Use the buttons below to preview & print.');
+  } catch(err) {
+    showMsg('error', 'Lookup failed: ' + err.message);
+    currentRecord = null;
+    $('record-card').style.display = 'none';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Look Up';
+  }
+}
+
+function renderRecord(r) {
+  $('r-dir').textContent = r.direction === 'outbound' ? 'OUTBOUND' : 'INBOUND';
+  $('r-dir').className = 'r-dir ' + (r.direction === 'outbound' ? 'outbound' : 'inbound');
+  $('r-po').textContent = '#' + r.po;
+  $('r-client').textContent   = r.client || '—';
+  $('r-account').textContent  = r.account || '—';
+  $('r-date').textContent     = r.date || '—';
+  $('r-carrier').textContent  = r.carrier || '—';
+  $('r-tracking').textContent = r.tracking || '—';
+  $('r-qty').textContent      = (r.cartons || '0') + ' ctn · ' + (r.pallets || '0') + ' pallet · ' + (r.weight || '0') + ' lbs';
+  $('r-address').textContent  = r.address || '—';
+  $('r-contents').textContent = r.contents || '—';
+  $('record-card').style.display = 'block';
+  $('record-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function clearRecord() {
+  currentRecord = null;
+  $('record-card').style.display = 'none';
+  $('po-input').value = '';
+  hideMsg();
+  $('po-input').focus();
+}
+
+function openBol(type) {
+  if (!currentRecord) { showMsg('error', 'No record loaded.'); return; }
+  if (!window.HANDS_BOL) { showMsg('error', 'BOL module failed to load. Refresh and try again.'); return; }
+  window.HANDS_BOL.openPreview(type, currentRecord, currentRecord.po);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  AUTO-LOAD FROM ?po= URL PARAM
+// ══════════════════════════════════════════════════════════════
+(function autoload() {
+  const params = new URLSearchParams(window.location.search);
+  const po = params.get('po');
+  if (po) {
+    $('po-input').value = po.trim();
+    setTimeout(lookupPo, 100);
+  }
+})();
+
+// Enter key submits
+$('po-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupPo(); });
+</script>
+</body>
+</html>
