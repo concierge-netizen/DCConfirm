@@ -133,7 +133,7 @@ function calcTotals(proposal) {
 // BLOB STORE
 // ─────────────────────────────────────────────────────────────
 function store() {
-  return getStore({ name: BLOB_STORE, consistency: 'strong' });
+  return getStore({ name: BLOB_STORE });
 }
 
 async function readProposal(slug) {
