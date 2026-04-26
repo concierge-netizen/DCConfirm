@@ -1,3 +1,4 @@
+// Re-pushed 2026-04-26 to force Netlify function bundle refresh
 // HANDS Logistics — POST /api/hub-login
 // Validates a numeric PIN against env var HUB_PIN, returns a signed JWT.
 // JWT is HS256 with HMAC-SHA256, signed with HUB_JWT_SECRET. 30-day expiry.
