@@ -1,79 +1,48 @@
 // ───────────────────────────────────────────────────────────────
-// HANDS Logistics — Activation Proposals API
+// HANDS Logistics — Activation Proposals API (Monday-backed)
 // Handles: save / load / list / accept / changes
-// Persistence: Netlify Blobs
-// On accept: creates or updates an Ops Board item with all 4 schedule
-// dates, status="Approved", Activity Type="Activation"
-// ───────────────────────────────────────────────────────────────
 //
-// Routes (all POST, action in body):
-//   action=save              → save proposal, returns slug (admin only)
-//   action=load  + slug      → fetch proposal data (public)
-//   action=list              → list all proposals (admin only)
-//   action=accept + slug     → mark accepted, write to Ops Board, email Jon
-//   action=changes + slug    → send change request, email Jon
+// Storage: Monday Ops Board (4550650855) — proposal JSON lives in a
+// long_text column on each item. Slug lives in a text column for lookup.
+// Items land in the "Unconfirmed" group at status "Proposal Submitted"
+// when saved. On accept: status → "Setup Scheduled" + Billing → "ESTIMATE
+// APPROVED". On changes: status → "INFORMATION NEEDED" + change notes
+// posted as a Monday update.
 //
-// Env vars:
-//   RESEND_KEY            — for notification emails to Jon
-//   ADMIN_PASSWORD        — for save/list (or fallback to hardcoded HANDS2026)
-//   MONDAY_TOKEN          — for Ops Board write-back on accept
+// Why Monday-native: simpler infrastructure, no @netlify/blobs dependency,
+// proposals visible in Monday immediately, single source of truth.
 // ───────────────────────────────────────────────────────────────
-
-// Lazy-require so an import failure produces a clean 500 with details
-// (rather than a top-of-module crash that causes a generic 502).
-let _blobs = null;
-function getBlobsStore(name) {
-  if (!_blobs) {
-    try {
-      _blobs = require('@netlify/blobs');
-    } catch (e) {
-      throw new Error('@netlify/blobs not installed: ' + e.message);
-    }
-  }
-  // Newer @netlify/blobs auto-detects Netlify environment. If that fails,
-  // fall back to explicit config from env vars (which Netlify always sets).
-  try {
-    return _blobs.getStore(name);
-  } catch (e) {
-    const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
-    const token  = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
-    if (siteID && token) {
-      return _blobs.getStore({ name, siteID, token });
-    }
-    throw new Error('getStore failed (auto-detect + explicit config both failed): ' + e.message);
-  }
-}
 
 const FROM_ADDRESS  = 'HANDS Logistics <concierge@handslogistics.com>';
 const JON_EMAIL     = 'concierge@handslogistics.com';
 const OPS_BOARD     = '4550650855';
-const ACTIVATION_GROUP_ID = 'topics'; // default Ops Board group for new activations
+const PROPOSAL_GROUP_ID = 'new_group84798'; // Unconfirmed group — proposals land here until accepted
+
+const TAX_RATE = 0.08375;
 
 // Ops Board column IDs (verified via get_board_info)
 const COL = {
-  client:        'text',           // Client name
-  account:       'text4',          // Account
-  project:       'text5',          // Project Name
-  deliveryDate:  'text2',          // Delivery Date (plain text MMM D, YYYY uppercase)
-  deliveryTime:  'text9',          // Delivery Time
-  address:       'long_text8',     // Delivery Address
-  notes:         'long_text',      // Description
-  logisticsStatus: 'color',        // LOGISTICS STATUS (status column)
-  projectStatus: 'status',         // PROJECT STATUS (status column)
-  billingStatus: 'status2',        // BILLING STATUS (status column)
-  activityType:  'color_mm1wxn5k', // Activity Type (status)
-  clientEmail:   'client_email1',  // Email column
-  // Time columns (hour-only, format HH:MM)
-  startHour:     'start',          // Load-in start time (hour column)
-  strikeHour:    'strike',         // Strike start time (hour column) — kept as event-end time
-  // New datetime columns (created earlier in this build)
-  eventStart:    'date_mm2sv91q',  // Event Start (Live)
-  eventEnd:      'date_mm2s7tq2',  // Event End (Live)
-  // Activation Time Frame (timeline column)
-  timeframe:     'timerange'       // Spans load-in start → strike end (the outer crew window)
+  client:           'text',
+  account:          'text4',
+  project:          'text5',
+  deliveryDate:     'text2',
+  deliveryTime:     'text9',
+  address:          'long_text8',
+  notes:            'long_text',
+  logisticsStatus:  'color',
+  projectStatus:    'status',
+  billingStatus:    'status2',
+  activityType:     'color_mm1wxn5k',
+  clientEmail:      'client_email1',
+  startHour:        'start',
+  strikeHour:       'strike',
+  eventStart:       'date_mm2sv91q',
+  eventEnd:         'date_mm2s7tq2',
+  timeframe:        'timerange',
+  // Storage columns (created in this build)
+  proposalData:     'long_text_mm2sscgy',
+  proposalSlug:     'text_mm2sp5ek'
 };
-
-const TAX_RATE = 0.08375;
 
 exports.handler = async (event) => {
   const headers = {
@@ -86,40 +55,30 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers, body: JSON.stringify({ error: 'POST only' }) };
 
+  if (!process.env.MONDAY_TOKEN) {
+    return {
+      statusCode: 500, headers,
+      body: JSON.stringify({ error: 'MONDAY_TOKEN not configured in Netlify env vars' })
+    };
+  }
+
   let payload;
   try { payload = JSON.parse(event.body || '{}'); }
   catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
   const { action } = payload;
 
-  // Get blob store with detailed error reporting if it fails
-  let store;
   try {
-    store = getBlobsStore('activation-proposals');
-  } catch (e) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Blob store unavailable',
-        detail: e.message,
-        hint: 'Check that @netlify/blobs installed correctly. If this persists, verify package.json was deployed and trigger a "Clear cache and deploy site" from Netlify dashboard.'
-      })
-    };
-  }
-
-  try {
-    if (action === 'save')    return await handleSave(payload, store, headers);
-    if (action === 'load')    return await handleLoad(payload, store, headers);
-    if (action === 'list')    return await handleList(payload, store, headers);
-    if (action === 'accept')  return await handleAccept(payload, store, headers);
-    if (action === 'changes') return await handleChanges(payload, store, headers);
+    if (action === 'save')    return await handleSave(payload, headers);
+    if (action === 'load')    return await handleLoad(payload, headers);
+    if (action === 'list')    return await handleList(payload, headers);
+    if (action === 'accept')  return await handleAccept(payload, headers);
+    if (action === 'changes') return await handleChanges(payload, headers);
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action: ' + action }) };
   } catch (err) {
     console.error('activation-proposals error:', err);
     return {
-      statusCode: 500,
-      headers,
+      statusCode: 500, headers,
       body: JSON.stringify({
         error: err.message || 'Server error',
         stack: err.stack ? err.stack.split('\n').slice(0, 5).join(' | ') : undefined
@@ -128,18 +87,11 @@ exports.handler = async (event) => {
   }
 };
 
-// ── Auth ──
-// Internal tool: auth gate is disabled by default. We only enforce the
-// password if (a) the request supplies one AND (b) ADMIN_PASSWORD is set
-// in the env. Otherwise calls proceed. The hub PIN gate at /hub guards
-// upstream access; the public proposal view (/activation-proposal/<slug>)
-// is intentionally unauthenticated since the slug acts as the access token.
+// ── Auth (permissive — internal tool, hub PIN gates upstream) ──
 function checkAdmin(password) {
-  // No password supplied → allow (internal tool, hub PIN already gates).
   if (!password) return true;
-  // Password supplied → must match ADMIN_PASSWORD if set.
   const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return true; // no env-configured password → accept anything
+  if (!expected) return true;
   return password === expected;
 }
 
@@ -157,21 +109,145 @@ function makeSlug(client, projectName) {
   return `${base}-${stamp}`;
 }
 
-// ── Totals ──
 function calcTotals(proposal) {
   const items = proposal.lineItems || [];
   const subtotal = items.reduce((s, it) => s + ((it.qty || 0) * (it.unitPrice || 0)), 0);
   const tax = proposal.includeTax ? subtotal * TAX_RATE : 0;
-  const total = subtotal + tax;
-  return { subtotal, tax, total };
+  return { subtotal, tax, total: subtotal + tax };
 }
 
-// ── SAVE ──
-async function handleSave(payload, store, headers) {
-  const { password, proposal } = payload;
-  if (!checkAdmin(password)) {
+// ─────────────────────────────────────────────────────────────
+// MONDAY API
+// ─────────────────────────────────────────────────────────────
+async function mondayQuery(query) {
+  const res = await fetch('https://api.monday.com/v2', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': process.env.MONDAY_TOKEN,
+      'API-Version': '2023-04'
+    },
+    body: JSON.stringify({ query })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error('Monday HTTP ' + res.status + ': ' + JSON.stringify(data).slice(0, 400));
+  if (data.errors && data.errors.length) {
+    throw new Error('Monday: ' + data.errors.map(e => e.message).join(' | '));
+  }
+  return data;
+}
+
+// Find an item by its slug column value
+async function findItemBySlug(slug) {
+  const safeSlug = String(slug).replace(/"/g, '');
+  const q = `query {
+    items_page_by_column_values(
+      board_id: ${OPS_BOARD},
+      columns: [{column_id: "${COL.proposalSlug}", column_values: ["${safeSlug}"]}],
+      limit: 5
+    ) {
+      items {
+        id
+        name
+        column_values { id text value }
+      }
+    }
+  }`;
+  const data = await mondayQuery(q);
+  const items = data.data.items_page_by_column_values?.items || [];
+  return items[0] || null;
+}
+
+function itemToProposal(item) {
+  if (!item) return null;
+  const cols = {};
+  (item.column_values || []).forEach(c => { cols[c.id] = c; });
+
+  const rawJson = cols[COL.proposalData]?.text || '';
+  let proposal = {};
+  if (rawJson) {
+    try { proposal = JSON.parse(rawJson); }
+    catch (e) { console.warn('Failed to parse proposal JSON for item', item.id, e.message); }
+  }
+
+  proposal.opsItemId = item.id;
+  proposal.slug = proposal.slug || (cols[COL.proposalSlug]?.text || '');
+  proposal.client = proposal.client || (cols[COL.client]?.text || '');
+  proposal.projectName = proposal.projectName || (cols[COL.project]?.text || item.name || '');
+
+  return proposal;
+}
+
+function buildColumnValues(record, statusOverrides) {
+  const sch = record.schedule || {};
+  const totals = calcTotals(record);
+  const cols = {};
+
+  if (record.client)       cols[COL.client]    = record.client;
+  if (record.client)       cols[COL.account]   = record.client;
+  if (record.projectName)  cols[COL.project]   = record.projectName;
+  if (record.email)        cols[COL.clientEmail] = { email: record.email, text: record.email };
+
+  cols[COL.activityType] = { label: 'Activation' };
+  if (statusOverrides) {
+    if (statusOverrides.logistics) cols[COL.logisticsStatus] = { label: statusOverrides.logistics };
+    if (statusOverrides.billing)   cols[COL.billingStatus]   = { label: statusOverrides.billing };
+    if (statusOverrides.project)   cols[COL.projectStatus]   = { label: statusOverrides.project };
+  }
+
+  if (sch.eventStartDate) cols[COL.deliveryDate] = isoToText2(sch.eventStartDate);
+  if (sch.eventStartTime) cols[COL.deliveryTime] = formatTimeAmPm(sch.eventStartTime);
+
+  if (record.venueAddress || record.venueName) {
+    cols[COL.address] = { text: [record.venueName, record.venueAddress].filter(Boolean).join(' — ') };
+  }
+
+  if (sch.loadinTime) {
+    const [h, m] = sch.loadinTime.split(':').map(Number);
+    cols[COL.startHour] = { hour: h || 0, minute: m || 0 };
+  }
+  if (sch.strikeTime) {
+    const [h, m] = sch.strikeTime.split(':').map(Number);
+    cols[COL.strikeHour] = { hour: h || 0, minute: m || 0 };
+  }
+
+  if (sch.eventStartDate) {
+    const v = { date: sch.eventStartDate };
+    if (sch.eventStartTime) v.time = sch.eventStartTime + ':00';
+    cols[COL.eventStart] = v;
+  }
+  if (sch.eventEndDate) {
+    const v = { date: sch.eventEndDate };
+    if (sch.eventEndTime) v.time = sch.eventEndTime + ':00';
+    cols[COL.eventEnd] = v;
+  }
+
+  if (sch.loadinDate && sch.strikeDate) {
+    cols[COL.timeframe] = { from: sch.loadinDate, to: sch.strikeDate };
+  }
+
+  const noteText = `Activation Proposal: ${record.slug || ''}\n` +
+                   `Total: $${totals.total.toFixed(2)}${record.includeTax ? ' (incl. NV tax)' : ''}\n` +
+                   `Proposal: ${getSiteUrl()}/activation-proposal/${record.slug}\n\n` +
+                   (record.scopeOfWork || '');
+  cols[COL.notes] = { text: noteText.slice(0, 1900) };
+
+  // Storage: full JSON blob + slug for lookup
+  cols[COL.proposalData] = { text: JSON.stringify(record).slice(0, 60000) };
+  cols[COL.proposalSlug] = record.slug || '';
+
+  return cols;
+}
+
+// ─────────────────────────────────────────────────────────────
+// HANDLERS
+// ─────────────────────────────────────────────────────────────
+
+async function handleSave(payload, headers) {
+  if (!checkAdmin(payload.password)) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
+  const { proposal } = payload;
   if (!proposal || !proposal.client) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing proposal data' }) };
   }
@@ -195,142 +271,176 @@ async function handleSave(payload, store, headers) {
     includeTax:     !!proposal.includeTax,
     paymentTerms:   proposal.paymentTerms || '',
     customNotes:    proposal.customNotes || '',
-    // ── Reserved for future deck render (Phase: PDF deck via puppeteer) ──
-    // These slots are saved on every record so when we add deck UI later we
-    // don't need a data migration. Empty defaults are intentional.
-    brandColor:     proposal.brandColor || '',          // single hex e.g. "#0a3a5e"; palette auto-generated
-    designSlides:   Array.isArray(proposal.designSlides)  ? proposal.designSlides  : [],  // [{ imageUrl, caption }]
-    deliverables:   Array.isArray(proposal.deliverables)  ? proposal.deliverables  : [],  // [{ title, schematicUrl, dimensions, notes, window }]
-    sourcingItems:  Array.isArray(proposal.sourcingItems) ? proposal.sourcingItems : [],  // [{ name, vendor, photoUrl, qty, leadTime, notes }]
-    deckTemplate:   proposal.deckTemplate || 'brand-event',  // future: which template to render with
-    // ── End reserved fields ──
+    brandColor:     proposal.brandColor || '',
+    designSlides:   Array.isArray(proposal.designSlides)  ? proposal.designSlides  : [],
+    deliverables:   Array.isArray(proposal.deliverables)  ? proposal.deliverables  : [],
+    sourcingItems:  Array.isArray(proposal.sourcingItems) ? proposal.sourcingItems : [],
+    deckTemplate:   proposal.deckTemplate || 'brand-event',
     createdAt:      proposal.createdAt || now,
     updatedAt:      now,
     status:         proposal.status || 'sent'
   };
 
-  await store.setJSON(slug, record);
+  let itemId = record.opsItemId;
+  if (!itemId) {
+    const existing = await findItemBySlug(slug);
+    if (existing) itemId = existing.id;
+  }
+
+  // Status for newly-saved or re-saved-not-yet-accepted proposals
+  const statusOverrides = {
+    logistics: 'Proposal Submitted',
+    billing:   'ESTIMATE READY',
+    project:   'PROPOSAL SUBMITTED'
+  };
+
+  // If the existing item is already accepted, don't reset it back to "Proposal Submitted"
+  if (itemId && record.status === 'accepted') {
+    statusOverrides.logistics = 'Setup Scheduled';
+    statusOverrides.billing = 'ESTIMATE APPROVED';
+    statusOverrides.project = 'IN PROGRESS';
+  }
+
+  const cols = buildColumnValues(record, statusOverrides);
+  const colsStr = JSON.stringify(JSON.stringify(cols));
+
+  if (itemId) {
+    const m = `mutation { change_multiple_column_values(item_id: ${itemId}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`;
+    await mondayQuery(m);
+    record.opsItemId = itemId;
+  } else {
+    const itemName = record.projectName || `${record.client} — Activation`;
+    const m = `mutation { create_item(board_id: ${OPS_BOARD}, group_id: "${PROPOSAL_GROUP_ID}", item_name: ${JSON.stringify(itemName)}, column_values: ${colsStr}) { id } }`;
+    const data = await mondayQuery(m);
+    itemId = data.data.create_item.id;
+    record.opsItemId = itemId;
+  }
+
   return { statusCode: 200, headers, body: JSON.stringify({ success: true, slug, proposal: record }) };
 }
 
-// ── LOAD (public) ──
-async function handleLoad(payload, store, headers) {
+async function handleLoad(payload, headers) {
   const { slug } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
-  const record = await store.get(slug, { type: 'json' });
-  if (!record) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal not found' }) };
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposal: record }) };
+
+  const item = await findItemBySlug(slug);
+  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal not found' }) };
+
+  const proposal = itemToProposal(item);
+  if (!proposal) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal data unreadable' }) };
+
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposal }) };
 }
 
-// ── LIST (admin) ──
-async function handleList(payload, store, headers) {
+async function handleList(payload, headers) {
   if (!checkAdmin(payload.password)) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
-  const { blobs } = await store.list();
-  const proposals = [];
-  for (const blob of blobs) {
-    const record = await store.get(blob.key, { type: 'json' });
-    if (record) proposals.push(record);
-  }
-  proposals.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
+  // Fetch all activation items, then filter client-side by presence of slug.
+  // Using items_page with no filters is the most reliable across Monday API versions.
+  const data = await mondayQuery(`query {
+    boards(ids: [${OPS_BOARD}]) {
+      items_page(limit: 200) {
+        items {
+          id name updated_at
+          column_values { id text value }
+        }
+      }
+    }
+  }`);
+  const allItems = data.data.boards[0]?.items_page?.items || [];
+
+  const proposals = allItems
+    .map(it => {
+      const cols = {};
+      it.column_values.forEach(c => { cols[c.id] = c; });
+      const slug = (cols[COL.proposalSlug]?.text || '').trim();
+      const isActivation = (cols[COL.activityType]?.text || '') === 'Activation';
+      if (!slug || !isActivation) return null;
+      const p = itemToProposal(it);
+      if (p) p.updatedAt = p.updatedAt || it.updated_at;
+      return p;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
   return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposals }) };
 }
 
-// ── ACCEPT ──
-async function handleAccept(payload, store, headers) {
+async function handleAccept(payload, headers) {
   const { slug } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
 
-  const record = await store.get(slug, { type: 'json' });
-  if (!record) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
+  const item = await findItemBySlug(slug);
+  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
 
-  // Idempotency — if already accepted, no-op
+  const record = itemToProposal(item);
+
   if (record.status === 'accepted') {
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, alreadyAccepted: true }) };
   }
 
   record.status = 'accepted';
   record.acceptedAt = new Date().toISOString();
+  record.updatedAt = record.acceptedAt;
 
-  // Write to Monday — create new Ops item or update existing
-  let mondayResult = { skipped: true };
-  if (process.env.MONDAY_TOKEN) {
-    try {
-      mondayResult = await pushToMonday(record);
-      record.opsItemId = mondayResult.itemId || record.opsItemId;
-    } catch (e) {
-      console.error('Monday write failed:', e);
-      mondayResult = { error: e.message };
-    }
-  }
+  const cols = buildColumnValues(record, {
+    logistics: 'Setup Scheduled',
+    billing:   'ESTIMATE APPROVED',
+    project:   'IN PROGRESS'
+  });
+  const colsStr = JSON.stringify(JSON.stringify(cols));
+  await mondayQuery(`mutation { change_multiple_column_values(item_id: ${item.id}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
 
-  await store.setJSON(slug, record);
+  const updateBody = `✓ Activation proposal accepted by client. View: ${getSiteUrl()}/activation-proposal/${slug}`;
+  try {
+    await mondayQuery(`mutation { create_update(item_id: ${item.id}, body: ${JSON.stringify(updateBody)}) { id } }`);
+  } catch (_) {}
 
-  // Notify Jon
   await sendNotification({
     subject: `✓ ACCEPTED — ${record.client} · ${record.projectName || ''}`,
-    body: buildAcceptNotification(record, mondayResult)
+    body: buildAcceptNotification(record)
   });
 
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true, monday: mondayResult }) };
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: item.id }) };
 }
 
-// ── CHANGES REQUESTED ──
-async function handleChanges(payload, store, headers) {
+async function handleChanges(payload, headers) {
   const { slug, notes } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
 
-  const record = await store.get(slug, { type: 'json' });
-  if (!record) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
+  const item = await findItemBySlug(slug);
+  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
 
+  const record = itemToProposal(item);
   record.status = 'changes_requested';
-  record.lastChangeRequest = {
-    at: new Date().toISOString(),
-    notes: notes || ''
-  };
-  await store.setJSON(slug, record);
+  record.lastChangeRequest = { at: new Date().toISOString(), notes: notes || '' };
+  record.updatedAt = record.lastChangeRequest.at;
 
-  // If linked to an Ops item, post the change request as a Monday update too
-  if (record.opsItemId && process.env.MONDAY_TOKEN) {
-    try {
-      const updateBody = `🔄 Client requested changes on activation proposal:\n\n${notes || '(no notes)'}\n\nProposal: ${getSiteUrl()}/activation-proposal/${record.slug}`;
-      await mondayQuery(`mutation { create_update(item_id:${record.opsItemId}, body:${JSON.stringify(updateBody)}) { id } }`);
-    } catch (e) {
-      console.error('Monday update post failed:', e);
-    }
-  }
+  const cols = buildColumnValues(record, {
+    logistics: 'INFORMATION NEEDED',
+    project:   'INFORMATION NEEDED'
+  });
+  const colsStr = JSON.stringify(JSON.stringify(cols));
+  await mondayQuery(`mutation { change_multiple_column_values(item_id: ${item.id}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
+
+  const updateBody = `🔄 Client requested changes:\n\n${notes || '(no notes)'}\n\nProposal: ${getSiteUrl()}/activation-proposal/${slug}`;
+  try {
+    await mondayQuery(`mutation { create_update(item_id: ${item.id}, body: ${JSON.stringify(updateBody)}) { id } }`);
+  } catch (_) {}
 
   await sendNotification({
     subject: `↩ CHANGES REQUESTED — ${record.client} · ${record.projectName || ''}`,
     body: buildChangeRequestNotification(record, notes)
   });
 
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: item.id }) };
 }
 
 // ─────────────────────────────────────────────────────────────
-// MONDAY HELPERS
+// HELPERS
 // ─────────────────────────────────────────────────────────────
-async function mondayQuery(query) {
-  const res = await fetch('https://api.monday.com/v2', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': process.env.MONDAY_TOKEN,
-      'API-Version': '2023-04'
-    },
-    body: JSON.stringify({ query })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error('Monday HTTP ' + res.status + ': ' + JSON.stringify(data).slice(0, 400));
-  if (data.errors && data.errors.length) {
-    throw new Error('Monday: ' + data.errors.map(e => e.message).join(' | '));
-  }
-  return data;
-}
-
-// Build a Monday text2 string (uppercase month-day-year) from YYYY-MM-DD
 function isoToText2(iso) {
   if (!iso) return '';
   const months = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
@@ -339,100 +449,6 @@ function isoToText2(iso) {
   return `${months[m-1]} ${d}, ${y}`;
 }
 
-// Push proposal to Ops Board — create or update.
-// Status flow on Accept:
-//   LOGISTICS STATUS → "Setup Scheduled" (label exists)
-//   BILLING STATUS   → "ESTIMATE APPROVED" (label exists)
-//   ACTIVITY TYPE    → "Activation"
-async function pushToMonday(record) {
-  const sch = record.schedule || {};
-  const totals = calcTotals(record);
-
-  const cols = {};
-
-  // Status fields
-  cols[COL.logisticsStatus] = { label: 'Setup Scheduled' };
-  cols[COL.billingStatus]   = { label: 'ESTIMATE APPROVED' };
-  cols[COL.activityType]    = { label: 'Activation' };
-
-  // Identity
-  if (record.client)      cols[COL.client]    = record.client;
-  if (record.client)      cols[COL.account]   = record.client; // account = client by default
-  if (record.projectName) cols[COL.project]   = record.projectName;
-  if (record.email)       cols[COL.clientEmail] = { email: record.email, text: record.email };
-
-  // Delivery Date / Time mirror event start (the live window's start, not load-in)
-  if (sch.eventStartDate) cols[COL.deliveryDate] = isoToText2(sch.eventStartDate);
-  if (sch.eventStartTime) cols[COL.deliveryTime] = formatTimeAmPm(sch.eventStartTime);
-
-  // Address
-  if (record.venueAddress || record.venueName) {
-    cols[COL.address] = { text: [record.venueName, record.venueAddress].filter(Boolean).join(' — ') };
-  }
-
-  // Notes — proposal link + scope of work
-  const noteText = `Activation proposal accepted: ${record.slug}\n` +
-                   `Total: $${totals.total.toFixed(2)}${record.includeTax ? ' (incl. NV tax)' : ''}\n` +
-                   `Proposal: ${getSiteUrl()}/activation-proposal/${record.slug}\n\n` +
-                   (record.scopeOfWork || '');
-  cols[COL.notes] = { text: noteText.slice(0, 1900) }; // long_text has limits
-
-  // Hour columns (start = load-in time, strike = strike-end time)
-  // Format: { hour: H, minute: M } where both are integers in 24-hour
-  if (sch.loadinTime) {
-    const [h, m] = sch.loadinTime.split(':').map(Number);
-    cols[COL.startHour] = { hour: h, minute: m || 0 };
-  }
-  if (sch.strikeTime) {
-    const [h, m] = sch.strikeTime.split(':').map(Number);
-    cols[COL.strikeHour] = { hour: h, minute: m || 0 };
-  }
-
-  // New datetime columns — Event Start / Event End (the inner LIVE window)
-  // Format: { date: "YYYY-MM-DD", time: "HH:MM:SS" }
-  if (sch.eventStartDate) {
-    const v = { date: sch.eventStartDate };
-    if (sch.eventStartTime) v.time = sch.eventStartTime + ':00';
-    cols[COL.eventStart] = v;
-  }
-  if (sch.eventEndDate) {
-    const v = { date: sch.eventEndDate };
-    if (sch.eventEndTime) v.time = sch.eventEndTime + ':00';
-    cols[COL.eventEnd] = v;
-  }
-
-  // Activation Time Frame (timeline) — full crew window: load-in date → strike date
-  if (sch.loadinDate && sch.strikeDate) {
-    cols[COL.timeframe] = {
-      from: sch.loadinDate,
-      to:   sch.strikeDate
-    };
-  }
-
-  // Triple-stringify for column_values argument
-  const updates = JSON.stringify(JSON.stringify(cols));
-
-  let itemId = record.opsItemId;
-  if (itemId) {
-    // UPDATE existing item
-    const m = `mutation { change_multiple_column_values(item_id:${itemId}, board_id:${OPS_BOARD}, column_values:${updates}) { id } }`;
-    await mondayQuery(m);
-    const noteBody = `✓ Activation proposal accepted. View: ${getSiteUrl()}/activation-proposal/${record.slug}`;
-    try { await mondayQuery(`mutation { create_update(item_id:${itemId}, body:${JSON.stringify(noteBody)}) { id } }`); } catch (_) {}
-    return { itemId, action: 'updated' };
-  }
-
-  // CREATE new item in Unconfirmed group (intake group)
-  const itemName = record.projectName || `${record.client} — Activation`;
-  const m = `mutation { create_item(board_id:${OPS_BOARD}, group_id:"new_group84798", item_name:${JSON.stringify(itemName)}, column_values:${updates}) { id } }`;
-  const data = await mondayQuery(m);
-  itemId = data.data.create_item.id;
-  const noteBody = `Created from accepted activation proposal: ${getSiteUrl()}/activation-proposal/${record.slug}`;
-  try { await mondayQuery(`mutation { create_update(item_id:${itemId}, body:${JSON.stringify(noteBody)}) { id } }`); } catch (_) {}
-  return { itemId, action: 'created' };
-}
-
-// Format "HH:MM" → "H:MM AM/PM" for delivery time column
 function formatTimeAmPm(timeStr) {
   if (!timeStr) return '';
   const [h, m] = timeStr.split(':').map(Number);
@@ -440,6 +456,12 @@ function formatTimeAmPm(timeStr) {
   const period = h >= 12 ? 'PM' : 'AM';
   const hh = h === 0 ? 12 : (h > 12 ? h - 12 : h);
   return `${hh}:${String(m || 0).padStart(2,'0')} ${period}`;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -468,7 +490,7 @@ async function sendNotification({ subject, body }) {
   }
 }
 
-function buildAcceptNotification(record, mondayResult) {
+function buildAcceptNotification(record) {
   const url = `${getSiteUrl()}/activation-proposal/${record.slug}`;
   const totals = calcTotals(record);
   let body = `Activation proposal accepted!\n\n`;
@@ -485,15 +507,8 @@ function buildAcceptNotification(record, mondayResult) {
     body += `Event:    ${sch.eventStartDate} ${sch.eventStartTime || ''}\n`;
     body += `Venue:    ${record.venueName || ''} ${record.venueAddress || ''}\n\n`;
   }
-
   body += `View:  ${url}\n`;
-
-  if (mondayResult && mondayResult.itemId) {
-    body += `Monday Ops Board: PO #${mondayResult.itemId} (${mondayResult.action})\n`;
-  } else if (mondayResult && mondayResult.error) {
-    body += `\nMonday write failed: ${mondayResult.error}\n(You'll need to log this manually.)\n`;
-  }
-
+  if (record.opsItemId) body += `Monday: PO #${record.opsItemId}\n`;
   body += `\nNext: send PayPal invoice for the deposit.`;
   return body;
 }
@@ -506,19 +521,8 @@ function buildChangeRequestNotification(record, notes) {
   body += `Contact:  ${record.contact || '(not provided)'}\n`;
   body += `Email:    ${record.email || '(not provided)'}\n`;
   body += `Slug:     ${record.slug}\n\n`;
-  body += `Their notes:\n`;
-  body += `────────────────────────\n`;
-  body += `${notes || '(no notes provided)'}\n`;
-  body += `────────────────────────\n\n`;
+  body += `Their notes:\n────────────────────────\n${notes || '(no notes provided)'}\n────────────────────────\n\n`;
   body += `View:  ${url}\n`;
+  if (record.opsItemId) body += `Monday: PO #${record.opsItemId}\n`;
   return body;
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
