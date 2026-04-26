@@ -6,7 +6,7 @@
 <title>HANDS — Operations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,14 +18,26 @@
     --line-2:     #c8c8c4;
     --text-2:     #7a7a76;
     --text:       #111110;
-    --green:      #a0d6b4;
-    --green-d:    #6dba96;
+    --green:      #a0d6b4;        /* light HANDS green */
+    --green-d:    #6dba96;        /* primary HANDS green */
+    --green-deep: #4a8268;        /* deeper green for accents */
+    --green-bg:   #eef5f0;        /* very light green tint */
+    --green-tint: #f3f8f5;        /* even lighter green tint for daily-mode bg */
     --red:        #c94a4a;
     --amber:      #c8a84b;
     --blue:       #5b8fc4;
-    --display:    'Cormorant Garamond', Georgia, serif;
+    /* TV / dark-mode tokens */
+    --tv-bg:        #0a1410;       /* near-black with green undertone */
+    --tv-panel:     #131e18;
+    --tv-line:      rgba(160,214,180,0.16);
+    --tv-text:      #e8f1ec;
+    --tv-text-dim:  rgba(232,241,236,0.55);
+    /* Fonts */
+    --display:    'Bebas Neue', 'DM Sans', -apple-system, sans-serif;
     --body:       'DM Sans', -apple-system, sans-serif;
+    --accent:     'Malayalam MN', 'Cormorant Garamond', Georgia, serif;
     --mono:       'DM Mono', 'SF Mono', Menlo, monospace;
+    --terminal:   'JetBrains Mono', 'DM Mono', 'SF Mono', Menlo, monospace;
   }
 
   html, body { height: 100%; }
@@ -38,6 +50,94 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* ─── MODE ROUTER ─── */
+  /* Daily mode: brand green-tinted off-white background, accent green panels */
+  body.mode-daily {
+    background: var(--green-tint);
+  }
+  body.mode-daily .panel {
+    border-color: rgba(109,186,150,0.18);
+  }
+  body.mode-daily .row {
+    border-bottom-color: rgba(109,186,150,0.18);
+  }
+  body.mode-daily .sub-banner {
+    background: var(--green-bg);
+    border-bottom-color: rgba(109,186,150,0.22);
+  }
+  body.mode-daily .sub-banner-brand,
+  body.mode-daily .sub-banner-status {
+    border-color: rgba(109,186,150,0.22);
+  }
+  body.mode-daily .sub-banner-context .sep {
+    background: rgba(109,186,150,0.28);
+  }
+  body.mode-daily .sidebar {
+    border-right-color: rgba(109,186,150,0.18);
+  }
+  body.mode-daily .activity {
+    /* Keep dark for contrast — activity rail stays as-is */
+  }
+  /* Tools sidebar replaced by drawer in daily mode (see tools-rail-v2) */
+  body.mode-daily .tool-rail { display: none; }
+  body.mode-daily .tools-fab { display: flex; }
+
+  /* TV mode: dark theme, no chrome, big rotating views */
+  body.mode-tv {
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    font-family: var(--body);
+  }
+  body.mode-tv .topnav,
+  body.mode-tv .sub-banner,
+  body.mode-tv .sidebar,
+  body.mode-tv .activity,
+  body.mode-tv .claude-fab,
+  body.mode-tv .tools-fab,
+  body.mode-tv .row.r-pipeline,
+  body.mode-tv .row.r-board,
+  body.mode-tv .row.r-bottom { display: none; }
+  body.mode-tv .layout {
+    grid-template-columns: 1fr;
+    height: 100vh;
+  }
+  body.mode-tv .main {
+    background: var(--tv-bg);
+    overflow: hidden;
+  }
+  body.mode-tv .tv-stage { display: flex; }
+
+  /* Deep mode: terminal monospace, data-dense */
+  body.mode-deep {
+    background: #0d0d0d;
+    color: #d8e8d8;
+    font-family: var(--terminal);
+    font-size: 12px;
+  }
+  body.mode-deep .topnav,
+  body.mode-deep .sub-banner,
+  body.mode-deep .sidebar,
+  body.mode-deep .activity,
+  body.mode-deep .claude-fab,
+  body.mode-deep .tools-fab,
+  body.mode-deep .row.r-pipeline,
+  body.mode-deep .row.r-board,
+  body.mode-deep .row.r-bottom { display: none; }
+  body.mode-deep .layout {
+    grid-template-columns: 1fr;
+    height: 100vh;
+  }
+  body.mode-deep .main {
+    background: #0d0d0d;
+    overflow: auto;
+    padding: 0;
+  }
+  body.mode-deep .deep-stage { display: flex; }
+
+  /* By default these mode-specific stages are hidden — JS turns on the right one */
+  .tv-stage, .deep-stage { display: none; }
+  .tools-fab { display: none; }
 
   .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .eyebrow {
@@ -123,22 +223,22 @@
   }
   .stat-num {
     font-family: var(--display);
-    font-weight: 300;
-    font-size: 76px;
-    line-height: 0.85;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    font-size: 88px;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
     color: var(--white);
     white-space: nowrap;
   }
   .stat-num .denom {
     color: rgba(255,255,255,0.4);
-    font-size: 44px;
-    margin-left: -2px;
+    font-size: 50px;
+    margin-left: 0px;
   }
   .stat-num .pct {
     color: inherit;
-    font-size: 44px;
-    margin-left: 2px;
+    font-size: 50px;
+    margin-left: 4px;
     font-weight: 400;
   }
   .stat-num .unit {
@@ -149,7 +249,7 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     margin-left: 12px;
-    vertical-align: 38px;
+    vertical-align: 42px;
   }
   .stat-num.health-good { color: var(--green); }
   .stat-num.health-bad  { color: var(--red); }
@@ -217,6 +317,66 @@
     border-color: var(--green-d);
   }
   .nav-btn svg { width: 12px; height: 12px; stroke-width: 1.7; }
+
+  /* ─── MODE SWITCHER (icon-only, square, top-nav right) ─── */
+  .mode-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    margin: 0 4px;
+  }
+  .mode-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.12);
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .14s;
+    text-decoration: none;
+    position: relative;
+  }
+  .mode-btn:hover {
+    background: var(--green);
+    color: var(--text);
+    border-color: var(--green);
+  }
+  .mode-btn svg { width: 16px; height: 16px; stroke-width: 1.6; }
+  .mode-btn .mode-tip {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--text);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .14s;
+    z-index: 60;
+  }
+  .mode-btn:hover .mode-tip { opacity: 1; }
+
+  /* Hide the button matching the active mode */
+  body.mode-daily .mode-btn[data-mode="daily"],
+  body.mode-tv    .mode-btn[data-mode="tv"],
+  body.mode-deep  .mode-btn[data-mode="deep"] {
+    display: none;
+  }
+
+  /* In TV / Deep, the dark nav is hidden anyway, but if it weren't,
+     keep the switcher visible for the OTHER two modes. */
 
   .layout {
     display: grid;
@@ -1237,6 +1397,720 @@
     border-radius: 50%;
   }
 
+  /* ─── TOOLS FAB + DRAWER (daily mode, replaces sidebar tools) ─── */
+  .tools-fab {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--green-d);
+    color: var(--text);
+    width: 52px;
+    height: 52px;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(74,130,104,0.28);
+    z-index: 50;
+    transition: transform .18s, background .18s;
+  }
+  .tools-fab:hover { background: var(--green); transform: translateY(-2px); }
+  .tools-fab svg { width: 22px; height: 22px; stroke-width: 1.8; }
+  .tools-fab .tools-fab-label {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: var(--white);
+    padding: 6px 10px;
+    border: 1px solid rgba(109,186,150,0.3);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s;
+  }
+  .tools-fab:hover .tools-fab-label { opacity: 1; }
+
+  .tools-drawer {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 380px;
+    background: var(--white);
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(109,186,150,0.22);
+  }
+  .tools-drawer.open { transform: translateX(0); }
+  .td-head {
+    background: var(--text);
+    color: var(--white);
+    padding: 22px 24px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .td-head::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 10% 30%, rgba(160,214,180,0.14) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .td-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+  .td-title {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 0.95;
+    color: var(--white);
+  }
+  .td-title em {
+    font-style: italic;
+    font-family: var(--accent);
+    color: var(--green);
+  }
+  .td-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--white);
+    width: 28px; height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .td-close:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.32); }
+
+  .td-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+  }
+  .td-section-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+  .td-section-eyebrow:not(:first-child) { margin-top: 22px; }
+
+  .td-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .td-tile {
+    background: var(--paper);
+    border: 1px solid rgba(109,186,150,0.18);
+    padding: 14px 12px;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: all .14s;
+    min-height: 78px;
+  }
+  .td-tile:hover {
+    background: var(--green-bg);
+    border-color: var(--green-d);
+    transform: translateY(-1px);
+  }
+  .td-tile-icon {
+    width: 22px; height: 22px;
+    color: var(--green-deep);
+    flex-shrink: 0;
+  }
+  .td-tile-icon svg { width: 100%; height: 100%; stroke-width: 1.6; }
+  .td-tile-label {
+    font-family: var(--body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .td-tile-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-top: auto;
+  }
+
+  .scrim-left {
+    position: fixed; inset: 0;
+    background: rgba(17,17,16,0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    z-index: 90;
+  }
+  .scrim-left.open { opacity: 1; pointer-events: all; }
+
+  /* ──────────────────────────────────────────── */
+  /* TV MODE — operations wall, 12ft viewing      */
+  /* ──────────────────────────────────────────── */
+  .tv-stage {
+    position: fixed;
+    inset: 0;
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    z-index: 200;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .tv-corner {
+    position: absolute;
+    z-index: 5;
+    padding: 28px 36px;
+  }
+  .tv-corner-tl { top: 0; left: 0; }
+  .tv-corner-tr { top: 0; right: 0; text-align: right; }
+  .tv-corner-bl { bottom: 0; left: 0; display: flex; align-items: center; gap: 12px; }
+  .tv-corner-br { bottom: 0; right: 0; }
+  .tv-brand {
+    font-family: var(--display);
+    font-size: 32px;
+    letter-spacing: 0.18em;
+    color: var(--green);
+    line-height: 1;
+  }
+  .tv-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    margin-top: 6px;
+  }
+  .tv-clock {
+    font-family: var(--display);
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    color: var(--tv-text);
+    line-height: 1;
+  }
+  .tv-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    margin-top: 8px;
+  }
+  .tv-pulse {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green-d);
+    animation: pulse 2s infinite;
+  }
+  .tv-sync {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+  }
+  .tv-rotation {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+  }
+  .tv-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  /* TV View 1: Today's Deliveries */
+  .tv-deliveries {
+    width: 100%;
+    max-width: 1800px;
+  }
+  .tv-deliveries-header {
+    display: flex;
+    align-items: baseline;
+    gap: 32px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--tv-line);
+    padding-bottom: 20px;
+  }
+  .tv-deliveries-num {
+    font-family: var(--display);
+    font-size: 140px;
+    line-height: 0.85;
+    color: var(--green-d);
+    letter-spacing: 0.01em;
+  }
+  .tv-deliveries-label {
+    font-family: var(--display);
+    font-size: 56px;
+    line-height: 1;
+    color: var(--tv-text);
+    letter-spacing: 0.06em;
+  }
+  .tv-deliveries-meta {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    margin-left: auto;
+    text-align: right;
+  }
+  .tv-deliveries-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 40px;
+  }
+  .tv-delivery-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 80px;
+    gap: 24px;
+    align-items: baseline;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(160,214,180,0.08);
+  }
+  .tv-delivery-time {
+    font-family: var(--display);
+    font-size: 32px;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .tv-delivery-meta-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    margin-top: 4px;
+  }
+  .tv-delivery-client {
+    font-family: var(--body);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--tv-text);
+    line-height: 1.2;
+  }
+  .tv-delivery-project {
+    font-family: var(--body);
+    font-size: 14px;
+    color: var(--tv-text-dim);
+    margin-top: 4px;
+  }
+  .tv-delivery-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--green-d);
+    text-align: right;
+    border: 1px solid var(--green-d);
+    padding: 4px 8px;
+  }
+  .tv-delivery-status.tv-late { color: var(--red); border-color: var(--red); }
+  .tv-delivery-status.tv-out  { color: var(--amber); border-color: var(--amber); }
+  .tv-delivery-status.tv-done { color: var(--tv-text-dim); border-color: var(--tv-text-dim); }
+  .tv-empty {
+    font-family: var(--display);
+    font-size: 80px;
+    color: var(--tv-text-dim);
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.04em;
+  }
+
+  /* TV View 2: KPI Rings */
+  .tv-rings {
+    width: 100%;
+    max-width: 1800px;
+  }
+  .tv-rings-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  .tv-rings-eyebrow {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--green-d);
+    margin-bottom: 8px;
+  }
+  .tv-rings-title {
+    font-family: var(--display);
+    font-size: 64px;
+    color: var(--tv-text);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .tv-rings-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 36px;
+  }
+  .tv-ring-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .tv-ring-svg {
+    width: 220px;
+    height: 220px;
+  }
+  .tv-ring-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    margin-top: 18px;
+  }
+  .tv-ring-meta {
+    font-family: var(--display);
+    font-size: 28px;
+    color: var(--tv-text);
+    margin-top: 6px;
+  }
+
+  /* TV View 3: Live activity */
+  .tv-activity {
+    width: 100%;
+    max-width: 1600px;
+  }
+  .tv-activity-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--tv-line);
+    padding-bottom: 20px;
+  }
+  .tv-activity-title {
+    font-family: var(--display);
+    font-size: 56px;
+    color: var(--tv-text);
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+  .tv-activity-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--green-d);
+    margin-left: auto;
+  }
+  .tv-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .tv-activity-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 200px;
+    gap: 32px;
+    align-items: baseline;
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(160,214,180,0.06);
+  }
+  .tv-activity-time {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-d);
+  }
+  .tv-activity-msg {
+    font-family: var(--body);
+    font-size: 20px;
+    color: var(--tv-text);
+    line-height: 1.4;
+  }
+  .tv-activity-msg .po {
+    font-family: var(--mono);
+    color: var(--green);
+    font-size: 17px;
+    padding: 1px 5px;
+    background: rgba(160,214,180,0.1);
+    margin: 0 2px;
+  }
+  .tv-activity-who {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--tv-text-dim);
+    text-align: right;
+  }
+
+  /* TV view crossfade */
+  .tv-fade-out { opacity: 0; transition: opacity .35s ease; }
+  .tv-fade-in  { opacity: 1; transition: opacity .35s ease; }
+
+  /* ──────────────────────────────────────────── */
+  /* DEEP MODE — terminal, data-dense              */
+  /* ──────────────────────────────────────────── */
+  .deep-stage {
+    position: fixed;
+    inset: 0;
+    background: #0d0d0d;
+    color: #d8e8d8;
+    font-family: var(--terminal);
+    font-size: 12px;
+    z-index: 200;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .deep-header {
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a3024;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .deep-header-l {
+    font-family: var(--terminal);
+    font-size: 13px;
+    color: #9ed4b4;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .deep-prompt { color: var(--green-d); }
+  .deep-divider { color: #555; }
+  .deep-path { color: #9ed4b4; }
+  .deep-cursor {
+    color: var(--green);
+    animation: deep-blink 1s steps(2) infinite;
+  }
+  @keyframes deep-blink { 50% { opacity: 0; } }
+  .deep-header-r {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-family: var(--terminal);
+    font-size: 11px;
+  }
+  .deep-meta-item {
+    color: #6c8c78;
+  }
+  .deep-meta-k { color: #4d6657; }
+  .deep-meta-v { color: var(--green); }
+  .deep-link {
+    text-decoration: none;
+    color: #6c8c78;
+    cursor: pointer;
+  }
+  .deep-link:hover { color: var(--green); }
+
+  .deep-toolbar {
+    background: #0d0d0d;
+    border-bottom: 1px solid #1a2820;
+    padding: 6px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .deep-tool-group {
+    display: flex;
+    gap: 2px;
+  }
+  .deep-tool-group-r { margin-left: auto; }
+  .deep-tool-btn {
+    background: transparent;
+    border: 1px solid #1a3024;
+    color: #6c8c78;
+    font-family: var(--terminal);
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+  .deep-tool-btn:hover {
+    background: #0f1a14;
+    color: #b4d4c0;
+    border-color: #2a4830;
+  }
+  .deep-tool-btn.deep-active {
+    background: #1a3024;
+    color: var(--green);
+    border-color: var(--green-deep);
+  }
+  .deep-search {
+    background: #0a0a0a;
+    border: 1px solid #1a3024;
+    color: #d8e8d8;
+    font-family: var(--terminal);
+    font-size: 11px;
+    padding: 5px 10px;
+    width: 280px;
+    outline: none;
+  }
+  .deep-search:focus {
+    border-color: var(--green-deep);
+  }
+
+  .deep-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 1px;
+    background: #1a2820;
+    overflow: hidden;
+  }
+  .deep-side {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 1px;
+    background: #1a2820;
+    overflow: hidden;
+  }
+  .deep-panel {
+    background: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .deep-panel-h {
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a2820;
+    padding: 6px 14px;
+    font-family: var(--terminal);
+    font-size: 11px;
+    color: var(--green-d);
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+  .deep-panel-num { color: #4d6657; margin-right: 6px; }
+  .deep-panel-b {
+    flex: 1;
+    overflow: auto;
+    padding: 10px 14px;
+    font-family: var(--terminal);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .deep-table-wrap {
+    padding: 0;
+  }
+  .deep-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--terminal);
+    font-size: 11px;
+  }
+  .deep-table thead th {
+    background: #0a0a0a;
+    color: var(--green-d);
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid #1a3024;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .deep-table tbody td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #141414;
+    color: #c4d4c8;
+    white-space: nowrap;
+  }
+  .deep-table tbody tr:hover td {
+    background: #0f1a14;
+  }
+  .deep-table .deep-id { color: var(--green); }
+  .deep-table .deep-stat-out  { color: var(--amber); }
+  .deep-table .deep-stat-late { color: var(--red); }
+  .deep-table .deep-stat-done { color: #6c8c78; }
+  .deep-table .deep-stat-prog { color: var(--green); }
+  .deep-table .deep-act-Delivery   { color: var(--green-d); }
+  .deep-table .deep-act-Activation { color: var(--amber); }
+  .deep-table .deep-act-IO         { color: var(--blue); }
+  .deep-table .deep-act-Sourcing   { color: #9a7fc1; }
+  .deep-table .deep-act-Production { color: var(--red); }
+  .deep-checkmark { color: var(--green); }
+  .deep-x { color: #444; }
+
+  .deep-pipeline-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed #1a2820;
+  }
+  .deep-pipeline-row:last-child { border-bottom: none; }
+  .deep-pipeline-k { color: #6c8c78; }
+  .deep-pipeline-v { color: var(--green); }
+  .deep-pipeline-n {
+    color: #4d6657;
+    margin-right: 8px;
+  }
+
+  .deep-log-entry {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+    padding: 3px 0;
+    border-bottom: 1px dashed #14201a;
+    font-size: 10px;
+  }
+  .deep-log-time { color: var(--green-d); }
+  .deep-log-msg { color: #c4d4c8; }
+  .deep-log-msg .po { color: var(--green); }
+
+  .deep-burndown {
+    width: 100%;
+    height: 100%;
+  }
+
+  .deep-footer {
+    background: #0a0a0a;
+    border-top: 1px solid #1a3024;
+    padding: 5px 18px;
+    font-family: var(--terminal);
+    font-size: 10px;
+    color: #6c8c78;
+    flex-shrink: 0;
+  }
+  .deep-footer .ok { color: var(--green); }
+  .deep-footer .warn { color: var(--amber); }
+  .deep-footer .err { color: var(--red); }
+
   .scrim {
     position: fixed; inset: 0;
     background: rgba(17,17,16,0.45);
@@ -1520,7 +2394,20 @@
   </div>
   <div class="nav-tools">
     <div class="clock"><strong id="clock-time">8:42 PM</strong>Sat · Apr 25</div>
-    <button class="nav-btn">TV</button>
+    <div class="mode-switch" role="group" aria-label="Switch view mode">
+      <a class="mode-btn" href="/hub" data-mode="daily" aria-label="Daily mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="mode-tip">Daily</span>
+      </a>
+      <a class="mode-btn" href="/hub?tv=1" data-mode="tv" aria-label="TV mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="13" rx="0"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span class="mode-tip">TV mode</span>
+      </a>
+      <a class="mode-btn" href="/hub?deep=1" data-mode="deep" aria-label="Deep mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span class="mode-tip">Deep mode</span>
+      </a>
+    </div>
     <button class="nav-btn primary" onclick="openClaude()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Ask Claude
@@ -2252,6 +3139,211 @@
     <div class="dr-foot">Claude Haiku 4.5 · Monday read/write + email</div>
   </div>
 </aside>
+
+<!-- ─── TOOLS FAB + DRAWER (daily mode) ─── -->
+<button class="tools-fab" onclick="openTools()" aria-label="Open tools">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+  <span class="tools-fab-label">Tools</span>
+</button>
+
+<div class="scrim-left" id="scrimLeft" onclick="closeTools()"></div>
+
+<aside class="tools-drawer" id="toolsDrawer">
+  <div class="td-head">
+    <div class="td-eyebrow">Operations Toolkit</div>
+    <div class="td-title">Tools at <em>hand</em>.</div>
+    <button class="td-close" onclick="closeTools()" aria-label="Close tools">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="td-body">
+
+    <div class="td-section-eyebrow">Workflow</div>
+    <div class="td-grid">
+      <a class="td-tile" href="/schedule">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="td-tile-label">Schedule a delivery</div>
+        <div class="td-tile-meta">Intake → Ops</div>
+      </a>
+      <a class="td-tile" href="/" onclick="event.preventDefault(); closeTools(); openModal('modalSendEmail');">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/><polyline points="9,15 11,17 15,13"/></svg></div>
+        <div class="td-tile-label">DC confirmation</div>
+        <div class="td-tile-meta">Send DC email</div>
+      </a>
+      <a class="td-tile" href="/pod">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="td-tile-label">POD upload</div>
+        <div class="td-tile-meta">Driver portal</div>
+      </a>
+      <a class="td-tile" href="/dispatch">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="td-tile-label">Driver dispatch</div>
+        <div class="td-tile-meta">Routing</div>
+      </a>
+    </div>
+
+    <div class="td-section-eyebrow">Operations</div>
+    <div class="td-grid">
+      <a class="td-tile" href="/workorders">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div>
+        <div class="td-tile-label">Work orders</div>
+        <div class="td-tile-meta">Field ops</div>
+      </a>
+      <a class="td-tile" href="/label">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg></div>
+        <div class="td-tile-label">Thermal labels</div>
+        <div class="td-tile-meta">4×6 Arkscan</div>
+      </a>
+      <a class="td-tile" href="/warehouse">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><line x1="12" y1="11" x2="12" y2="21"/><polyline points="3 7 12 11 21 7"/></svg></div>
+        <div class="td-tile-label">Warehouse I/O</div>
+        <div class="td-tile-meta">Inbound + outbound</div>
+      </a>
+      <a class="td-tile" href="/assign-purpose">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></div>
+        <div class="td-tile-label">Client portal</div>
+        <div class="td-tile-meta">Assign purpose</div>
+      </a>
+    </div>
+
+    <div class="td-section-eyebrow">Business</div>
+    <div class="td-grid">
+      <a class="td-tile" href="/estimates">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div class="td-tile-label">Estimates</div>
+        <div class="td-tile-meta">Quote builder</div>
+      </a>
+      <a class="td-tile" href="/ceo">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="22" x2="21" y2="22"/></svg></div>
+        <div class="td-tile-label">CEO dashboard</div>
+        <div class="td-tile-meta">Billing + FP&A</div>
+      </a>
+      <a class="td-tile" href="/procure">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div class="td-tile-label">Procurement</div>
+        <div class="td-tile-meta">Quote intake</div>
+      </a>
+      <a class="td-tile" href="/ceo">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="0"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+        <div class="td-tile-label">Billing</div>
+        <div class="td-tile-meta">On CEO dash</div>
+      </a>
+    </div>
+
+    <div class="td-section-eyebrow">Modes</div>
+    <div class="td-grid">
+      <a class="td-tile" href="/hub?tv=1">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="0"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="td-tile-label">TV mode</div>
+        <div class="td-tile-meta">Operations wall</div>
+      </a>
+      <a class="td-tile" href="/hub?deep=1">
+        <div class="td-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div class="td-tile-label">Deep mode</div>
+        <div class="td-tile-meta">Terminal</div>
+      </a>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ─── TV MODE STAGE (hidden unless body.mode-tv) ─── -->
+<div class="tv-stage" id="tvStage">
+  <div class="tv-corner tv-corner-tl">
+    <div class="tv-brand">HANDS</div>
+    <div class="tv-meta">Las Vegas Operations</div>
+  </div>
+  <div class="tv-corner tv-corner-tr">
+    <div class="tv-clock" id="tvClock">—</div>
+    <div class="tv-date" id="tvDate">—</div>
+  </div>
+  <div class="tv-corner tv-corner-bl">
+    <div class="tv-pulse"></div>
+    <div class="tv-sync" id="tvSync">SYNC <span id="tvSyncTime">pending</span></div>
+  </div>
+  <div class="tv-corner tv-corner-br">
+    <div class="tv-rotation" id="tvRotation">VIEW 1 OF 3</div>
+  </div>
+
+  <div class="tv-content" id="tvContent">
+    <!-- One of three views populated by renderTV(viewIndex) -->
+  </div>
+</div>
+
+<!-- ─── DEEP MODE STAGE (hidden unless body.mode-deep) ─── -->
+<div class="deep-stage" id="deepStage">
+  <div class="deep-header">
+    <div class="deep-header-l">
+      <span class="deep-prompt">hands@ops</span>
+      <span class="deep-divider">:</span>
+      <span class="deep-path">~/operations</span>
+      <span class="deep-divider">$</span>
+      <span class="deep-cursor">_</span>
+    </div>
+    <div class="deep-header-r">
+      <span class="deep-meta-item"><span class="deep-meta-k">items</span> <span class="deep-meta-v" id="deepItemsCount">—</span></span>
+      <span class="deep-meta-item"><span class="deep-meta-k">last_sync</span> <span class="deep-meta-v" id="deepLastSync">—</span></span>
+      <a class="deep-meta-item deep-link" href="/hub">[ exit ]</a>
+    </div>
+  </div>
+
+  <div class="deep-toolbar">
+    <div class="deep-tool-group">
+      <button class="deep-tool-btn deep-active" data-deep-view="all">all</button>
+      <button class="deep-tool-btn" data-deep-view="delivery">delivery</button>
+      <button class="deep-tool-btn" data-deep-view="activation">activation</button>
+      <button class="deep-tool-btn" data-deep-view="io">i/o</button>
+      <button class="deep-tool-btn" data-deep-view="sourcing">sourcing</button>
+      <button class="deep-tool-btn" data-deep-view="production">production</button>
+    </div>
+    <div class="deep-tool-group deep-tool-group-r">
+      <input class="deep-search" id="deepSearch" placeholder="grep client / project / po…" />
+    </div>
+  </div>
+
+  <div class="deep-grid">
+    <div class="deep-panel">
+      <div class="deep-panel-h"><span class="deep-panel-num">[01]</span> ITEMS_TABLE</div>
+      <div class="deep-panel-b deep-table-wrap" id="deepTableWrap">
+        <table class="deep-table" id="deepTable">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>activity</th>
+              <th>status</th>
+              <th>client</th>
+              <th>project</th>
+              <th>delivery_date</th>
+              <th>created</th>
+              <th>dc</th>
+              <th>pod</th>
+            </tr>
+          </thead>
+          <tbody id="deepTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="deep-side">
+      <div class="deep-panel">
+        <div class="deep-panel-h"><span class="deep-panel-num">[02]</span> PIPELINE_STATE</div>
+        <div class="deep-panel-b" id="deepPipelineState"></div>
+      </div>
+
+      <div class="deep-panel">
+        <div class="deep-panel-h"><span class="deep-panel-num">[03]</span> ACTIVITY_LOG</div>
+        <div class="deep-panel-b" id="deepActivityLog"></div>
+      </div>
+
+      <div class="deep-panel">
+        <div class="deep-panel-h"><span class="deep-panel-num">[04]</span> GOAL_BURNDOWN</div>
+        <div class="deep-panel-b" id="deepBurndown"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deep-footer" id="deepFooter">— ready —</div>
+</div>
 
 <script>
 
@@ -3647,18 +4739,509 @@ function updateBanner() {
   renderHolidays();
 }
 
+// ─────────────────────────────────────────────
+// MODE ROUTER — daily | tv | deep
+// ─────────────────────────────────────────────
+function getMode() {
+  var qs = new URLSearchParams(window.location.search);
+  if (qs.get('tv') === '1' || qs.get('mode') === 'tv') return 'tv';
+  if (qs.get('deep') === '1' || qs.get('mode') === 'deep') return 'deep';
+  return 'daily';
+}
+var HUB_MODE = 'daily';
+
+function applyMode(mode) {
+  HUB_MODE = mode;
+  document.body.classList.remove('mode-daily', 'mode-tv', 'mode-deep');
+  document.body.classList.add('mode-' + mode);
+}
+
+// ─────────────────────────────────────────────
+// TOOLS DRAWER (daily mode)
+// ─────────────────────────────────────────────
+function openTools() {
+  var d = document.getElementById('toolsDrawer');
+  var s = document.getElementById('scrimLeft');
+  if (d) d.classList.add('open');
+  if (s) s.classList.add('open');
+}
+function closeTools() {
+  var d = document.getElementById('toolsDrawer');
+  var s = document.getElementById('scrimLeft');
+  if (d) d.classList.remove('open');
+  if (s) s.classList.remove('open');
+}
+// Esc key closes both drawers
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    closeTools();
+    if (typeof closeClaude === 'function') closeClaude();
+  }
+});
+
+// ─────────────────────────────────────────────
+// TV MODE — rotating views, 30s each
+// ─────────────────────────────────────────────
+var TV_ROTATION_MS = 30000;
+var TV_REFRESH_MS  = 60000;
+var tvViewIdx = 0;
+var tvRotationTimer = null;
+
+function tvTickClock() {
+  var d = new Date();
+  var h = d.getHours();
+  var m = String(d.getMinutes()).padStart(2,'0');
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  var clock = document.getElementById('tvClock');
+  if (clock) clock.textContent = h + ':' + m + ' ' + ampm;
+  var date = document.getElementById('tvDate');
+  if (date) {
+    var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    date.textContent = days[d.getDay()] + ' \u00b7 ' + MONTH_SHORT[d.getMonth()].toUpperCase() + ' ' + d.getDate();
+  }
+}
+
+function tvUpdateSync() {
+  var s = document.getElementById('tvSyncTime');
+  if (s) s.textContent = lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'pending';
+}
+
+function renderTV(viewIdx) {
+  var content = document.getElementById('tvContent');
+  if (!content) return;
+  // Update rotation indicator
+  var rot = document.getElementById('tvRotation');
+  if (rot) rot.textContent = 'VIEW ' + (viewIdx + 1) + ' OF 3';
+
+  // Crossfade
+  content.classList.add('tv-fade-out');
+  setTimeout(function(){
+    if (viewIdx === 0) content.innerHTML = renderTVDeliveries();
+    else if (viewIdx === 1) content.innerHTML = renderTVRings();
+    else content.innerHTML = renderTVActivity();
+    content.classList.remove('tv-fade-out');
+    content.classList.add('tv-fade-in');
+  }, 350);
+}
+
+function renderTVDeliveries() {
+  // Today's deliveries from cachedAllItems, sorted by delivery date+time
+  var now = new Date();
+  var todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var items = (cachedAllItems || []).filter(function(item){
+    if (typeof isPersonnel === 'function' && isPersonnel(item)) return false;
+    var act = pipeGet(item, ACTIVITY_COL);
+    if (!act || act.toLowerCase().indexOf('deliver') === -1) return false;
+    var dateText = pipeGet(item, 'text2');
+    var d = parseDeliveryDate(dateText);
+    if (!d) return false;
+    return d.getTime() === todayMidnight.getTime();
+  });
+
+  // Sort by delivery time
+  items.sort(function(a, b){
+    var ta = pipeGet(a, 'text9') || '';
+    var tb = pipeGet(b, 'text9') || '';
+    return ta.localeCompare(tb);
+  });
+
+  var rowsHtml = items.map(function(item){
+    var time   = pipeGet(item, 'text9') || '—';
+    var client = pipeGet(item, 'text') || pipeGet(item, 'text4') || '—';
+    var project= pipeGet(item, 'text5') || '';
+    var status = pipeGet(item, 'color') || '';
+    var statusClass = '';
+    var s = (status || '').toUpperCase();
+    if (s.indexOf('OUT') !== -1)        statusClass = 'tv-out';
+    else if (s.indexOf('LATE') !== -1)  statusClass = 'tv-late';
+    else if (s.indexOf('COMPLETE') !== -1 || s.indexOf('DELIVERED') !== -1) statusClass = 'tv-done';
+    var statusLabel = status ? abbrev(status) : 'SCHED';
+    return '<div class="tv-delivery-row">' +
+      '<div><div class="tv-delivery-time">' + escHtml(time) + '</div></div>' +
+      '<div><div class="tv-delivery-client">' + escHtml(client) + '</div>' +
+        (project ? '<div class="tv-delivery-project">' + escHtml(project) + '</div>' : '') +
+      '</div>' +
+      '<div class="tv-delivery-status ' + statusClass + '">' + escHtml(statusLabel) + '</div>' +
+    '</div>';
+  }).join('');
+
+  if (!rowsHtml) {
+    rowsHtml = '<div class="tv-empty">No deliveries today</div>';
+  }
+
+  return '<div class="tv-deliveries">' +
+    '<div class="tv-deliveries-header">' +
+      '<div class="tv-deliveries-num">' + items.length + '</div>' +
+      '<div class="tv-deliveries-label">DELIVERIES TODAY</div>' +
+      '<div class="tv-deliveries-meta">Live from Monday \u00b7 ' + (lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'pending') + '</div>' +
+    '</div>' +
+    '<div class="tv-deliveries-list">' + rowsHtml + '</div>' +
+  '</div>';
+}
+
+function abbrev(status) {
+  var s = String(status || '').toUpperCase();
+  if (s.indexOf('OUT') !== -1) return 'OUT';
+  if (s.indexOf('SCHED') !== -1) return 'SCHED';
+  if (s.indexOf('PROGRESS') !== -1) return 'IN PROG';
+  if (s.indexOf('HOLD') !== -1) return 'HOLD';
+  if (s.indexOf('COMPLETE') !== -1) return 'DONE';
+  if (s.indexOf('DELIVERED') !== -1) return 'DONE';
+  return s.slice(0, 8);
+}
+
+function renderTVRings() {
+  // 5 activity types with done count + monthly target
+  var now = new Date();
+  var monthIdx = now.getMonth();
+  var monthYear = now.getFullYear();
+  var rings = ACTIVITY_TYPES.map(function(at){
+    var goal = (typeof getMonthlyGoalFromCache === 'function') ? getMonthlyGoalFromCache(at.label, monthYear, monthIdx) : 0;
+    var done = (typeof countCompletedFromCache === 'function') ? countCompletedFromCache(at.label, monthYear, monthIdx) : 0;
+    var pct  = goal > 0 ? Math.min(1, done / goal) : 0;
+    return { label: at.label, color: at.color, done: done, goal: goal, pct: pct };
+  });
+
+  var ringsHtml = rings.map(function(r){
+    var R = 90;
+    var C = 2 * Math.PI * R;
+    var dash = (C * r.pct).toFixed(1);
+    var dashRest = (C - parseFloat(dash)).toFixed(1);
+    return '<div class="tv-ring-cell">' +
+      '<svg class="tv-ring-svg" viewBox="0 0 220 220">' +
+        '<circle cx="110" cy="110" r="' + R + '" stroke="rgba(160,214,180,0.08)" stroke-width="14" fill="none"/>' +
+        '<circle cx="110" cy="110" r="' + R + '" stroke="' + r.color + '" stroke-width="14" fill="none"' +
+          ' stroke-dasharray="' + dash + ' ' + dashRest + '" transform="rotate(-90 110 110)" stroke-linecap="butt"/>' +
+        '<text x="110" y="118" text-anchor="middle" font-family="Bebas Neue" font-size="64" fill="' + r.color + '">' + r.done + '</text>' +
+      '</svg>' +
+      '<div class="tv-ring-label">' + escHtml(r.label) + '</div>' +
+      '<div class="tv-ring-meta">' + r.done + ' / ' + r.goal + '</div>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="tv-rings">' +
+    '<div class="tv-rings-header">' +
+      '<div class="tv-rings-eyebrow">' + MONTH_SHORT[monthIdx].toUpperCase() + ' ' + monthYear + ' \u00b7 Pacing</div>' +
+      '<div class="tv-rings-title">Monthly KPI</div>' +
+    '</div>' +
+    '<div class="tv-rings-grid">' + ringsHtml + '</div>' +
+  '</div>';
+}
+
+function renderTVActivity() {
+  var rows = (cachedActivity || []).slice(0, 8).map(function(act){
+    return '<div class="tv-activity-row">' +
+      '<div class="tv-activity-time">' + escHtml(act.time) + '</div>' +
+      '<div class="tv-activity-msg">' + act.msg + '</div>' +
+      '<div class="tv-activity-who">' + escHtml(act.who) + '</div>' +
+    '</div>';
+  }).join('');
+  if (!rows) rows = '<div class="tv-empty">No recent activity</div>';
+  return '<div class="tv-activity">' +
+    '<div class="tv-activity-header">' +
+      '<div class="tv-activity-title">Live activity</div>' +
+      '<div class="tv-activity-meta">Last 1h \u00b7 Live from Monday</div>' +
+    '</div>' +
+    '<div class="tv-activity-list">' + rows + '</div>' +
+  '</div>';
+}
+
+function startTVMode() {
+  // First render
+  renderTV(0);
+  // Rotate every TV_ROTATION_MS
+  if (tvRotationTimer) clearInterval(tvRotationTimer);
+  tvRotationTimer = setInterval(function(){
+    tvViewIdx = (tvViewIdx + 1) % 3;
+    renderTV(tvViewIdx);
+  }, TV_ROTATION_MS);
+  // Clock + sync ticker
+  tvTickClock();
+  setInterval(tvTickClock, 30000);
+  setInterval(tvUpdateSync, 5000);
+}
+
+// ─────────────────────────────────────────────
+// DEEP MODE — terminal, data-dense
+// ─────────────────────────────────────────────
+var deepFilter = 'all';
+var deepSearchQuery = '';
+
+function renderDeep() {
+  if (HUB_MODE !== 'deep') return;
+  renderDeepTable();
+  renderDeepPipelineState();
+  renderDeepActivityLog();
+  renderDeepBurndown();
+  renderDeepHeader();
+  renderDeepFooter();
+}
+
+function renderDeepHeader() {
+  var n = document.getElementById('deepItemsCount');
+  if (n) n.textContent = (cachedAllItems || []).filter(function(i){ return !isPersonnel(i); }).length;
+  var s = document.getElementById('deepLastSync');
+  if (s) s.textContent = lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'pending';
+}
+
+function deepActivityKey(label) {
+  if (!label) return '';
+  var l = String(label).toLowerCase();
+  if (l.indexOf('deliver')   !== -1) return 'Delivery';
+  if (l.indexOf('activation')!== -1) return 'Activation';
+  if (l.indexOf('i/o')       !== -1 || l.indexOf('shipping') !== -1) return 'IO';
+  if (l.indexOf('sourc')     !== -1) return 'Sourcing';
+  if (l.indexOf('product')   !== -1) return 'Production';
+  return '';
+}
+
+function deepStatusClass(status) {
+  var s = String(status || '').toUpperCase();
+  if (s.indexOf('OUT') !== -1)       return 'deep-stat-out';
+  if (s.indexOf('LATE') !== -1)      return 'deep-stat-late';
+  if (s.indexOf('PROGRESS') !== -1)  return 'deep-stat-prog';
+  if (s.indexOf('COMPLETE') !== -1 || s.indexOf('DELIVERED') !== -1) return 'deep-stat-done';
+  return '';
+}
+
+function renderDeepTable() {
+  var tbody = document.getElementById('deepTableBody');
+  if (!tbody) return;
+  var items = (cachedAllItems || []).filter(function(i){ return !isPersonnel(i); });
+
+  // Apply filter
+  if (deepFilter !== 'all') {
+    items = items.filter(function(i){
+      var act = pipeGet(i, ACTIVITY_COL) || '';
+      var key = deepActivityKey(act).toLowerCase();
+      var f = deepFilter.toLowerCase();
+      if (f === 'io') return key === 'io';
+      return key.toLowerCase() === f;
+    });
+  }
+
+  // Apply search
+  if (deepSearchQuery) {
+    var q = deepSearchQuery.toLowerCase();
+    items = items.filter(function(i){
+      var hay = (pipeGet(i, 'text') + ' ' + pipeGet(i, 'text4') + ' ' + pipeGet(i, 'text5') + ' ' + i.id + ' ' + i.name).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+
+  // Sort by delivery date asc
+  items.sort(function(a, b){
+    var da = parseDeliveryDate(pipeGet(a, 'text2'));
+    var db = parseDeliveryDate(pipeGet(b, 'text2'));
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+
+  // Cap to 200 rows for terminal density
+  items = items.slice(0, 200);
+
+  tbody.innerHTML = items.map(function(item){
+    var act    = pipeGet(item, ACTIVITY_COL) || '';
+    var actKey = deepActivityKey(act);
+    var status = pipeGet(item, 'color') || '';
+    var statusClass = deepStatusClass(status);
+    var dc  = pipeIsChecked(item, 'boolean_mm1jv595');
+    var pod = pipeIsChecked(item, 'boolean_mm1jr3gr');
+    var deliveryDate = pipeGet(item, 'text2') || '—';
+    var created = '';
+    if (item.created_at) {
+      try { var d = new Date(item.created_at); created = d.toISOString().slice(0,10); } catch(e){}
+    }
+    return '<tr>' +
+      '<td><span class="deep-id">#' + escHtml(item.id) + '</span></td>' +
+      '<td><span class="deep-act-' + actKey + '">' + escHtml(act || '—') + '</span></td>' +
+      '<td><span class="' + statusClass + '">' + escHtml(status || '—') + '</span></td>' +
+      '<td>' + escHtml(pipeGet(item, 'text') || pipeGet(item, 'text4') || '—') + '</td>' +
+      '<td>' + escHtml(pipeGet(item, 'text5') || '—') + '</td>' +
+      '<td>' + escHtml(deliveryDate) + '</td>' +
+      '<td>' + escHtml(created || '—') + '</td>' +
+      '<td>' + (dc ? '<span class="deep-checkmark">\u2713</span>' : '<span class="deep-x">\u00b7</span>') + '</td>' +
+      '<td>' + (pod ? '<span class="deep-checkmark">\u2713</span>' : '<span class="deep-x">\u00b7</span>') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderDeepPipelineState() {
+  var box = document.getElementById('deepPipelineState');
+  if (!box) return;
+  var items = (cachedAllItems || []).filter(function(i){ return !isPersonnel(i); });
+  // Stage counts
+  var stages = { intake:0, scheduled:0, motion:0, delivered:0, billed:0,
+                 proposal:0, approved:0, procurement:0, setup:0, live:0, strike:0, wrapped:0 };
+  items.forEach(function(item){
+    var act = pipeGet(item, ACTIVITY_COL) || '';
+    if (act.toLowerCase().indexOf('deliver') !== -1) {
+      var s = (typeof classifyDelivery === 'function') ? classifyDelivery(item) : null;
+      if (s && stages[s] !== undefined) stages[s]++;
+    } else if (act.toLowerCase().indexOf('activation') !== -1) {
+      var s = (typeof classifyActivation === 'function') ? classifyActivation(item) : null;
+      if (s && stages[s] !== undefined) stages[s]++;
+    }
+  });
+  var lines = [
+    { k: 'delivery.intake',     v: stages.intake },
+    { k: 'delivery.scheduled',  v: stages.scheduled },
+    { k: 'delivery.motion',     v: stages.motion },
+    { k: 'delivery.delivered',  v: stages.delivered },
+    { k: 'delivery.billed',     v: stages.billed },
+    { k: 'activation.proposal', v: stages.proposal },
+    { k: 'activation.approved', v: stages.approved },
+    { k: 'activation.procurement', v: stages.procurement },
+    { k: 'activation.setup',    v: stages.setup },
+    { k: 'activation.live',     v: stages.live },
+    { k: 'activation.strike',   v: stages.strike },
+    { k: 'activation.wrapped',  v: stages.wrapped }
+  ];
+  box.innerHTML = lines.map(function(line, i){
+    var n = String(i + 1).padStart(2, '0');
+    return '<div class="deep-pipeline-row">' +
+      '<span><span class="deep-pipeline-n">' + n + '</span><span class="deep-pipeline-k">' + line.k + '</span></span>' +
+      '<span class="deep-pipeline-v">' + line.v + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDeepActivityLog() {
+  var box = document.getElementById('deepActivityLog');
+  if (!box) return;
+  if (!cachedActivity || !cachedActivity.length) {
+    box.innerHTML = '<div style="color:#4d6657;">no activity</div>';
+    return;
+  }
+  box.innerHTML = cachedActivity.slice(0, 30).map(function(a){
+    var msg = (a.msg || '').replace(/<[^>]*>/g, '').slice(0, 80);
+    return '<div class="deep-log-entry">' +
+      '<span class="deep-log-time">' + escHtml(a.time) + '</span>' +
+      '<span class="deep-log-msg">' + escHtml(msg) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDeepBurndown() {
+  var box = document.getElementById('deepBurndown');
+  if (!box) return;
+  // Simple ASCII-art burndown — completion vs day of month
+  var now = new Date();
+  var monthIdx = now.getMonth();
+  var year = now.getFullYear();
+  var dim = new Date(year, monthIdx + 1, 0).getDate();
+  var totalGoal = 0, totalDone = 0;
+  ACTIVITY_TYPES.forEach(function(at){
+    totalGoal += (typeof getMonthlyGoalFromCache === 'function') ? getMonthlyGoalFromCache(at.label, year, monthIdx) : 0;
+    totalDone += (typeof countCompletedFromCache === 'function') ? countCompletedFromCache(at.label, year, monthIdx) : 0;
+  });
+  var pacePct = Math.round((now.getDate() / dim) * 100);
+  var donePct = totalGoal > 0 ? Math.round((totalDone / totalGoal) * 100) : 0;
+  var statusLine = donePct >= pacePct ? 'on_pace' : (donePct > pacePct - 10 ? 'tracking' : 'behind');
+  var statusColor = donePct >= pacePct ? '#9ed4b4' : (donePct > pacePct - 10 ? '#c8a84b' : '#c94a4a');
+
+  // Simple horizontal bar
+  var barLen = 28;
+  var doneBar = Math.round((donePct / 100) * barLen);
+  var paceMark = Math.round((pacePct / 100) * barLen);
+  var bar = '';
+  for (var i = 0; i < barLen; i++) {
+    if (i < doneBar) bar += '\u2588';
+    else if (i === paceMark) bar += '|';
+    else bar += '\u2591';
+  }
+
+  box.innerHTML = '<div style="line-height:1.7;">' +
+    '<div><span class="deep-pipeline-k">month</span> <span class="deep-pipeline-v">' + MONTH_SHORT[monthIdx] + ' ' + year + '</span></div>' +
+    '<div><span class="deep-pipeline-k">day</span>   <span class="deep-pipeline-v">' + now.getDate() + ' / ' + dim + '</span></div>' +
+    '<div><span class="deep-pipeline-k">goal</span>  <span class="deep-pipeline-v">' + totalDone + ' / ' + totalGoal + '</span></div>' +
+    '<div><span class="deep-pipeline-k">pace</span>  <span style="color:' + statusColor + '">' + pacePct + '%</span> &nbsp; ' +
+      '<span class="deep-pipeline-k">done</span> <span style="color:' + statusColor + '">' + donePct + '%</span></div>' +
+    '<div style="margin-top:10px;font-family:var(--terminal);letter-spacing:0;">' +
+      '<span style="color:' + statusColor + '">' + bar + '</span>' +
+    '</div>' +
+    '<div style="margin-top:6px;"><span class="deep-pipeline-k">status</span> <span style="color:' + statusColor + '">[ ' + statusLine + ' ]</span></div>' +
+  '</div>';
+}
+
+function renderDeepFooter() {
+  var f = document.getElementById('deepFooter');
+  if (!f) return;
+  var n = (cachedAllItems || []).filter(function(i){ return !isPersonnel(i); }).length;
+  var filterLabel = deepFilter === 'all' ? 'all' : deepFilter;
+  var searchLabel = deepSearchQuery ? ' grep="' + deepSearchQuery + '"' : '';
+  f.innerHTML = '<span class="ok">[ok]</span> ' + n + ' items \u00b7 filter=' + filterLabel + searchLabel + ' \u00b7 model=haiku-4-5 \u00b7 board=' + OPS_BOARD;
+}
+
+function wireDeepToolbar() {
+  var btns = document.querySelectorAll('.deep-tool-btn');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btns.forEach(function(b){ b.classList.remove('deep-active'); });
+      btn.classList.add('deep-active');
+      deepFilter = btn.getAttribute('data-deep-view');
+      renderDeepTable();
+      renderDeepFooter();
+    });
+  });
+  var search = document.getElementById('deepSearch');
+  if (search) {
+    var t;
+    search.addEventListener('input', function(e){
+      clearTimeout(t);
+      t = setTimeout(function(){
+        deepSearchQuery = e.target.value.trim();
+        renderDeepTable();
+        renderDeepFooter();
+      }, 200);
+    });
+  }
+}
+
 // Init
 document.addEventListener('DOMContentLoaded', function(){
+  // Determine mode FIRST so init paths can branch
+  applyMode(getMode());
+
+  // Always-on
   tickClock();
   setInterval(tickClock, 30000);
-  wireBoardTabs();
-  wireChat();
-  wireModals();
-  wireCalendarNav();
   loadAllV3();
-  // Refresh every 90s
-  setInterval(loadAllV3, 90000);
+  setInterval(loadAllV3, HUB_MODE === 'tv' ? 60000 : 90000);
+
+  if (HUB_MODE === 'daily') {
+    wireBoardTabs();
+    wireChat();
+    wireModals();
+    wireCalendarNav();
+    // No tools sidebar in daily mode — drawer + Esc handler handle it
+  } else if (HUB_MODE === 'tv') {
+    startTVMode();
+  } else if (HUB_MODE === 'deep') {
+    wireDeepToolbar();
+    // Re-render deep on every loadAllV3 cycle
+    var origLoad = loadAllV3;
+  }
 });
+
+// Hook deep render into the load cycle
+(function(){
+  var orig = window.loadAllV3;
+  if (typeof orig === 'function') {
+    window.loadAllV3 = function() {
+      return orig.apply(this, arguments).then(function(){
+        if (HUB_MODE === 'deep') renderDeep();
+        if (HUB_MODE === 'tv') {
+          // Re-render the current TV view in case data changed
+          renderTV(tvViewIdx);
+        }
+      });
+    };
+  }
+})();
 </script>
 
 
