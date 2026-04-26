@@ -1363,60 +1363,60 @@
   <aside class="sidebar">
     <div class="side-section">
       <div class="side-eyebrow">View</div>
-      <a class="side-link active">Dashboard <span class="side-link-meta">●</span></a>
-      <a class="side-link">Pipeline <span class="side-link-meta">55</span></a>
-      <a class="side-link">Today <span class="side-link-meta">14</span></a>
-      <a class="side-link">Calendar</a>
-      <a class="side-link">Activity log</a>
+      <a class="side-link active" href="#" onclick="navTo('dashboard',event)">Dashboard <span class="side-link-meta">●</span></a>
+      <a class="side-link" href="#" onclick="navTo('pipeline',event)">Pipeline <span class="side-link-meta">55</span></a>
+      <a class="side-link" href="#" onclick="navTo('today',event)">Today <span class="side-link-meta">14</span></a>
+      <a class="side-link" href="#" onclick="navTo('calendar',event)">Calendar</a>
+      <a class="side-link" href="#" onclick="navTo('activity',event)">Activity log</a>
     </div>
     <div class="side-section tool-rail">
       <div class="side-eyebrow">Tools</div>
       <div class="tool-grid">
-        <a class="tool-tile" title="Schedule a delivery">
+        <a class="tool-tile" title="Schedule a delivery" href="/schedule">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span class="tool-tip">Schedule</span>
         </a>
-        <a class="tool-tile" title="POD upload">
+        <a class="tool-tile" title="POD upload" href="/pod">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="tool-tip">POD upload</span>
         </a>
-        <a class="tool-tile" title="DC confirm">
+        <a class="tool-tile" title="DC confirm" href="/" onclick="event.preventDefault(); openModal('modalSendEmail');">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/><polyline points="9,15 11,17 15,13"/></svg>
           <span class="tool-tip">DC confirm</span>
         </a>
-        <a class="tool-tile" title="Driver dispatch">
+        <a class="tool-tile" title="Driver dispatch" href="/dispatch">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span class="tool-tip">Dispatch</span>
         </a>
-        <a class="tool-tile" title="Work orders">
+        <a class="tool-tile" title="Work orders" href="/workorders">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
           <span class="tool-tip">Work orders</span>
         </a>
-        <a class="tool-tile" title="Label generator">
+        <a class="tool-tile" title="Label generator" href="/label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
           <span class="tool-tip">Labels</span>
         </a>
-        <a class="tool-tile" title="Warehouse I/O form">
+        <a class="tool-tile" title="Warehouse I/O form" href="/warehouse">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><line x1="12" y1="11" x2="12" y2="21"/><polyline points="3 7 12 11 21 7"/></svg>
           <span class="tool-tip">I/O form</span>
         </a>
-        <a class="tool-tile" title="Client I/O portal">
+        <a class="tool-tile" title="Client I/O portal" href="/assign-purpose">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
           <span class="tool-tip">Client portal</span>
         </a>
-        <a class="tool-tile" title="Estimate generator">
+        <a class="tool-tile" title="Estimate generator" href="/estimates">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span class="tool-tip">Estimates</span>
         </a>
-        <a class="tool-tile" title="CEO dashboard">
+        <a class="tool-tile" title="CEO dashboard" href="/ceo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="22" x2="21" y2="22"/></svg>
           <span class="tool-tip">CEO dash</span>
         </a>
-        <a class="tool-tile" title="Procurement">
+        <a class="tool-tile" title="Procurement" href="/procure">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span class="tool-tip">Procurement</span>
         </a>
-        <a class="tool-tile" title="Billing">
+        <a class="tool-tile" title="Billing" href="/ceo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="0"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           <span class="tool-tip">Billing</span>
         </a>
@@ -1431,7 +1431,7 @@
 
   <main class="main">
 
-    <div class="row r-pipeline">
+    <div class="row r-pipeline" id="section-pipeline">
 
       <div class="panel">
         <div class="p-head">
@@ -1469,7 +1469,7 @@
 
     </div>
 
-    <div class="row r-board">
+    <div class="row r-board" id="section-board">
       <div class="panel">
         <div class="p-head">
           <div class="p-title">
@@ -3250,6 +3250,43 @@ document.addEventListener('click', function(){
 // Activity rail collapse
 function toggleActivity() {
   document.body.classList.toggle('activity-collapsed');
+}
+
+// View nav handler — scrolls to section, switches tabs, opens calendar
+function navTo(target, event) {
+  if (event) event.preventDefault();
+  // Mark the active link
+  var links = document.querySelectorAll('.side-link');
+  links.forEach(function(l){ l.classList.remove('active'); });
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+  if (target === 'dashboard') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (target === 'pipeline') {
+    var el = document.getElementById('section-pipeline');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  if (target === 'today') {
+    if (typeof setBoardTab === 'function') setBoardTab('today');
+    var el = document.getElementById('section-board');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  if (target === 'calendar') {
+    // Open Google Calendar (HANDS LV Delivery Reminders) in a new tab
+    window.open('https://calendar.google.com/calendar/u/0/r?cid=c_e305c25f4b8322a96b53468d229055a1af5f3fa18aff4880a651aaf7d35122f0%40group.calendar.google.com', '_blank');
+    return;
+  }
+  if (target === 'activity') {
+    // Make sure rail is open, then scroll to top of activity feed
+    document.body.classList.remove('activity-collapsed');
+    var el = document.querySelector('.activity-rail') || document.querySelector('.act-list');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
 }
 
 // Clock
