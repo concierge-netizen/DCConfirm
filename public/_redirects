@@ -34,3 +34,9 @@
 /api/billing-webhook   /.netlify/functions/billing-webhook   200
 /api/claude-stream     /.netlify/functions/claude-stream     200
 /ceo                   /ceo.html                             200
+
+# HANDS Phase 7 wave 3 — Procurement Tool
+/api/lookup-product   /.netlify/functions/lookup-product   200
+/api/save-quote       /.netlify/functions/save-quote       200
+/api/load-quotes      /.netlify/functions/load-quotes      200
+/procure              /procure.html                        200
