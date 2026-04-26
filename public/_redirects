@@ -51,3 +51,9 @@
 # HANDS Phase B — Gmail OAuth bootstrap
 /api/gmail-auth          /.netlify/functions/gmail-auth          200
 /api/gmail-auth-callback /.netlify/functions/gmail-auth-callback 200
+
+# Activation Proposal — admin builder + public client view + APIs
+/api/activation-proposals    /.netlify/functions/activation-proposals    200
+/api/send-activation-quote   /.netlify/functions/send-activation-quote   200
+/activation-admin            /activation-admin.html                      200
+/activation-proposal/*       /activation-proposal.html?slug=:splat       200
