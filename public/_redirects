@@ -43,3 +43,11 @@
 
 # Path swap — / now serves hub.html (copied to index.html), DC confirm flow moved to /confirmations
 /confirmations         /confirmations.html                   200
+
+# HANDS Phase A — auth gate (PIN→JWT login)
+/api/hub-login           /.netlify/functions/hub-login           200
+/api/claude-chat         /.netlify/functions/claude-chat         200
+
+# HANDS Phase B — Gmail OAuth bootstrap
+/api/gmail-auth          /.netlify/functions/gmail-auth          200
+/api/gmail-auth-callback /.netlify/functions/gmail-auth-callback 200
