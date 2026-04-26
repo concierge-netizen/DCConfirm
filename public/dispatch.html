@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HANDS Logistics — Driver Dispatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#0a0a0a;--dark:#111;--card:#161616;--card2:#1a1a1a;
+  --border:#2a2a2a;--border2:#333;
+  --green:#a0d6b4;--green2:#7fc49e;
+  --muted:#555;--label:#888;--text:#e8e8e8;--white:#fff;--red:#e07070;
+  --radius:6px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;--head:'Bebas Neue',sans-serif;
+}
+body{background:var(--black);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh;padding-bottom:80px;}
+
+/* ── Header ── */
+.site-header{background:var(--black);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:200;}
+.header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;}
+.header-logo img{height:26px;display:block;}
+.badge{background:rgba(160,214,180,0.10);border:1px solid rgba(160,214,180,0.25);border-radius:20px;padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);}
+.accent-bar{display:flex;height:3px;}
+.accent-bar .dk{flex:0 0 68%;background:#1a1a1a;}
+.accent-bar .gn{flex:0 0 32%;background:var(--green);}
+.hero{background:var(--green);padding:11px 24px;text-align:center;}
+.hero p{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--black);}
+
+/* ── Layout ── */
+.page{max-width:640px;margin:0 auto;padding:28px 20px 0;}
+.sec-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.card-hdr{background:#1c1c1c;padding:9px 16px;border-bottom:1px solid var(--border);}
+.card-hdr p{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green);}
+.card-body{padding:18px 16px;}
+
+/* ── Fields ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--label);margin-bottom:7px;}
+.field input,.field select,.field textarea{width:100%;background:#0f0f0f;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:14px;padding:9px 12px;outline:none;transition:border-color 0.2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5;}
+
+/* ── Quick-fill banner ── */
+.qf-banner{background:linear-gradient(135deg,rgba(160,214,180,0.08),rgba(160,214,180,0.03));border:1px solid rgba(160,214,180,0.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;}
+.qf-banner .qf-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px;}
+.qf-banner select{width:100%;background:#0a0a0a;border:1px solid rgba(160,214,180,0.25);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 32px 9px 12px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23a0d6b4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+
+/* ── Stops ── */
+#stops-list{margin-bottom:14px;}
+.stop-card{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
+.stop-card.dragging{opacity:0.5;border-color:var(--green);}
+.stop-card.drag-over{border-color:var(--green);box-shadow:0 0 0 2px rgba(160,214,180,0.2);}
+.stop-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1c1c1c;border-bottom:1px solid var(--border);cursor:default;user-select:none;}
+.drag-handle{cursor:grab;color:var(--muted);font-size:16px;line-height:1;flex-shrink:0;padding:2px 4px;}
+.drag-handle:active{cursor:grabbing;}
+.stop-num{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1px;color:var(--green);min-width:52px;}
+.stop-title{flex:1;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stop-actions{display:flex;gap:6px;flex-shrink:0;}
+.stop-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:4px;font-size:13px;color:var(--muted);transition:color 0.15s,background 0.15s;}
+.stop-btn:hover{color:var(--text);background:var(--border);}
+.stop-btn.del:hover{color:var(--red);background:rgba(224,112,112,0.1);}
+.stop-body{padding:14px;}
+.stop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.stop-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.stop-field label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.stop-field input,.stop-field textarea{width:100%;background:#0f0f0f;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:8px 10px;outline:none;transition:border-color 0.2s;}
+.stop-field input:focus,.stop-field textarea:focus{border-color:var(--green);}
+.stop-field textarea{resize:vertical;min-height:52px;line-height:1.5;}
+.stop-qf-row{margin-bottom:10px;}
+.stop-qf-row select{width:100%;background:#0a0a0a;border:1px solid rgba(160,214,180,0.2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 28px 7px 10px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 0l5 7 5-7z' fill='%23a0d6b4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+
+/* ── Add stop ── */
+.btn-add-stop{width:100%;background:transparent;border:1px dashed var(--border2);border-radius:8px;padding:12px;color:var(--muted);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:border-color 0.2s,color 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
+.btn-add-stop:hover{border-color:var(--green);color:var(--green);}
+
+/* ── Buttons ── */
+.btn-primary{width:100%;background:var(--green);color:var(--black);border:none;border-radius:var(--radius);padding:15px 24px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s,opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-primary:hover{background:var(--green2);}
+.btn-primary:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-secondary{width:100%;background:transparent;color:var(--green);border:1px solid var(--green);border-radius:var(--radius);padding:12px 24px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;margin-bottom:10px;}
+.btn-secondary:hover{background:rgba(160,214,180,0.08);}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--text);opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.ok{border-color:rgba(160,214,180,0.4);color:var(--green);}
+#toast.err{border-color:rgba(224,112,112,0.4);color:var(--red);}
+
+/* ── Status ── */
+.status-wrap{display:none;margin-bottom:14px;}
+.status-wrap.show{display:block;}
+.status-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:7px;}
+.status-fill{height:100%;background:var(--green);border-radius:2px;width:0;transition:width 0.3s;}
+.status-txt{font-size:11px;color:var(--label);text-align:center;}
+.error-box{display:none;background:rgba(224,112,112,0.08);border:1px solid rgba(224,112,112,0.25);border-radius:var(--radius);padding:11px 14px;color:var(--red);font-size:13px;margin-bottom:14px;}
+.error-box.show{display:block;}
+
+/* ── Footer ── */
+.site-footer{background:#0f0f0f;border-top:1px solid var(--border);padding:18px 24px;margin-top:40px;}
+.footer-inner{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;color:var(--muted);}
+.brand-sub{color:var(--green);font-weight:600;}
+.footer-right a{color:var(--muted);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics" width="140">
+    </div>
+    <div class="badge">Dispatcher</div>
+  </div>
+</header>
+<div class="accent-bar"><div class="dk"></div><div class="gn"></div></div>
+<div class="hero"><p>Driver Dispatch</p></div>
+
+<main class="page">
+
+  <!-- Dispatch Info -->
+  <div class="card">
+    <div class="card-hdr"><p>01 &mdash; Dispatch Details</p></div>
+
+    <div class="card-body">
+      <div class="grid-3">
+        <div class="field">
+          <label>Driver Name</label>
+          <input type="text" id="driverName" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Driver Email</label>
+          <input type="text" id="driverEmail" placeholder="driver@email.com">
+        </div>
+        <div class="field">
+          <label>Vehicle</label>
+          <input type="text" id="vehicle" placeholder="Van / Truck / Sprinter">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Date</label>
+          <input type="text" id="dispatchDate" placeholder="April 3, 2026">
+        </div>
+        <div class="field">
+          <label>Dispatcher</label>
+          <input type="text" id="dispatcher" placeholder="Your name" value="Jon Williams">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PO Quick-Add -->
+  <div class="card">
+    <div class="card-hdr"><p>02 &mdash; Add Stop by PO Number</p></div>
+    <div class="card-body">
+      <div style="display:flex;gap:10px;align-items:flex-end;">
+        <div class="field" style="flex:1;margin-bottom:0;">
+          <label>PO # or Monday Item ID</label>
+          <input type="text" id="poLookupInput" placeholder="e.g. PO768557 or 11656685820" onkeydown="if(event.key==='Enter') addStopByPO()">
+        </div>
+        <button onclick="addStopByPO()" style="background:var(--green);color:var(--black);border:none;border-radius:var(--radius);padding:9px 18px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;height:38px;">+ Add Stop</button>
+      </div>
+      <div id="po-lookup-msg" style="font-size:11px;color:var(--label);margin-top:8px;display:none;"></div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Or select from recent orders:</div>
+        <select id="po-global-select" style="width:100%;background:#0a0a0a;border:1px solid rgba(160,214,180,0.2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 32px 9px 12px;outline:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27%3E%3Cpath d=%27M0 0l6 8 6-8z%27 fill=%27%23a0d6b4%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 12px center;" onchange="if(this.value) { addStopFromSelect(this.value); this.value=''; }">
+          <option value="">&#x25BC; Select an order to add as a stop...</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stops -->
+  <div class="card">
+    <div class="card-hdr"><p>03 &mdash; Delivery Stops <span id="stop-count" style="color:var(--muted);font-size:8px;margin-left:8px;">0 STOPS</span></p></div>
+    <div class="card-body">
+      <div id="stops-list"></div>
+      <button class="btn-add-stop" onclick="addStop()">&#43; Add Empty Stop</button>
+    </div>
+  </div>
+
+  <div class="status-wrap" id="statusWrap">
+    <div class="status-bar"><div class="status-fill" id="statusFill"></div></div>
+    <div class="status-txt" id="statusTxt">Sending...</div>
+  </div>
+  <div class="error-box" id="errorBox"></div>
+
+  <button class="btn-secondary" id="previewBtn" onclick="previewDispatch()">
+    &#128064; Preview Email Before Sending
+  </button>
+  <button class="btn-primary" id="sendBtn" onclick="sendDispatch()">
+    Send Dispatch to Driver &#8594;
+  </button>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;overflow-y:auto;padding:24px 16px;">
+    <div style="max-width:680px;margin:0 auto;background:#1a1a1a;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#111;border-bottom:1px solid var(--border);">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);">Email Preview</div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="confirmSend()" style="background:var(--green);color:var(--black);border:none;border-radius:var(--radius);padding:8px 18px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Confirm &amp; Send &#8594;</button>
+          <button onclick="closePreview()" style="background:#2a2a2a;color:var(--label);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;font-family:var(--font);font-size:13px;cursor:pointer;">&#10005; Close</button>
+        </div>
+      </div>
+      <div id="previewFrame" style="padding:0;background:#fff;"></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="accent-bar"><div class="dk"></div><div class="gn"></div></div>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div><p>Concierge Desk</p><p class="brand-sub">HANDS Logistics</p></div>
+    <div class="footer-right">
+      <a href="mailto:concierge@handslogistics.com">concierge&#64;handslogistics.com</a><br>Las Vegas, NV 89139
+    </div>
+  </div>
+</footer>
+<div id="toast"></div>
+
+<script>
+var SEND_ENDPOINT   = '/api/send-dispatch';
+var FETCH_ENDPOINT  = '/api/fetch-items';
+var OPS_BOARD       = '4550650855';
+var EXCLUDE_STATUS  = ['COMPLETE', 'Proposal Need'];
+var stopCounter     = 0;
+var dragSrc         = null;
+
+// ── Monday items — loaded live on page load ───────────────────
+var MONDAY_ITEMS = [];
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type || '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.className = ''; }, 3000);
+}
+
+// ── Stop number refresh ───────────────────────────────────────
+function refreshStopNums() {
+  var stops = document.querySelectorAll('.stop-card');
+  stops.forEach(function(s, i) {
+    var num = s.querySelector('.stop-num');
+    var title = s.querySelector('.stop-title');
+    if (num) num.textContent = 'STOP ' + (i + 1) + ' / ' + stops.length;
+    // Update title from account field
+    var acc = s.querySelector('.sf-account');
+    if (title && acc) title.textContent = acc.value || 'New Stop';
+  });
+  document.getElementById('stop-count').textContent = stops.length + ' STOP' + (stops.length !== 1 ? 'S' : '');
+}
+
+// ── Build stop options HTML ───────────────────────────────────
+function buildOptions() {
+  var html = '<option value="">&#x25BC; Quick-fill from recent orders...</option>';
+  MONDAY_ITEMS.forEach(function(m) {
+    var label = (m.account ? m.account + ' — ' : '') + m.name;
+    if (m.po)   label += ' [' + m.po + ']';
+    if (m.date) label += ' (' + m.date + ')';
+    html += '<option value="' + m.id + '">' + label + '</option>';
+  });
+  return html;
+}
+
+// ── Apply quick-fill to a stop ────────────────────────────────
+function applyFill(stopEl, itemId) {
+  if (!itemId) return;
+  var m = MONDAY_ITEMS.find(function(x) { return x.id === itemId; });
+  if (!m) return;
+
+  function set(cls, val) {
+    var el = stopEl.querySelector('.' + cls);
+    if (el) el.value = val || '';
+  }
+
+  set('sf-account',  m.account);
+  set('sf-project',  m.project);
+
+  // Only use m.po if it's an actual PO number — not a billing status string
+  var billingWords = ['INVOICE PENDING','INVOICE DIRECT','ESTIMATE READY','NOT STARTED','DIRECT','PENDING'];
+  var realPO = m.po && billingWords.indexOf(m.po.toUpperCase().trim()) === -1 ? m.po : '';
+  set('sf-po', realPO || m.id);
+
+  set('sf-address',  m.address);
+  set('sf-time',     m.time);
+  set('sf-contact',  m.contact);
+  set('sf-desc',     m.desc || '');
+
+  // Set POD link using monday item ID (always works, even if no PO number)
+  var podEl = stopEl.querySelector('.sf-pod');
+  if (podEl && m.id) podEl.value = 'https://handslogistics.netlify.app/?po=' + m.id;
+
+  // Update title
+  var title = stopEl.querySelector('.stop-title');
+  if (title) title.textContent = m.account || m.name;
+
+  refreshStopNums();
+  showToast('Loaded: ' + (m.account || m.name), 'ok');
+}
+
+// ── Drag & drop reorder ───────────────────────────────────────
+function initDrag(card) {
+  card.setAttribute('draggable', 'true');
+
+  card.addEventListener('dragstart', function(e) {
+    dragSrc = card;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', function() {
+    card.classList.remove('dragging');
+    document.querySelectorAll('.stop-card').forEach(function(c) { c.classList.remove('drag-over'); });
+    refreshStopNums();
+  });
+  card.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    if (dragSrc && dragSrc !== card) {
+      document.querySelectorAll('.stop-card').forEach(function(c) { c.classList.remove('drag-over'); });
+      card.classList.add('drag-over');
+    }
+  });
+  card.addEventListener('drop', function(e) {
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    if (dragSrc && dragSrc !== card) {
+      var list = document.getElementById('stops-list');
+      var cards = Array.from(list.querySelectorAll('.stop-card'));
+      var fromIdx = cards.indexOf(dragSrc);
+      var toIdx   = cards.indexOf(card);
+      if (fromIdx < toIdx) {
+        list.insertBefore(dragSrc, card.nextSibling);
+      } else {
+        list.insertBefore(dragSrc, card);
+      }
+      refreshStopNums();
+      showToast('Stop reordered', 'ok');
+    }
+  });
+}
+
+// ── Add stop ──────────────────────────────────────────────────
+function addStop(prefill) {
+  stopCounter++;
+  var id = 'stop-' + stopCounter;
+  var card = document.createElement('div');
+  card.className = 'stop-card';
+  card.id = id;
+
+  card.innerHTML =
+    '<div class="stop-header">' +
+      '<span class="drag-handle" title="Drag to reorder">&#9776;</span>' +
+      '<span class="stop-num">STOP 1 / 1</span>' +
+      '<span class="stop-title">New Stop</span>' +
+      '<div class="stop-actions">' +
+        '<button class="stop-btn" onclick="moveStop(\'' + id + '\',-1)" title="Move up">&#8593;</button>' +
+        '<button class="stop-btn" onclick="moveStop(\'' + id + '\',1)"  title="Move down">&#8595;</button>' +
+        '<button class="stop-btn del" onclick="removeStop(\'' + id + '\')" title="Remove">&#10005;</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="stop-body">' +
+      '<div class="stop-qf-row">' +
+        '<select onchange="applyFill(document.getElementById(\'' + id + '\'), this.value)">' +
+          buildOptions() +
+        '</select>' +
+      '</div>' +
+      '<div class="stop-grid">' +
+        '<div class="stop-field"><label>Account / Client</label><input type="text" class="sf-account" placeholder="Company name" oninput="refreshStopNums()"></div>' +
+        '<div class="stop-field"><label>PO / Reference</label><input type="text" class="sf-po" placeholder="PO number or ID"></div>' +
+      '</div>' +
+      '<div class="stop-field" style="margin-bottom:10px;"><label>Project / Job Name</label><input type="text" class="sf-project" placeholder="Project name"></div>' +
+      '<div class="stop-field" style="margin-bottom:10px;"><label>Delivery Address</label><textarea class="sf-address" placeholder="Full address"></textarea></div>' +
+      '<div class="stop-grid">' +
+        '<div class="stop-field"><label>Delivery Time</label><input type="text" class="sf-time" placeholder="e.g. Before 2PM"></div>' +
+        '<div class="stop-field"><label>Contact</label><input type="text" class="sf-contact" placeholder="Name or email"></div>' +
+      '</div>' +
+      '<div class="stop-field" style="margin-bottom:10px;"><label>Items / Description</label><textarea class="sf-desc" placeholder="Products, quantities, or delivery details" style="min-height:52px;"></textarea></div>' +
+      '<div class="stop-grid">' +
+        '<div class="stop-field"><label>Notes</label><textarea class="sf-notes" placeholder="Gate codes, special instructions..." style="min-height:44px;"></textarea></div>' +
+        '<div class="stop-field"><label>POD Upload Link</label><input type="text" class="sf-pod" readonly style="color:var(--green);cursor:pointer;" onclick="this.select()" placeholder="Auto-generated after save"></div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('stops-list').appendChild(card);
+  initDrag(card);
+
+  if (prefill) applyFill(card, prefill);
+
+  // Set POD link placeholder — will show after account/PO selected
+  refreshStopNums();
+  card.querySelector('.sf-account').focus();
+}
+
+// Update POD link whenever account changes
+function updatePodLink(stopEl) {
+  // POD link is set by quick-fill — just ensure it shows if po is set
+  var po = stopEl.querySelector('.sf-po');
+  var pod = stopEl.querySelector('.sf-pod');
+  if (po && pod && po.value && !pod.value) {
+    pod.value = 'handslogistics.netlify.app/?po=' + po.value;
+  }
+}
+
+// ── Move stop up/down ─────────────────────────────────────────
+function moveStop(id, dir) {
+  var list = document.getElementById('stops-list');
+  var card = document.getElementById(id);
+  if (dir === -1 && card.previousElementSibling) {
+    list.insertBefore(card, card.previousElementSibling);
+  } else if (dir === 1 && card.nextElementSibling) {
+    list.insertBefore(card.nextElementSibling, card);
+  }
+  refreshStopNums();
+}
+
+// ── Remove stop ───────────────────────────────────────────────
+function removeStop(id) {
+  var card = document.getElementById(id);
+  if (card) card.remove();
+  refreshStopNums();
+}
+
+// ── Collect stop data ─────────────────────────────────────────
+function getStops() {
+  return Array.from(document.querySelectorAll('.stop-card')).map(function(card) {
+    function v(cls) { var el = card.querySelector('.' + cls); return el ? el.value.trim() : ''; }
+    return {
+      account: v('sf-account'),
+      po:      v('sf-po'),
+      project: v('sf-project'),
+      address: v('sf-address'),
+      time:    v('sf-time'),
+      contact: v('sf-contact'),
+      desc:    v('sf-desc'),
+      notes:   v('sf-notes'),
+      podLink: v('sf-pod')
+    };
+  });
+}
+
+// ── Validation ────────────────────────────────────────────────
+function showError(m) { var e=document.getElementById('errorBox'); e.textContent=m; e.classList.add('show'); }
+function hideError()  { document.getElementById('errorBox').classList.remove('show'); }
+function setStatus(p,m) { document.getElementById('statusFill').style.width=p+'%'; document.getElementById('statusTxt').textContent=m; }
+
+// ── Send dispatch ─────────────────────────────────────────────
+function sendDispatch() {
+  hideError();
+  var driverName  = document.getElementById('driverName').value.trim();
+  var driverEmail = document.getElementById('driverEmail').value.trim();
+  var vehicle     = document.getElementById('vehicle').value.trim();
+  var date        = document.getElementById('dispatchDate').value.trim();
+  var dispatcher  = document.getElementById('dispatcher').value.trim();
+  var stops       = getStops();
+
+  if (!driverName)  { showError('Please enter the driver name.'); return; }
+  if (!driverEmail) { showError('Please enter the driver email.'); return; }
+  if (stops.length === 0) { showError('Please add at least one stop.'); return; }
+
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  document.getElementById('statusWrap').classList.add('show');
+  setStatus(30, 'Sending dispatch email...');
+
+  fetch(SEND_ENDPOINT, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ driverName, driverEmail, vehicle, date, dispatcher, stops })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      setStatus(100, 'Sent!');
+      showToast('Dispatch sent to ' + driverName + ' &#10003;', 'ok');
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = 'Send Dispatch to Driver \u2192';
+        document.getElementById('statusWrap').classList.remove('show');
+        setStatus(0, '');
+      }, 2000);
+    } else {
+      throw new Error(d.error || 'Unknown error');
+    }
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = 'Send Dispatch to Driver \u2192';
+    document.getElementById('statusWrap').classList.remove('show');
+    showError('Send failed: ' + err.message);
+  });
+}
+
+// ── Init global PO select ─────────────────────────────────────
+function initGlobalSelect() {
+  var sel = document.getElementById('po-global-select');
+  if (!sel) return;
+  MONDAY_ITEMS.forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m.id;
+    var label = (m.account ? m.account + ' — ' : '') + m.name;
+    if (m.po)   label += ' [' + m.po + ']';
+    if (m.date) label += ' (' + m.date + ')';
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Add stop from global dropdown ────────────────────────────
+function addStopFromSelect(itemId) {
+  addStop();
+  var cards = document.querySelectorAll('.stop-card');
+  var newCard = cards[cards.length - 1];
+  applyFill(newCard, itemId);
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── Add stop by typed PO number ──────────────────────────────
+function addStopByPO() {
+  var input = document.getElementById('poLookupInput');
+  var msg   = document.getElementById('po-lookup-msg');
+  var val   = input.value.trim();
+  if (!val) return;
+
+  msg.style.display = 'block';
+  msg.style.color   = 'var(--label)';
+  msg.textContent   = 'Searching...';
+
+  // Try matching by monday item ID first
+  var byId = MONDAY_ITEMS.find(function(m) { return m.id === val; });
+  if (byId) {
+    addStopFromSelect(byId.id);
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Added: ' + byId.account + ' — ' + byId.name;
+    input.value = '';
+    return;
+  }
+
+  // Try matching by PO number (case-insensitive)
+  var byPO = MONDAY_ITEMS.find(function(m) {
+    return m.po && m.po.toLowerCase() === val.toLowerCase();
+  });
+  if (byPO) {
+    addStopFromSelect(byPO.id);
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Added: ' + byPO.account + ' — ' + byPO.name;
+    input.value = '';
+    return;
+  }
+
+  // Try partial match on name, account, project
+  var partial = MONDAY_ITEMS.find(function(m) {
+    var search = val.toLowerCase();
+    return (m.name    && m.name.toLowerCase().includes(search))    ||
+           (m.account && m.account.toLowerCase().includes(search)) ||
+           (m.project && m.project.toLowerCase().includes(search)) ||
+           (m.po      && m.po.toLowerCase().includes(search));
+  });
+  if (partial) {
+    addStopFromSelect(partial.id);
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Added: ' + partial.account + ' — ' + partial.name;
+    input.value = '';
+    return;
+  }
+
+  // Not found — add an empty stop with the PO pre-filled
+  addStop();
+  var cards = document.querySelectorAll('.stop-card');
+  var newCard = cards[cards.length - 1];
+  var poEl = newCard.querySelector('.sf-po');
+  if (poEl) poEl.value = val;
+  var podEl = newCard.querySelector('.sf-pod');
+  if (podEl) podEl.value = 'handslogistics.netlify.app/?po=' + val;
+  refreshStopNums();
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  msg.style.color = '#f0c040';
+  msg.textContent = 'No match found — added empty stop with PO pre-filled.';
+  input.value = '';
+}
+
+// ── Build dispatch email HTML for preview ────────────────────
+function buildDispatchHTML(driverName, driverEmail, vehicle, date, dispatcher, stops) {
+  var GREEN = '#a0d6b4';
+  var stopsHtml = stops.map(function(s, i) {
+    var rows = '';
+    if (s.account) rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;width:30%;border-bottom:1px solid #eee;">Account</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.account + '</td></tr>';
+    if (s.po)      rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">PO / Ref</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.po + '</td></tr>';
+    if (s.project) rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Project</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.project + '</td></tr>';
+    if (s.address) rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Address</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.address.replace(/\n/g,'<br>') + '</td></tr>';
+    if (s.time)    rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Time</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.time + '</td></tr>';
+    if (s.contact) rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Contact</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.contact + '</td></tr>';
+    if (s.desc)    rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;vertical-align:top;">Items</td><td style="padding:6px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + s.desc.replace(/\n/g,'<br>') + '</td></tr>';
+    if (s.notes)   rows += '<tr><td style="padding:6px 14px;font-size:11px;color:#888;vertical-align:top;">Notes</td><td style="padding:6px 14px;font-size:12px;color:#111;">' + s.notes.replace(/\n/g,'<br>') + '</td></tr>';
+
+    // POD link — ensure full https:// URL
+    var podUrl = '';
+    if (s.podLink) {
+      podUrl = s.podLink.match(/^https?:\/\//) ? s.podLink : 'https://' + s.podLink;
+    }
+    var podBtn = podUrl
+      ? '<a href="' + podUrl + '" style="display:inline-block;margin-top:0;background:' + GREEN + ';color:#000;text-decoration:none;border-radius:6px;padding:10px 20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">&#128247; Upload POD Photos</a>'
+      : '';
+
+    // Stop header: show PO only if it's an actual PO number (not billing status text)
+    var billingKeywords = ['INVOICE PENDING','INVOICE DIRECT','ESTIMATE READY','NOT STARTED','DIRECT'];
+    var showPO = s.po && billingKeywords.indexOf(s.po.toUpperCase()) === -1;
+    var headerRight = showPO
+      ? '<span style="color:#aaa;font-size:12px;font-weight:500;">PO# ' + s.po + '</span>'
+      : '';
+
+    return '<div style="margin-bottom:20px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">' +
+      '<div style="background:#0a0a0a;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span style="background:' + GREEN + ';color:#000;font-weight:700;font-size:11px;border-radius:4px;padding:3px 10px;letter-spacing:1px;">STOP ' + (i+1) + '</span>' +
+          '<span style="color:#fff;font-size:13px;font-weight:600;">' + (s.account || s.project || 'Stop ' + (i+1)) + '</span>' +
+        '</div>' +
+        headerRight +
+      '</div>' +
+      '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">' + rows + '</table>' +
+      (podBtn ? '<div style="padding:14px;background:#f0faf4;border-top:2px solid ' + GREEN + ';text-align:center;">' + podBtn + '</div>' : '') +
+    '</div>';
+  }).join('');
+
+  return '<!DOCTYPE html><html><body style="margin:0;padding:32px;background:#f4f4f4;font-family:Arial,sans-serif;">' +
+    '<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">' +
+    '<div style="background:#0a0a0a;padding:28px 32px;">' +
+      '<img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" width="140" style="display:block;margin-bottom:20px;">' +
+      '<div style="height:3px;background:linear-gradient(90deg,#1a1a1a 68%,' + GREEN + ' 68%);margin-bottom:0;"></div>' +
+    '</div>' +
+    '<div style="background:' + GREEN + ';padding:12px 32px;text-align:center;"><p style="margin:0;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000;">Driver Dispatch</p></div>' +
+    '<div style="padding:28px 32px;">' +
+      '<h2 style="margin:0 0 6px;font-size:22px;color:#0a0a0a;">Your Delivery Route</h2>' +
+      '<p style="margin:0 0 24px;font-size:13px;color:#888;">Hello ' + driverName + ', here are your stops for today.</p>' +
+      '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:24px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">' +
+        (driverName  ? '<tr><td style="padding:8px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;width:30%;">Driver</td><td style="padding:8px 14px;font-size:12px;font-weight:600;color:#111;border-bottom:1px solid #eee;">' + driverName + '</td></tr>' : '') +
+        (vehicle     ? '<tr><td style="padding:8px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Vehicle</td><td style="padding:8px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + vehicle + '</td></tr>' : '') +
+        (date        ? '<tr><td style="padding:8px 14px;font-size:11px;color:#888;border-bottom:1px solid #eee;">Date</td><td style="padding:8px 14px;font-size:12px;color:#111;border-bottom:1px solid #eee;">' + date + '</td></tr>' : '') +
+        (dispatcher  ? '<tr><td style="padding:8px 14px;font-size:11px;color:#888;">Dispatcher</td><td style="padding:8px 14px;font-size:12px;color:#111;">' + dispatcher + '</td></tr>' : '') +
+      '</table>' +
+      '<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:14px;">' + stops.length + ' Stop' + (stops.length !== 1 ? 's' : '') + '</div>' +
+      stopsHtml +
+    '</div>' +
+    '<div style="background:#f0f0f0;padding:18px 32px;border-top:1px solid #e0e0e0;font-size:11px;color:#888;text-align:center;">HANDS Logistics &middot; concierge@handslogistics.com &middot; Las Vegas, NV 89139</div>' +
+    '</div></body></html>';
+}
+
+// ── Preview modal ─────────────────────────────────────────────
+function previewDispatch() {
+  hideError();
+  var driverName  = document.getElementById('driverName').value.trim();
+  var driverEmail = document.getElementById('driverEmail').value.trim();
+  var vehicle     = document.getElementById('vehicle').value.trim();
+  var date        = document.getElementById('dispatchDate').value.trim();
+  var dispatcher  = document.getElementById('dispatcher').value.trim();
+  var stops       = getStops();
+
+  if (!driverName)  { showError('Please enter the driver name before previewing.'); return; }
+  if (stops.length === 0) { showError('Please add at least one stop before previewing.'); return; }
+
+  var html = buildDispatchHTML(driverName, driverEmail, vehicle, date, dispatcher, stops);
+  var frame = document.getElementById('previewFrame');
+  frame.innerHTML = '<iframe srcdoc="' + html.replace(/"/g, '&quot;') + '" style="width:100%;height:600px;border:none;" frameborder="0"></iframe>';
+  document.getElementById('previewModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreview() {
+  document.getElementById('previewModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function confirmSend() {
+  closePreview();
+  sendDispatch();
+}
+
+// ── Fetch items via Netlify function (avoids CORS) ───────────
+function loadMondayItems() {
+  var sel = document.getElementById('po-global-select');
+  var msg = document.getElementById('po-lookup-msg');
+  if (sel) { sel.innerHTML = '<option value="">Loading orders from Monday...</option>'; sel.disabled = true; }
+
+  fetch(FETCH_ENDPOINT)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      MONDAY_ITEMS = data.items || [];
+      initGlobalSelect();
+      if (msg) { msg.style.display = 'none'; }
+    })
+    .catch(function(err) {
+      console.warn('fetch-items failed:', err);
+      if (sel) {
+        sel.innerHTML = '<option value="">Could not load orders — type PO# or Item ID manually</option>';
+        sel.disabled = false;
+      }
+    });
+}
+
+// ── Init ──────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  loadMondayItems();
+  addStop();
+});
+</script>
+</body>
+</html>
