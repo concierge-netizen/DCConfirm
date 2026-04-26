@@ -408,6 +408,274 @@
       grid-template-columns: 1fr;
     }
   }
+  /* ── Brand Color picker ── */
+  .brand-color-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .brand-color-input-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid var(--light-grey);
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--white);
+    width: 220px;
+  }
+  .brand-color-input-wrap input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 56px;
+    height: 56px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .brand-color-input-wrap input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  .brand-color-input-wrap input[type="color"]::-webkit-color-swatch { border: none; }
+  .brand-color-input-wrap input[type="color"]::-moz-color-swatch { border: none; }
+  .brand-color-input-wrap input[type="text"] {
+    flex: 1;
+    border: none;
+    border-left: 1px solid var(--light-grey);
+    padding: 0 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    outline: none;
+    background: var(--white);
+  }
+  .brand-color-input-wrap input[type="text"]:focus {
+    background: var(--off-white);
+  }
+  .palette-preview {
+    display: flex;
+    height: 56px;
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .palette-preview .swatch {
+    flex: 1;
+    position: relative;
+    transition: flex 0.2s;
+  }
+  .palette-preview .swatch:hover { flex: 1.4; }
+  .palette-preview .swatch::after {
+    content: attr(data-hex);
+    position: absolute;
+    bottom: 6px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    opacity: 0;
+    transition: opacity 0.2s;
+    text-shadow: 0 0 4px rgba(255,255,255,0.8);
+  }
+  .palette-preview .swatch:hover::after { opacity: 1; }
+  @media (max-width: 720px) {
+    .brand-color-row { grid-template-columns: 1fr; gap: 16px; }
+    .brand-color-input-wrap { width: 100%; }
+  }
+
+  /* ── Deck card stack (Design Slides + Deliverables) ── */
+  .deck-card-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .deck-card-stack .empty-state {
+    padding: 40px 28px;
+    text-align: center;
+    color: var(--text-grey);
+    font-size: 13px;
+    background: var(--off-white);
+  }
+  .deck-card {
+    display: grid;
+    grid-template-columns: 240px 1fr auto;
+    gap: 24px;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--light-grey);
+    align-items: start;
+  }
+  .deck-card:last-child { border-bottom: none; }
+  .deck-card-image {
+    aspect-ratio: 4 / 3;
+    background: var(--off-white);
+    border: 1px dashed var(--light-grey);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .deck-card-image:hover {
+    border-color: var(--green-dark);
+    background: rgba(160,214,180,0.08);
+  }
+  .deck-card-image.has-image {
+    border-style: solid;
+    border-color: var(--light-grey);
+  }
+  .deck-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .deck-card-image .upload-prompt {
+    text-align: center;
+    color: var(--text-grey);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px;
+  }
+  .deck-card-image .upload-prompt .arrow {
+    font-size: 20px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .deck-card-image .uploading {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+  }
+  .deck-card-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .deck-card-fields .field { margin-bottom: 0; }
+  .deck-card-row-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .deck-card-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--mid-grey);
+    font-size: 22px;
+    padding: 4px 10px;
+    line-height: 1;
+    align-self: start;
+    transition: color 0.15s;
+  }
+  .deck-card-remove:hover { color: var(--red); }
+  @media (max-width: 900px) {
+    .deck-card { grid-template-columns: 1fr; }
+    .deck-card-image { max-width: 280px; }
+  }
+
+  /* ── Sourcing items table ── */
+  .sourcing-table-header {
+    display: grid;
+    grid-template-columns: 80px 1.4fr 1fr 70px 100px 1.5fr 32px;
+    gap: 10px;
+    padding: 12px 28px;
+    background: var(--off-white);
+    border-bottom: 1px solid var(--light-grey);
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text-grey);
+  }
+  .sourcing-row {
+    display: grid;
+    grid-template-columns: 80px 1.4fr 1fr 70px 100px 1.5fr 32px;
+    gap: 10px;
+    padding: 12px 28px;
+    border-bottom: 1px solid var(--light-grey);
+    align-items: center;
+  }
+  .sourcing-row:last-child { border-bottom: none; }
+  .sourcing-row .field { margin-bottom: 0; }
+  .sourcing-row input,
+  .sourcing-row select {
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1px solid var(--light-grey);
+    background: var(--white);
+    border-radius: 2px; outline: none;
+    width: 100%;
+  }
+  .sourcing-row input:focus { border-color: var(--green-dark); }
+  .sourcing-thumb {
+    width: 60px; height: 60px;
+    background: var(--off-white);
+    border: 1px dashed var(--light-grey);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .sourcing-thumb:hover {
+    border-color: var(--green-dark);
+    background: rgba(160,214,180,0.08);
+  }
+  .sourcing-thumb.has-image { border-style: solid; border-color: var(--light-grey); }
+  .sourcing-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .sourcing-thumb .add-icon {
+    font-size: 18px;
+    color: var(--text-grey);
+  }
+  .sourcing-thumb .uploading {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--green-dark);
+  }
+  .sourcing-row .item-remove {
+    background: transparent; border: none; cursor: pointer;
+    color: var(--mid-grey); font-size: 18px;
+    padding: 4px 8px;
+  }
+  .sourcing-row .item-remove:hover { color: var(--red); }
+  .sourcing-empty-state {
+    padding: 24px 28px;
+    text-align: center;
+    color: var(--text-grey);
+    font-size: 13px;
+  }
+  @media (max-width: 1024px) {
+    .sourcing-table-header { display: none; }
+    .sourcing-row {
+      grid-template-columns: 80px 1fr 32px;
+      gap: 12px;
+      padding: 16px 20px;
+    }
+    .sourcing-row .stack-on-mobile {
+      grid-column: 2 / 3;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -654,6 +922,87 @@
           <textarea id="customNotes" rows="3" placeholder="e.g. Final attendee count needed by May 5 to lock crew sizing. Loading dock access requires 24hr advance request &mdash; HANDS handles."></textarea>
         </div>
       </div>
+
+      <!-- Step 08: Brand Color -->
+      <div class="card">
+        <div class="section-eyebrow">Step 08 — Brand Color</div>
+        <h3 class="section-title" style="font-size: 22px;">Drop a hex, get a palette.</h3>
+        <p class="section-sub">A single brand color drives the entire deck — five tones derived automatically. Skip if undecided; defaults work too.</p>
+
+        <div class="brand-color-row">
+          <div class="brand-color-input-wrap">
+            <input type="color" id="brandColorPicker" value="#a0d6b4" oninput="syncBrandColor('picker')" aria-label="Color picker" />
+            <input type="text" id="brandColorHex" value="" placeholder="#0a3a5e" maxlength="7" oninput="syncBrandColor('hex')" />
+          </div>
+          <div class="palette-preview" id="palettePreview" aria-label="Palette preview">
+            <!-- 5 swatches injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 09: Design Slides -->
+      <div class="builder-card">
+        <div class="builder-header">
+          <div>
+            <div class="section-eyebrow">Step 09 — Design Slides</div>
+            <h4>Visual concept reference</h4>
+          </div>
+          <button class="btn-secondary" onclick="addDesignSlide()">+ Add slide</button>
+        </div>
+        <div class="deck-card-stack" id="designSlidesStack">
+          <div class="empty-state">No slides yet. Add reference visuals — moodboard images, brand guidelines, room layouts.</div>
+        </div>
+      </div>
+
+      <!-- Step 10: Deliverables -->
+      <div class="builder-card">
+        <div class="builder-header">
+          <div>
+            <div class="section-eyebrow">Step 10 — Deliverables</div>
+            <h4>Custom builds &amp; production schematics</h4>
+          </div>
+          <button class="btn-secondary" onclick="addDeliverable()">+ Add deliverable</button>
+        </div>
+        <div class="deck-card-stack" id="deliverablesStack">
+          <div class="empty-state">No deliverables yet. Add the things HANDS is fabricating: bar build, signage, install elements.</div>
+        </div>
+      </div>
+
+      <!-- Step 11: Sourcing Items -->
+      <div class="builder-card">
+        <div class="builder-header">
+          <div>
+            <div class="section-eyebrow">Step 11 — Sourcing</div>
+            <h4>POSM, props, branded materials</h4>
+          </div>
+          <button class="btn-secondary" onclick="addSourcingItem()">+ Add sourcing item</button>
+        </div>
+        <div class="sourcing-table-header">
+          <div>Photo</div>
+          <div>Name</div>
+          <div>Vendor</div>
+          <div>Qty</div>
+          <div>Lead Time</div>
+          <div>Notes</div>
+          <div></div>
+        </div>
+        <div id="sourcingList"></div>
+        <div class="sourcing-empty-state empty-state" id="sourcingEmpty" style="display: block;">No sourcing items yet.</div>
+      </div>
+
+      <!-- Step 12: Deck Template -->
+      <div class="card">
+        <div class="section-eyebrow">Step 12 — Deck Template</div>
+        <h3 class="section-title" style="font-size: 22px;">Deck style</h3>
+        <p class="section-sub">For now: brand-event template. More options coming as we add them.</p>
+        <div class="field" style="margin-top: 16px;">
+          <label for="deckTemplate">Template</label>
+          <select id="deckTemplate">
+            <option value="brand-event" selected>Brand Event — full activation deck</option>
+          </select>
+        </div>
+      </div>
+
 
       <!-- TOTALS -->
       <div class="totals-card">
@@ -1285,6 +1634,527 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
     return String(str || "")
       .replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
+  // ─────────────────────────────────────────────────────────────
+  // PHASE A — Deck content state
+  // ─────────────────────────────────────────────────────────────
+  const CLOUDINARY_CLOUD = "dxkpbjicu";
+  const CLOUDINARY_PRESET = "hands_pod_photos";
+
+  let designSlides = [];   // [{ id, imageUrl, caption }]
+  let deliverables = [];   // [{ id, title, schematicUrl, dimensions, notes, window }]
+  let sourcingItems = [];  // [{ id, name, vendor, photoUrl, qty, leadTime, notes }]
+
+  // ── Brand color palette ──
+  function syncBrandColor(source) {
+    const picker = document.getElementById('brandColorPicker');
+    const hexEl  = document.getElementById('brandColorHex');
+    let hex = source === 'picker' ? picker.value : (hexEl.value || '').trim();
+
+    if (source === 'hex') {
+      // Normalize: prepend # if missing, validate
+      if (hex && hex[0] !== '#') hex = '#' + hex;
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+        renderPalette(null);
+        return;
+      }
+      picker.value = hex;
+    }
+
+    if (source === 'picker') {
+      hexEl.value = hex.toUpperCase();
+    } else {
+      hexEl.value = hex.toUpperCase();
+    }
+
+    renderPalette(hex);
+  }
+
+  function renderPalette(baseHex) {
+    const container = document.getElementById('palettePreview');
+    if (!baseHex) {
+      container.innerHTML = '<div class="empty-state" style="padding: 16px; flex: 1; font-size: 11px;">Enter a valid hex to preview palette</div>';
+      return;
+    }
+    const palette = generatePalette(baseHex);
+    container.innerHTML = palette.map(c =>
+      `<div class="swatch" style="background: ${c};" data-hex="${c.toUpperCase()}"></div>`
+    ).join('');
+  }
+
+  // Generate a 5-tone palette: dark / mid-dark / base / mid-light / light
+  function generatePalette(hex) {
+    const { h, s, l } = hexToHsl(hex);
+    // Anchor lightnesses: 22, 38, base, 70, 88. Saturation eased toward extremes.
+    const stops = [
+      { l: 0.22, s: Math.max(s * 0.85, 0.15) },
+      { l: 0.38, s: Math.max(s * 0.95, 0.20) },
+      { l: l,    s: s },
+      { l: 0.70, s: Math.min(s, 0.55) },
+      { l: 0.88, s: Math.min(s * 0.55, 0.35) }
+    ];
+    return stops.map(stop => hslToHex(h, stop.s, stop.l));
+  }
+
+  function hexToHsl(hex) {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.slice(0,2), 16) / 255;
+    const g = parseInt(hex.slice(2,4), 16) / 255;
+    const b = parseInt(hex.slice(4,6), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0; const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h, s, l };
+  }
+
+  function hslToHex(h, s, l) {
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  // ── Cloudinary upload (unsigned, same preset as POD portal) ──
+  async function uploadToCloudinary(file, onProgress) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+    const res = await fetch(url, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.secure_url) throw new Error('No secure_url in response');
+    return data.secure_url;
+  }
+
+  // ── Generic file picker -> upload helper ──
+  function pickAndUploadImage(onSuccess, onError) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const url = await uploadToCloudinary(file);
+        onSuccess(url);
+      } catch (err) {
+        if (onError) onError(err);
+        else showToast('Upload failed: ' + err.message, true);
+      }
+    };
+    input.click();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // DESIGN SLIDES
+  // ─────────────────────────────────────────────────────────────
+  function addDesignSlide(prefill) {
+    designSlides.push(Object.assign({
+      id: Date.now() + Math.random(),
+      imageUrl: '',
+      caption: ''
+    }, prefill || {}));
+    renderDesignSlides();
+  }
+
+  function removeDesignSlide(id) {
+    designSlides = designSlides.filter(s => s.id !== id);
+    renderDesignSlides();
+  }
+
+  function updateDesignSlide(id, field, value) {
+    const s = designSlides.find(x => x.id === id);
+    if (s) s[field] = value;
+  }
+
+  function uploadDesignSlideImage(id) {
+    const slide = designSlides.find(s => s.id === id);
+    if (!slide) return;
+    const wrap = document.querySelector(`[data-slide-id="${id}"] .deck-card-image`);
+    if (wrap) wrap.innerHTML = '<div class="uploading">Uploading…</div>';
+    pickAndUploadImage(
+      (url) => {
+        slide.imageUrl = url;
+        renderDesignSlides();
+      },
+      (err) => {
+        showToast('Upload failed: ' + err.message, true);
+        renderDesignSlides();
+      }
+    );
+  }
+
+  function renderDesignSlides() {
+    const stack = document.getElementById('designSlidesStack');
+    if (designSlides.length === 0) {
+      stack.innerHTML = '<div class="empty-state">No slides yet. Add reference visuals — moodboard images, brand guidelines, room layouts.</div>';
+      return;
+    }
+    stack.innerHTML = designSlides.map(s => `
+      <div class="deck-card" data-slide-id="${s.id}">
+        <div class="deck-card-image ${s.imageUrl ? 'has-image' : ''}" onclick="uploadDesignSlideImage(${s.id})">
+          ${s.imageUrl
+            ? `<img src="${escapeAttr(s.imageUrl)}" alt="" />`
+            : `<div class="upload-prompt"><span class="arrow">↑</span>Click to upload<br/>image</div>`}
+        </div>
+        <div class="deck-card-fields">
+          <div class="field">
+            <label>Caption</label>
+            <input type="text" placeholder="e.g. Bar elevation reference" value="${escapeAttr(s.caption || '')}" oninput="updateDesignSlide(${s.id}, 'caption', this.value)" />
+          </div>
+        </div>
+        <button class="deck-card-remove" onclick="removeDesignSlide(${s.id})" title="Remove slide">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // DELIVERABLES
+  // ─────────────────────────────────────────────────────────────
+  function addDeliverable(prefill) {
+    deliverables.push(Object.assign({
+      id: Date.now() + Math.random(),
+      title: '',
+      schematicUrl: '',
+      dimensions: '',
+      notes: '',
+      window: 'Load-In'
+    }, prefill || {}));
+    renderDeliverables();
+  }
+
+  function removeDeliverable(id) {
+    deliverables = deliverables.filter(d => d.id !== id);
+    renderDeliverables();
+  }
+
+  function updateDeliverable(id, field, value) {
+    const d = deliverables.find(x => x.id === id);
+    if (d) d[field] = value;
+  }
+
+  function uploadDeliverableImage(id) {
+    const d = deliverables.find(x => x.id === id);
+    if (!d) return;
+    const wrap = document.querySelector(`[data-deliverable-id="${id}"] .deck-card-image`);
+    if (wrap) wrap.innerHTML = '<div class="uploading">Uploading…</div>';
+    pickAndUploadImage(
+      (url) => { d.schematicUrl = url; renderDeliverables(); },
+      (err) => { showToast('Upload failed: ' + err.message, true); renderDeliverables(); }
+    );
+  }
+
+  function renderDeliverables() {
+    const stack = document.getElementById('deliverablesStack');
+    if (deliverables.length === 0) {
+      stack.innerHTML = '<div class="empty-state">No deliverables yet. Add the things HANDS is fabricating: bar build, signage, install elements.</div>';
+      return;
+    }
+    const windows = ['Load-In', 'Live', 'Strike', 'Pre-event'];
+    stack.innerHTML = deliverables.map(d => `
+      <div class="deck-card" data-deliverable-id="${d.id}">
+        <div class="deck-card-image ${d.schematicUrl ? 'has-image' : ''}" onclick="uploadDeliverableImage(${d.id})">
+          ${d.schematicUrl
+            ? `<img src="${escapeAttr(d.schematicUrl)}" alt="" />`
+            : `<div class="upload-prompt"><span class="arrow">↑</span>Click to upload<br/>schematic</div>`}
+        </div>
+        <div class="deck-card-fields">
+          <div class="field">
+            <label>Title</label>
+            <input type="text" placeholder="e.g. 8ft custom branded bar build" value="${escapeAttr(d.title || '')}" oninput="updateDeliverable(${d.id}, 'title', this.value)" />
+          </div>
+          <div class="deck-card-row-inline">
+            <div class="field">
+              <label>Dimensions</label>
+              <input type="text" placeholder="e.g. 96&quot; W × 42&quot; H × 24&quot; D" value="${escapeAttr(d.dimensions || '')}" oninput="updateDeliverable(${d.id}, 'dimensions', this.value)" />
+            </div>
+            <div class="field">
+              <label>Install window</label>
+              <select onchange="updateDeliverable(${d.id}, 'window', this.value)">
+                ${windows.map(w => `<option value="${w}" ${w === (d.window || 'Load-In') ? 'selected' : ''}>${w}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Notes</label>
+            <input type="text" placeholder="Materials, finish, special instructions" value="${escapeAttr(d.notes || '')}" oninput="updateDeliverable(${d.id}, 'notes', this.value)" />
+          </div>
+        </div>
+        <button class="deck-card-remove" onclick="removeDeliverable(${d.id})" title="Remove deliverable">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // SOURCING ITEMS
+  // ─────────────────────────────────────────────────────────────
+  function addSourcingItem(prefill) {
+    sourcingItems.push(Object.assign({
+      id: Date.now() + Math.random(),
+      name: '',
+      vendor: '',
+      photoUrl: '',
+      qty: 1,
+      leadTime: '',
+      notes: ''
+    }, prefill || {}));
+    renderSourcingItems();
+  }
+
+  function removeSourcingItem(id) {
+    sourcingItems = sourcingItems.filter(i => i.id !== id);
+    renderSourcingItems();
+  }
+
+  function updateSourcingItem(id, field, value) {
+    const it = sourcingItems.find(x => x.id === id);
+    if (!it) return;
+    if (field === 'qty') it[field] = parseFloat(value) || 0;
+    else it[field] = value;
+  }
+
+  function uploadSourcingPhoto(id) {
+    const it = sourcingItems.find(x => x.id === id);
+    if (!it) return;
+    const thumb = document.querySelector(`[data-sourcing-id="${id}"] .sourcing-thumb`);
+    if (thumb) thumb.innerHTML = '<div class="uploading">…</div>';
+    pickAndUploadImage(
+      (url) => { it.photoUrl = url; renderSourcingItems(); },
+      (err) => { showToast('Upload failed: ' + err.message, true); renderSourcingItems(); }
+    );
+  }
+
+  function renderSourcingItems() {
+    const list = document.getElementById('sourcingList');
+    const empty = document.getElementById('sourcingEmpty');
+    if (sourcingItems.length === 0) {
+      list.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    list.innerHTML = sourcingItems.map(it => `
+      <div class="sourcing-row" data-sourcing-id="${it.id}">
+        <div class="sourcing-thumb ${it.photoUrl ? 'has-image' : ''}" onclick="uploadSourcingPhoto(${it.id})">
+          ${it.photoUrl
+            ? `<img src="${escapeAttr(it.photoUrl)}" alt="" />`
+            : `<span class="add-icon">+</span>`}
+        </div>
+        <div class="field">
+          <input type="text" placeholder="Name" value="${escapeAttr(it.name || '')}" oninput="updateSourcingItem(${it.id}, 'name', this.value)" />
+        </div>
+        <div class="field">
+          <input type="text" placeholder="Vendor" value="${escapeAttr(it.vendor || '')}" oninput="updateSourcingItem(${it.id}, 'vendor', this.value)" />
+        </div>
+        <div class="field">
+          <input type="number" min="0" step="1" value="${it.qty}" oninput="updateSourcingItem(${it.id}, 'qty', this.value)" />
+        </div>
+        <div class="field">
+          <input type="text" placeholder="2 weeks" value="${escapeAttr(it.leadTime || '')}" oninput="updateSourcingItem(${it.id}, 'leadTime', this.value)" />
+        </div>
+        <div class="field">
+          <input type="text" placeholder="Spec, size, finish, etc." value="${escapeAttr(it.notes || '')}" oninput="updateSourcingItem(${it.id}, 'notes', this.value)" />
+        </div>
+        <button class="item-remove" onclick="removeSourcingItem(${it.id})" title="Remove">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Hooks: extend save / edit / reset to handle deck content
+  // ─────────────────────────────────────────────────────────────
+  // Wrap saveProposal to inject the deck-content fields into the proposal
+  // before posting.
+  const __originalSaveProposal = saveProposal;
+  saveProposal = async function() {
+    // Re-implement save inline so we control the proposal payload exactly.
+    const client = document.getElementById('clientName').value.trim();
+    if (!client) { showToast('Client name required', true); return; }
+    const projectName = document.getElementById('projectName').value.trim();
+    if (!projectName) { showToast('Project name required', true); return; }
+    if (lineItems.length === 0 || lineItems.every(it => lineTotal(it) === 0)) {
+      if (!confirm('No priced line items. Generate empty proposal?')) return;
+    }
+
+    const brandColorHex = document.getElementById('brandColorHex').value.trim();
+    const brandColor = /^#[0-9a-fA-F]{6}$/.test(brandColorHex) ? brandColorHex : '';
+
+    const proposal = {
+      slug: currentSlug || null,
+      client,
+      contact: document.getElementById('clientContact').value.trim(),
+      email: document.getElementById('clientEmail').value.trim(),
+      proposalDate: document.getElementById('proposalDate').value,
+      projectName,
+      opsItemId: document.getElementById('opsItemId').value.trim(),
+      venueName: document.getElementById('venueName').value.trim(),
+      venueAddress: document.getElementById('venueAddress').value.trim(),
+      schedule: {
+        loadinDate: document.getElementById('loadinDate').value,
+        loadinTime: document.getElementById('loadinTime').value,
+        eventStartDate: document.getElementById('eventStartDate').value,
+        eventStartTime: document.getElementById('eventStartTime').value,
+        eventEndDate: document.getElementById('eventEndDate').value,
+        eventEndTime: document.getElementById('eventEndTime').value,
+        strikeDate: document.getElementById('strikeDate').value,
+        strikeTime: document.getElementById('strikeTime').value
+      },
+      scopeOfWork: document.getElementById('scopeOfWork').value.trim(),
+      lineItems: lineItems.map(it => ({
+        category: it.category, description: it.description,
+        qty: Number(it.qty), unit: it.unit, unitPrice: Number(it.unitPrice)
+      })),
+      includeTax: document.getElementById('includeTax').checked,
+      paymentTerms: document.getElementById('paymentTerms').value.trim(),
+      customNotes: document.getElementById('customNotes').value.trim(),
+
+      // Deck content (Phase A)
+      brandColor,
+      designSlides: designSlides.map(s => ({
+        imageUrl: s.imageUrl || '', caption: s.caption || ''
+      })).filter(s => s.imageUrl || s.caption),
+      deliverables: deliverables.map(d => ({
+        title: d.title || '', schematicUrl: d.schematicUrl || '',
+        dimensions: d.dimensions || '', notes: d.notes || '',
+        window: d.window || 'Load-In'
+      })).filter(d => d.title || d.schematicUrl || d.dimensions || d.notes),
+      sourcingItems: sourcingItems.map(i => ({
+        name: i.name || '', vendor: i.vendor || '', photoUrl: i.photoUrl || '',
+        qty: Number(i.qty) || 0, leadTime: i.leadTime || '', notes: i.notes || ''
+      })).filter(i => i.name || i.photoUrl || i.vendor),
+      deckTemplate: document.getElementById('deckTemplate').value || 'brand-event'
+    };
+
+    try {
+      const res = await fetch("/api/activation-proposals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save", password: adminPassword, proposal })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
+
+      currentSlug = data.slug;
+      currentClientEmail = proposal.email;
+      const url = `${location.origin}/activation-proposal/${data.slug}`;
+      document.getElementById("lbUrl").textContent = url;
+      document.getElementById("linkBanner").classList.add("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("Proposal saved");
+    } catch (err) {
+      showToast("Save failed: " + err.message, true);
+    }
+  };
+
+  // Wrap editProposal to populate deck content when editing existing
+  const __originalEditProposal = editProposal;
+  editProposal = async function(slug) {
+    await __originalEditProposal(slug);
+    // The original loads the rest, but doesn't touch the deck content.
+    // Re-fetch (cached client side already, but simplest: just re-load).
+    try {
+      const res = await fetch("/api/activation-proposals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load", slug })
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+      const p = data.proposal;
+
+      // Brand color
+      const bc = p.brandColor || '';
+      if (/^#[0-9a-fA-F]{6}$/.test(bc)) {
+        document.getElementById('brandColorPicker').value = bc;
+        document.getElementById('brandColorHex').value = bc.toUpperCase();
+        renderPalette(bc);
+      } else {
+        document.getElementById('brandColorPicker').value = '#a0d6b4';
+        document.getElementById('brandColorHex').value = '';
+        renderPalette(null);
+      }
+
+      // Design slides
+      designSlides = (p.designSlides || []).map(s => ({
+        id: Date.now() + Math.random(),
+        imageUrl: s.imageUrl || '', caption: s.caption || ''
+      }));
+      renderDesignSlides();
+
+      // Deliverables
+      deliverables = (p.deliverables || []).map(d => ({
+        id: Date.now() + Math.random(),
+        title: d.title || '', schematicUrl: d.schematicUrl || '',
+        dimensions: d.dimensions || '', notes: d.notes || '',
+        window: d.window || 'Load-In'
+      }));
+      renderDeliverables();
+
+      // Sourcing
+      sourcingItems = (p.sourcingItems || []).map(i => ({
+        id: Date.now() + Math.random(),
+        name: i.name || '', vendor: i.vendor || '', photoUrl: i.photoUrl || '',
+        qty: Number(i.qty) || 0, leadTime: i.leadTime || '', notes: i.notes || ''
+      }));
+      renderSourcingItems();
+
+      // Deck template
+      document.getElementById('deckTemplate').value = p.deckTemplate || 'brand-event';
+    } catch (e) {
+      console.warn('Deck content load failed:', e.message);
+    }
+  };
+
+  // Wrap resetForm to clear deck content too
+  const __originalResetForm = resetForm;
+  resetForm = function() {
+    __originalResetForm();
+    designSlides = [];
+    deliverables = [];
+    sourcingItems = [];
+    renderDesignSlides();
+    renderDeliverables();
+    renderSourcingItems();
+    document.getElementById('brandColorHex').value = '';
+    document.getElementById('brandColorPicker').value = '#a0d6b4';
+    renderPalette(null);
+    document.getElementById('deckTemplate').value = 'brand-event';
+  };
+
+  // Init palette preview on first load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      renderPalette(null);
+      renderDesignSlides();
+      renderSourcingItems();
+    }, 0);
+  });
+
 </script>
 </body>
 </html>
