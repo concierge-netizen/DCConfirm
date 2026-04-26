@@ -119,13 +119,17 @@ function calcTotals(proposal) {
 // ─────────────────────────────────────────────────────────────
 // MONDAY API
 // ─────────────────────────────────────────────────────────────
+// PATCHED: bumped API-Version from 2023-04 → 2024-01 so that
+// items_page_by_column_values is supported (it was added in 2023-10).
+// On 2023-04 the lookup returned no items even when the slug was set,
+// causing every /activation-proposal/<slug> page to render "not found".
 async function mondayQuery(query) {
   const res = await fetch('https://api.monday.com/v2', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': process.env.MONDAY_TOKEN,
-      'API-Version': '2023-04'
+      'API-Version': '2024-01'
     },
     body: JSON.stringify({ query })
   });
@@ -158,12 +162,33 @@ async function findItemBySlug(slug) {
   return items[0] || null;
 }
 
+// PATCHED: Robustly extract the proposal JSON blob from the long_text column.
+// Monday's GraphQL returns long_text values in BOTH `text` (plain string)
+// and `value` (JSON-encoded — typically `{"text":"..."}`). Different API
+// versions and column types can populate one but not the other. We try
+// `text` first, then fall back to parsing `value`.
+function readLongTextValue(col) {
+  if (!col) return '';
+  if (col.text && col.text.length > 0) return col.text;
+  if (col.value) {
+    try {
+      const parsed = JSON.parse(col.value);
+      if (typeof parsed === 'string') return parsed;
+      if (parsed && typeof parsed.text === 'string') return parsed.text;
+    } catch (_) {
+      // value wasn't JSON — return raw
+      return col.value;
+    }
+  }
+  return '';
+}
+
 function itemToProposal(item) {
   if (!item) return null;
   const cols = {};
   (item.column_values || []).forEach(c => { cols[c.id] = c; });
 
-  const rawJson = cols[COL.proposalData]?.text || '';
+  const rawJson = readLongTextValue(cols[COL.proposalData]);
   let proposal = {};
   if (rawJson) {
     try { proposal = JSON.parse(rawJson); }
