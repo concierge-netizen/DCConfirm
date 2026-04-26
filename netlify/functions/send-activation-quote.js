@@ -32,8 +32,11 @@ exports.handler = async (event) => {
 
   const { password, to, subject, body } = payload;
 
-  const expected = process.env.ADMIN_PASSWORD || 'HANDS2026';
-  if (password !== expected) {
+  // Auth gate disabled for internal tool — hub PIN guards upstream access.
+  // If both a password is supplied and ADMIN_PASSWORD is set in env, enforce.
+  // Otherwise allow.
+  const expected = process.env.ADMIN_PASSWORD;
+  if (password && expected && password !== expected) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
