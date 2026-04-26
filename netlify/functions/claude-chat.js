@@ -128,6 +128,18 @@ GOTCHAS:
 
 INTAKE PROTOCOL: pull Unconfirmed group → enrich → propose to Jon → on approval, update items + move to correct group by Activity Type. Calendar/reminders happen downstream.
 
+GMAIL: Three accounts available — jon (jon@), concierge (concierge@), inbound (inbound@handslogistics.com). DEFAULT to "concierge" unless context obviously points elsewhere (personal/exec → jon; receiving-dock email → inbound). Toolset:
+- gmail_search_threads / gmail_list_threads / gmail_get_thread to read
+- gmail_list_labels / gmail_modify_labels for labels
+- gmail_create_draft (DEFAULT for "draft an email" / "write a reply") — sits in Drafts, no risk
+- gmail_send_message (ONLY when Jon explicitly says "send it now" or after he reviews a draft) — sends immediately, no propose/send split, no review
+LABEL PROCESSING: When Jon says "process my labeled emails" / "process inbound" / similar, the pattern is:
+  1. gmail_list_labels (account=jon AND account=inbound — emails with the trigger label live in either) to find the "HANDS → Claude" label ID
+  2. gmail_search_threads with q='label:"HANDS → Claude"' (or list_threads with that label ID)
+  3. For each thread: gmail_get_thread → parse → take action (log to NV I/O Board ${IO_BOARD} for inbound receipts, or Ops Board ${OPS_BOARD} for activity-bound items)
+  4. gmail_modify_labels to REMOVE the "HANDS → Claude" label so it doesn't reprocess
+NEVER auto-send a Gmail message without explicit instruction. Drafts are free; sends are not.
+
 EMAIL: propose_email_send (DC/POD) or propose_custom_email → wait for approval → THEN send_*.
 
 TONE: concise, real PO numbers, brief explanations, no filler. Show your work before destructive ops. Don't apologize for being capable.`;
@@ -315,6 +327,105 @@ const TOOLS = [
       },
       required: ['to','subject','body']
     }
+  },
+
+  // ─── GMAIL TOOLS ─────────────────────────────────────────────
+  // Three accounts: jon | concierge | inbound. If unspecified, default to "concierge".
+  // All operations go through the matching GMAIL_TOKEN_* refresh token.
+  {
+    name: 'gmail_search_threads',
+    description: 'Search Gmail threads using Gmail\'s native query syntax. Returns thread list with summaries (subject, from, snippet, date). Use Gmail operators like from:bacardi.com, after:2026/04/01, label:HANDS-Claude, has:attachment, is:unread, subject:"PO ". Default account is "concierge" — pick "jon" for personal/exec inbox or "inbound" for receiving-dock email.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:    { type: 'string', enum: ['jon','concierge','inbound'], description: 'Which inbox. Defaults to concierge.', default: 'concierge' },
+        query:      { type: 'string', description: 'Gmail search query (uses native Gmail operators). Empty string = all threads.' },
+        maxResults: { type: 'integer', description: 'Max threads to return (default 20, max 50).', default: 20 }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'gmail_get_thread',
+    description: 'Get a full Gmail thread by threadId — all messages in the thread with headers, sender, recipient, date, and decoded body text. Use this to read what an email actually says before deciding what to do.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:  { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' },
+        threadId: { type: 'string', description: 'Thread ID from gmail_search_threads or gmail_list_threads.' }
+      },
+      required: ['threadId']
+    }
+  },
+  {
+    name: 'gmail_list_threads',
+    description: 'List Gmail threads filtered by label. Convenience wrapper around gmail_search_threads — useful when you have label IDs from gmail_list_labels. Common pattern: list threads labeled "HANDS → Claude" to process inbound automation requests.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:    { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' },
+        labelIds:   { type: 'array', items: { type: 'string' }, description: 'Label IDs to filter by (any-of). Get IDs via gmail_list_labels.' },
+        maxResults: { type: 'integer', default: 20 }
+      }
+    }
+  },
+  {
+    name: 'gmail_create_draft',
+    description: 'Create a Gmail draft. The draft sits in the account\'s Drafts folder until manually sent. Use this whenever Jon asks to "draft a reply" or "compose an email" — DO NOT send unless Jon explicitly says "send it" or approves a draft. Pass threadId to draft inside an existing thread (becomes a reply).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:  { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' },
+        to:       { type: 'string', description: 'Primary recipient email. Multiple = comma-separated.' },
+        cc:       { type: 'array', items: { type: 'string' } },
+        bcc:      { type: 'array', items: { type: 'string' } },
+        subject:  { type: 'string' },
+        body:     { type: 'string', description: 'Plain-text body. New paragraphs separated by blank lines.' },
+        threadId: { type: 'string', description: 'Optional. Pass to attach the draft as a reply to an existing thread.' }
+      },
+      required: ['to','subject','body']
+    }
+  },
+  {
+    name: 'gmail_send_message',
+    description: 'Send a Gmail message immediately. Use sparingly — prefer gmail_create_draft unless Jon explicitly says "send" or "send it now". This bypasses any review. There is no propose_/send_ split here — calling this IS the send.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:  { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' },
+        to:       { type: 'string' },
+        cc:       { type: 'array', items: { type: 'string' } },
+        bcc:      { type: 'array', items: { type: 'string' } },
+        subject:  { type: 'string' },
+        body:     { type: 'string' },
+        threadId: { type: 'string', description: 'Optional. Send as reply within an existing thread.' }
+      },
+      required: ['to','subject','body']
+    }
+  },
+  {
+    name: 'gmail_list_labels',
+    description: 'List all labels in a Gmail account (system + user-created), with their IDs. Needed when you want to add/remove a label by ID — use the returned id, not the human-readable name.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account: { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' }
+      }
+    }
+  },
+  {
+    name: 'gmail_modify_labels',
+    description: 'Add or remove labels on a Gmail thread by ID. Common pattern: after processing a "HANDS → Claude" labeled thread, remove that label so it doesn\'t reprocess. Get label IDs via gmail_list_labels first.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        account:        { type: 'string', enum: ['jon','concierge','inbound'], default: 'concierge' },
+        threadId:       { type: 'string' },
+        addLabelIds:    { type: 'array', items: { type: 'string' }, description: 'Label IDs to add. Empty array OK.' },
+        removeLabelIds: { type: 'array', items: { type: 'string' }, description: 'Label IDs to remove. Empty array OK.' }
+      },
+      required: ['threadId']
+    }
   }
 ];
 
@@ -344,6 +455,138 @@ async function mondayQuery(query) {
 function getCol(cols, id) {
   const c = (cols || []).find(x => x.id === id);
   return (c && c.text && c.text.trim()) ? c.text.trim() : '';
+}
+
+// ─────────────────────────────────────────────────────────────
+// GMAIL HELPERS
+// ─────────────────────────────────────────────────────────────
+const GMAIL_ACCOUNTS = {
+  jon:       { email: 'jon@handslogistics.com',       envVar: 'GMAIL_TOKEN_JON' },
+  concierge: { email: 'concierge@handslogistics.com', envVar: 'GMAIL_TOKEN_CONCIERGE' },
+  inbound:   { email: 'inbound@handslogistics.com',   envVar: 'GMAIL_TOKEN_INBOUND' }
+};
+
+// Module-scope access-token cache. Netlify keeps warm Lambda containers
+// alive for ~5-15 min between invocations, so this avoids hitting Google's
+// token endpoint on every single tool call within a chat session.
+// Each entry: { token: string, expiresAt: number (epoch seconds) }
+const GMAIL_TOKEN_CACHE = {};
+
+async function getGmailAccessToken(account) {
+  const cfg = GMAIL_ACCOUNTS[account];
+  if (!cfg) throw new Error(`Unknown Gmail account "${account}". Valid: jon, concierge, inbound.`);
+
+  const refreshToken = process.env[cfg.envVar];
+  if (!refreshToken) throw new Error(`${cfg.envVar} env var not set — run /api/gmail-auth to capture refresh token for ${cfg.email}.`);
+
+  const clientId     = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) throw new Error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set.');
+
+  // Return cached token if still good (with 60s safety margin)
+  const now = Math.floor(Date.now() / 1000);
+  const cached = GMAIL_TOKEN_CACHE[account];
+  if (cached && cached.expiresAt > now + 60) return cached.token;
+
+  // Refresh
+  const body = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token'
+  });
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  const data = await r.json();
+  if (!r.ok) {
+    throw new Error(`Google token refresh failed for ${account} (HTTP ${r.status}): ${data.error_description || data.error || JSON.stringify(data)}`);
+  }
+  if (!data.access_token) {
+    throw new Error(`No access_token in Google refresh response for ${account}.`);
+  }
+
+  GMAIL_TOKEN_CACHE[account] = {
+    token: data.access_token,
+    expiresAt: now + (data.expires_in || 3600)
+  };
+  return data.access_token;
+}
+
+// Convenience wrapper: GET / POST to Gmail API with auto-refreshed access token.
+async function gmailFetch(account, path, opts = {}) {
+  const token = await getGmailAccessToken(account);
+  const url = path.startsWith('http') ? path : 'https://gmail.googleapis.com' + path;
+  const headers = Object.assign({
+    'Authorization': 'Bearer ' + token,
+    'Content-Type':  'application/json'
+  }, opts.headers || {});
+  const res = await fetch(url, { ...opts, headers });
+  const text = await res.text();
+  let data; try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { raw: text }; }
+  if (!res.ok) {
+    const msg = (data.error && data.error.message) || data.message || text || ('HTTP ' + res.status);
+    throw new Error(`Gmail API ${res.status} (${account}): ${msg}`);
+  }
+  return data;
+}
+
+// Decode a Gmail message body. Gmail returns body data in URL-safe base64.
+// A message can have multiple MIME parts; we walk and pick the first text/plain
+// (falling back to text/html stripped of tags) so the agent gets readable text.
+function decodeGmailBody(payload) {
+  if (!payload) return '';
+  function decode(b64url) {
+    if (!b64url) return '';
+    const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    return Buffer.from(b64, 'base64').toString('utf8');
+  }
+  function walk(part, results) {
+    if (!part) return;
+    const mime = part.mimeType || '';
+    if (mime.startsWith('text/') && part.body && part.body.data) {
+      results.push({ mime, text: decode(part.body.data) });
+    }
+    (part.parts || []).forEach(p => walk(p, results));
+  }
+  const all = [];
+  walk(payload, all);
+  // Prefer text/plain
+  const plain = all.find(p => p.mime === 'text/plain');
+  if (plain) return plain.text;
+  const html = all.find(p => p.mime === 'text/html');
+  if (html) return html.text.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  // Fallback: top-level body
+  if (payload.body && payload.body.data) return decode(payload.body.data);
+  return '';
+}
+
+// Pick a header value out of payload.headers[]
+function getHeader(headers, name) {
+  if (!Array.isArray(headers)) return '';
+  const want = name.toLowerCase();
+  const h = headers.find(h => h.name && h.name.toLowerCase() === want);
+  return h ? (h.value || '') : '';
+}
+
+// Build an RFC 2822 message and base64url-encode for gmail.send / drafts.create
+function buildRfc822({ from, to, cc, bcc, subject, body }) {
+  const lines = [];
+  lines.push('From: ' + from);
+  lines.push('To: ' + (Array.isArray(to) ? to.join(', ') : to));
+  if (cc && cc.length)  lines.push('Cc: '  + (Array.isArray(cc)  ? cc.join(', ')  : cc));
+  if (bcc && bcc.length) lines.push('Bcc: ' + (Array.isArray(bcc) ? bcc.join(', ') : bcc));
+  lines.push('Subject: ' + subject);
+  lines.push('MIME-Version: 1.0');
+  lines.push('Content-Type: text/plain; charset="UTF-8"');
+  lines.push('Content-Transfer-Encoding: 7bit');
+  lines.push('');
+  lines.push(body || '');
+  const raw = lines.join('\r\n');
+  return Buffer.from(raw, 'utf8').toString('base64')
+    .replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -552,6 +795,174 @@ async function tool_send_custom_email(args) {
   return JSON.stringify({ success: true, message_id: data.id, to: args.to, subject: args.subject });
 }
 
+// ─── GMAIL TOOL EXECUTORS ────────────────────────────────────
+
+async function tool_gmail_search_threads(args) {
+  const account = args.account || 'concierge';
+  const max = Math.min(args.maxResults || 20, 50);
+  const params = new URLSearchParams();
+  params.set('maxResults', String(max));
+  if (args.query) params.set('q', args.query);
+  const list = await gmailFetch(account, `/gmail/v1/users/me/threads?${params.toString()}`);
+  const threads = list.threads || [];
+  if (!threads.length) return JSON.stringify({ account, query: args.query, count: 0, threads: [] });
+
+  // Hydrate each thread with first-message metadata (subject, from, snippet, date)
+  const summaries = await Promise.all(threads.slice(0, max).map(async t => {
+    try {
+      const detail = await gmailFetch(account, `/gmail/v1/users/me/threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
+      const firstMsg = detail.messages && detail.messages[0];
+      const lastMsg  = detail.messages && detail.messages[detail.messages.length - 1];
+      const headers  = (firstMsg && firstMsg.payload && firstMsg.payload.headers) || [];
+      return {
+        threadId: t.id,
+        subject:  getHeader(headers, 'Subject'),
+        from:     getHeader(headers, 'From'),
+        date:     getHeader(headers, 'Date'),
+        message_count: (detail.messages || []).length,
+        last_snippet: (lastMsg && lastMsg.snippet) || '',
+        labels: (lastMsg && lastMsg.labelIds) || []
+      };
+    } catch (e) {
+      return { threadId: t.id, error: e.message };
+    }
+  }));
+  return JSON.stringify({ account, query: args.query, count: summaries.length, threads: summaries });
+}
+
+async function tool_gmail_get_thread(args) {
+  const account = args.account || 'concierge';
+  const detail = await gmailFetch(account, `/gmail/v1/users/me/threads/${args.threadId}?format=full`);
+  const messages = (detail.messages || []).map(m => {
+    const headers = (m.payload && m.payload.headers) || [];
+    return {
+      messageId: m.id,
+      labels: m.labelIds || [],
+      from:    getHeader(headers, 'From'),
+      to:      getHeader(headers, 'To'),
+      cc:      getHeader(headers, 'Cc'),
+      subject: getHeader(headers, 'Subject'),
+      date:    getHeader(headers, 'Date'),
+      snippet: m.snippet || '',
+      body:    (decodeGmailBody(m.payload) || '').slice(0, 8000) // cap at 8k chars to keep response tight
+    };
+  });
+  return JSON.stringify({ account, threadId: args.threadId, messages });
+}
+
+async function tool_gmail_list_threads(args) {
+  const account = args.account || 'concierge';
+  const max = Math.min(args.maxResults || 20, 50);
+  const params = new URLSearchParams();
+  params.set('maxResults', String(max));
+  (args.labelIds || []).forEach(id => params.append('labelIds', id));
+  const list = await gmailFetch(account, `/gmail/v1/users/me/threads?${params.toString()}`);
+  const threads = list.threads || [];
+  if (!threads.length) return JSON.stringify({ account, count: 0, threads: [] });
+
+  const summaries = await Promise.all(threads.slice(0, max).map(async t => {
+    try {
+      const detail = await gmailFetch(account, `/gmail/v1/users/me/threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
+      const firstMsg = detail.messages && detail.messages[0];
+      const lastMsg  = detail.messages && detail.messages[detail.messages.length - 1];
+      const headers  = (firstMsg && firstMsg.payload && firstMsg.payload.headers) || [];
+      return {
+        threadId: t.id,
+        subject:  getHeader(headers, 'Subject'),
+        from:     getHeader(headers, 'From'),
+        date:     getHeader(headers, 'Date'),
+        message_count: (detail.messages || []).length,
+        last_snippet: (lastMsg && lastMsg.snippet) || '',
+        labels: (lastMsg && lastMsg.labelIds) || []
+      };
+    } catch (e) {
+      return { threadId: t.id, error: e.message };
+    }
+  }));
+  return JSON.stringify({ account, count: summaries.length, threads: summaries });
+}
+
+async function tool_gmail_create_draft(args) {
+  const account = args.account || 'concierge';
+  const fromEmail = GMAIL_ACCOUNTS[account].email;
+  const raw = buildRfc822({
+    from: fromEmail, to: args.to, cc: args.cc, bcc: args.bcc,
+    subject: args.subject, body: args.body
+  });
+  const message = { raw };
+  if (args.threadId) message.threadId = args.threadId;
+  const data = await gmailFetch(account, '/gmail/v1/users/me/drafts', {
+    method: 'POST',
+    body: JSON.stringify({ message })
+  });
+  return JSON.stringify({
+    success: true,
+    account,
+    draftId:  data.id,
+    messageId: data.message && data.message.id,
+    threadId:  data.message && data.message.threadId,
+    note: 'Draft created — sits in Drafts folder until manually sent or until you call gmail_send_message.'
+  });
+}
+
+async function tool_gmail_send_message(args) {
+  const account = args.account || 'concierge';
+  const fromEmail = GMAIL_ACCOUNTS[account].email;
+  const raw = buildRfc822({
+    from: fromEmail, to: args.to, cc: args.cc, bcc: args.bcc,
+    subject: args.subject, body: args.body
+  });
+  const payload = { raw };
+  if (args.threadId) payload.threadId = args.threadId;
+  const data = await gmailFetch(account, '/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return JSON.stringify({
+    success: true,
+    account,
+    from: fromEmail,
+    to: args.to,
+    subject: args.subject,
+    messageId: data.id,
+    threadId:  data.threadId
+  });
+}
+
+async function tool_gmail_list_labels(args) {
+  const account = args.account || 'concierge';
+  const data = await gmailFetch(account, '/gmail/v1/users/me/labels');
+  const labels = (data.labels || []).map(l => ({
+    id: l.id,
+    name: l.name,
+    type: l.type,
+    visible: l.labelListVisibility !== 'labelHide'
+  }));
+  return JSON.stringify({ account, count: labels.length, labels });
+}
+
+async function tool_gmail_modify_labels(args) {
+  const account = args.account || 'concierge';
+  const body = {
+    addLabelIds:    args.addLabelIds    || [],
+    removeLabelIds: args.removeLabelIds || []
+  };
+  if (!body.addLabelIds.length && !body.removeLabelIds.length) {
+    return JSON.stringify({ error: 'addLabelIds or removeLabelIds must be non-empty.' });
+  }
+  await gmailFetch(account, `/gmail/v1/users/me/threads/${args.threadId}/modify`, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  return JSON.stringify({
+    success: true,
+    account,
+    threadId: args.threadId,
+    added:    body.addLabelIds,
+    removed:  body.removeLabelIds
+  });
+}
+
 const EXECUTORS = {
   monday_graphql:       tool_monday_graphql,
   query_board_items:    tool_query_board_items,
@@ -563,7 +974,15 @@ const EXECUTORS = {
   send_dc_email:        tool_send_dc_email,
   send_pod_email:       tool_send_pod_email,
   propose_custom_email: tool_propose_custom_email,
-  send_custom_email:    tool_send_custom_email
+  send_custom_email:    tool_send_custom_email,
+  // Gmail
+  gmail_search_threads: tool_gmail_search_threads,
+  gmail_get_thread:     tool_gmail_get_thread,
+  gmail_list_threads:   tool_gmail_list_threads,
+  gmail_create_draft:   tool_gmail_create_draft,
+  gmail_send_message:   tool_gmail_send_message,
+  gmail_list_labels:    tool_gmail_list_labels,
+  gmail_modify_labels:  tool_gmail_modify_labels
 };
 
 // ─────────────────────────────────────────────────────────────
