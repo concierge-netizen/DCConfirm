@@ -16,3 +16,14 @@
 /api/fetch-items     /.netlify/functions/fetch-items     200
 /api/send-dispatch   /.netlify/functions/send-dispatch   200
 /dispatch            /dispatch.html                      200
+
+# HANDS Phase 7 wave 1 — Work Order Admin + driver portal
+/api/monday-sync       /.netlify/functions/monday-sync       200
+/api/get-workorder     /.netlify/functions/get-workorder     200
+/api/submit-workorder  /.netlify/functions/submit-workorder  200
+/api/send-email        /.netlify/functions/send-email        200
+/api/save-workorder    /.netlify/functions/save-workorder    200
+/api/catalog           /.netlify/functions/catalog           200
+/api/inventory         /.netlify/functions/inventory         200
+/workorders            /workorders.html                      200
+/workorder-portal      /workorder-portal.html                200
