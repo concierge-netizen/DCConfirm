@@ -1,26 +1,34 @@
 // ───────────────────────────────────────────────────────────────
-// HANDS Logistics — Activation Proposals API (Monday-backed)
+// HANDS Logistics — Activation Proposals API (Blobs-backed)
 // Handles: save / load / list / accept / changes
 //
-// Storage: Monday Ops Board (4550650855) — proposal JSON lives in a
-// long_text column on each item. Slug lives in a text column for lookup.
-// Items land in the "Unconfirmed" group at status "Proposal Submitted"
-// when saved. On accept: status → "Setup Scheduled" + Billing → "ESTIMATE
-// APPROVED". On changes: status → "INFORMATION NEEDED" + change notes
-// posted as a Monday update.
+// Storage:
+//   - Netlify Blobs (store: "activation-proposals", key: <slug>)
+//     holds the full proposal JSON. No size limit that matters
+//     (5GB per blob, 600 byte keys). Source of truth.
+//   - Monday Ops Board (4550650855) item carries operational fields
+//     only: slug, client, project name, dates, statuses, totals.
+//     Used for board visibility, billing pipeline, and discovery.
 //
-// Why Monday-native: simpler infrastructure, no @netlify/blobs dependency,
-// proposals visible in Monday immediately, single source of truth.
+// On save:    create/update Monday item → write Blob (Blob is canonical)
+// On load:    read Blob by slug. Fall through to Monday if Blob missing.
+// On list:    enumerate Blobs (paginated), return slug list with metadata.
+// On accept:  update Blob status + Monday status, send notification.
+// On changes: update Blob status + Monday status, post Monday update,
+//             send notification.
 // ───────────────────────────────────────────────────────────────
+
+const { connectLambda, getStore } = require('@netlify/blobs');
 
 const FROM_ADDRESS  = 'HANDS Logistics <concierge@handslogistics.com>';
 const JON_EMAIL     = 'concierge@handslogistics.com';
 const OPS_BOARD     = '4550650855';
-const PROPOSAL_GROUP_ID = 'new_group84798'; // Unconfirmed group — proposals land here until accepted
+const PROPOSAL_GROUP_ID = 'new_group84798'; // Unconfirmed group
 
+const BLOB_STORE = 'activation-proposals';
 const TAX_RATE = 0.08375;
 
-// Ops Board column IDs (verified via get_board_info)
+// Ops Board column IDs
 const COL = {
   client:           'text',
   account:          'text4',
@@ -39,9 +47,8 @@ const COL = {
   eventStart:       'date_mm2sv91q',
   eventEnd:         'date_mm2s7tq2',
   timeframe:        'timerange',
-  // Storage columns (created in this build)
-  proposalData:     'long_text_mm2sscgy',
-  proposalSlug:     'text_mm2sp5ek'
+  proposalSlug:     'text_mm2sp5ek'   // slug column (for board-side lookup if ever needed)
+  // proposalData column on Monday is no longer used — Blobs hold the JSON.
 };
 
 exports.handler = async (event) => {
@@ -54,6 +61,10 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers, body: JSON.stringify({ error: 'POST only' }) };
+
+  // REQUIRED for Lambda-compat functions to use Blobs
+  try { connectLambda(event); }
+  catch (e) { console.error('connectLambda failed:', e); }
 
   if (!process.env.MONDAY_TOKEN) {
     return {
@@ -87,7 +98,9 @@ exports.handler = async (event) => {
   }
 };
 
-// ── Auth (permissive — internal tool, hub PIN gates upstream) ──
+// ─────────────────────────────────────────────────────────────
+// AUTH (permissive — internal tool, hub PIN gates upstream)
+// ─────────────────────────────────────────────────────────────
 function checkAdmin(password) {
   if (!password) return true;
   const expected = process.env.ADMIN_PASSWORD;
@@ -117,12 +130,46 @@ function calcTotals(proposal) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// BLOB STORE
+// ─────────────────────────────────────────────────────────────
+function store() {
+  return getStore({ name: BLOB_STORE, consistency: 'strong' });
+}
+
+async function readProposal(slug) {
+  const s = store();
+  // setJSON/getJSON would also work but explicit JSON parse gives clearer errors
+  const raw = await s.get(slug, { type: 'text' });
+  if (!raw) return null;
+  try { return JSON.parse(raw); }
+  catch (e) {
+    console.warn('Blob JSON parse failed for slug', slug, e.message);
+    return null;
+  }
+}
+
+async function writeProposal(slug, record) {
+  const s = store();
+  await s.set(slug, JSON.stringify(record));
+}
+
+async function listProposalSlugs() {
+  const s = store();
+  // Single-page list. Up to 1000 keys per page; we'll page through if more.
+  const slugs = [];
+  let cursor;
+  for (let i = 0; i < 10; i++) { // hard cap to avoid runaway
+    const result = await s.list(cursor ? { cursor } : undefined);
+    (result.blobs || []).forEach(b => slugs.push(b.key));
+    if (!result.cursor) break;
+    cursor = result.cursor;
+  }
+  return slugs;
+}
+
+// ─────────────────────────────────────────────────────────────
 // MONDAY API
 // ─────────────────────────────────────────────────────────────
-// PATCHED: bumped API-Version from 2023-04 → 2024-01 so that
-// items_page_by_column_values is supported (it was added in 2023-10).
-// On 2023-04 the lookup returned no items even when the slug was set,
-// causing every /activation-proposal/<slug> page to render "not found".
 async function mondayQuery(query) {
   const res = await fetch('https://api.monday.com/v2', {
     method: 'POST',
@@ -141,7 +188,7 @@ async function mondayQuery(query) {
   return data;
 }
 
-// Find an item by its slug column value
+// Find a Monday item by its slug column value (only used when record.opsItemId is missing)
 async function findItemBySlug(slug) {
   const safeSlug = String(slug).replace(/"/g, '');
   const q = `query {
@@ -150,57 +197,12 @@ async function findItemBySlug(slug) {
       columns: [{column_id: "${COL.proposalSlug}", column_values: ["${safeSlug}"]}],
       limit: 5
     ) {
-      items {
-        id
-        name
-        column_values { id text value }
-      }
+      items { id }
     }
   }`;
   const data = await mondayQuery(q);
   const items = data.data.items_page_by_column_values?.items || [];
   return items[0] || null;
-}
-
-// PATCHED: Robustly extract the proposal JSON blob from the long_text column.
-// Monday's GraphQL returns long_text values in BOTH `text` (plain string)
-// and `value` (JSON-encoded — typically `{"text":"..."}`). Different API
-// versions and column types can populate one but not the other. We try
-// `text` first, then fall back to parsing `value`.
-function readLongTextValue(col) {
-  if (!col) return '';
-  if (col.text && col.text.length > 0) return col.text;
-  if (col.value) {
-    try {
-      const parsed = JSON.parse(col.value);
-      if (typeof parsed === 'string') return parsed;
-      if (parsed && typeof parsed.text === 'string') return parsed.text;
-    } catch (_) {
-      // value wasn't JSON — return raw
-      return col.value;
-    }
-  }
-  return '';
-}
-
-function itemToProposal(item) {
-  if (!item) return null;
-  const cols = {};
-  (item.column_values || []).forEach(c => { cols[c.id] = c; });
-
-  const rawJson = readLongTextValue(cols[COL.proposalData]);
-  let proposal = {};
-  if (rawJson) {
-    try { proposal = JSON.parse(rawJson); }
-    catch (e) { console.warn('Failed to parse proposal JSON for item', item.id, e.message); }
-  }
-
-  proposal.opsItemId = item.id;
-  proposal.slug = proposal.slug || (cols[COL.proposalSlug]?.text || '');
-  proposal.client = proposal.client || (cols[COL.client]?.text || '');
-  proposal.projectName = proposal.projectName || (cols[COL.project]?.text || item.name || '');
-
-  return proposal;
 }
 
 function buildColumnValues(record, statusOverrides) {
@@ -251,14 +253,14 @@ function buildColumnValues(record, statusOverrides) {
     cols[COL.timeframe] = { from: sch.loadinDate, to: sch.strikeDate };
   }
 
+  // Operational summary in the notes column. The full proposal lives in Blobs.
   const noteText = `Activation Proposal: ${record.slug || ''}\n` +
                    `Total: $${totals.total.toFixed(2)}${record.includeTax ? ' (incl. NV tax)' : ''}\n` +
                    `Proposal: ${getSiteUrl()}/activation-proposal/${record.slug}\n\n` +
                    (record.scopeOfWork || '');
   cols[COL.notes] = { text: noteText.slice(0, 1900) };
 
-  // Storage: full JSON blob + slug for lookup
-  cols[COL.proposalData] = { text: JSON.stringify(record).slice(0, 60000) };
+  // Slug column — for board-side lookup if needed
   cols[COL.proposalSlug] = record.slug || '';
 
   return cols;
@@ -280,66 +282,64 @@ async function handleSave(payload, headers) {
   const slug = proposal.slug || makeSlug(proposal.client, proposal.projectName);
   const now = new Date().toISOString();
 
+  // Hydrate the canonical record (read existing blob if any to preserve fields like createdAt)
+  let prev = null;
+  try { prev = await readProposal(slug); }
+  catch (e) { console.warn('readProposal threw, treating as new:', e.message); }
+
   const record = {
     slug,
-    client:         proposal.client || '',
-    contact:        proposal.contact || '',
-    email:          proposal.email || '',
-    proposalDate:   proposal.proposalDate || '',
-    projectName:    proposal.projectName || '',
-    opsItemId:      proposal.opsItemId || '',
-    venueName:      proposal.venueName || '',
-    venueAddress:   proposal.venueAddress || '',
-    schedule:       proposal.schedule || {},
-    scopeOfWork:    proposal.scopeOfWork || '',
-    lineItems:      proposal.lineItems || [],
-    includeTax:     !!proposal.includeTax,
-    paymentTerms:   proposal.paymentTerms || '',
-    customNotes:    proposal.customNotes || '',
-    brandColor:     proposal.brandColor || '',
-    designSlides:   Array.isArray(proposal.designSlides)  ? proposal.designSlides  : [],
-    deliverables:   Array.isArray(proposal.deliverables)  ? proposal.deliverables  : [],
-    sourcingItems:  Array.isArray(proposal.sourcingItems) ? proposal.sourcingItems : [],
-    deckTemplate:   proposal.deckTemplate || 'brand-event',
-    createdAt:      proposal.createdAt || now,
+    client:         proposal.client || (prev?.client || ''),
+    contact:        proposal.contact || (prev?.contact || ''),
+    email:          proposal.email || (prev?.email || ''),
+    proposalDate:   proposal.proposalDate || (prev?.proposalDate || ''),
+    projectName:    proposal.projectName || (prev?.projectName || ''),
+    opsItemId:      proposal.opsItemId || (prev?.opsItemId || ''),
+    venueName:      proposal.venueName || (prev?.venueName || ''),
+    venueAddress:   proposal.venueAddress || (prev?.venueAddress || ''),
+    schedule:       proposal.schedule || (prev?.schedule || {}),
+    scopeOfWork:    proposal.scopeOfWork || (prev?.scopeOfWork || ''),
+    lineItems:      Array.isArray(proposal.lineItems) ? proposal.lineItems : (prev?.lineItems || []),
+    includeTax:     typeof proposal.includeTax === 'boolean' ? proposal.includeTax : !!prev?.includeTax,
+    paymentTerms:   proposal.paymentTerms || (prev?.paymentTerms || ''),
+    customNotes:    proposal.customNotes || (prev?.customNotes || ''),
+    brandColor:     proposal.brandColor || (prev?.brandColor || ''),
+    designSlides:   Array.isArray(proposal.designSlides)  ? proposal.designSlides  : (prev?.designSlides  || []),
+    deliverables:   Array.isArray(proposal.deliverables)  ? proposal.deliverables  : (prev?.deliverables  || []),
+    sourcingItems:  Array.isArray(proposal.sourcingItems) ? proposal.sourcingItems : (prev?.sourcingItems || []),
+    deckTemplate:   proposal.deckTemplate || (prev?.deckTemplate || 'brand-event'),
+    createdAt:      prev?.createdAt || proposal.createdAt || now,
     updatedAt:      now,
-    status:         proposal.status || 'sent'
+    status:         proposal.status || prev?.status || 'sent',
+    acceptedAt:     prev?.acceptedAt || proposal.acceptedAt || null,
+    lastChangeRequest: prev?.lastChangeRequest || null
   };
 
+  // Resolve Monday item id (use existing if known, else search by slug)
   let itemId = record.opsItemId;
   if (!itemId) {
     const existing = await findItemBySlug(slug);
     if (existing) itemId = existing.id;
   }
 
-  // Status for newly-saved or re-saved-not-yet-accepted proposals
-  const statusOverrides = {
-    logistics: 'Proposal Submitted',
-    billing:   'ESTIMATE READY',
-    project:   'PROPOSAL SUBMITTED'
-  };
-
-  // If the existing item is already accepted, don't reset it back to "Proposal Submitted"
-  if (itemId && record.status === 'accepted') {
-    statusOverrides.logistics = 'Setup Scheduled';
-    statusOverrides.billing = 'ESTIMATE APPROVED';
-    statusOverrides.project = 'IN PROGRESS';
-  }
+  const statusOverrides = (record.status === 'accepted')
+    ? { logistics: 'Setup Scheduled', billing: 'ESTIMATE APPROVED', project: 'IN PROGRESS' }
+    : { logistics: 'Proposal Submitted', billing: 'ESTIMATE READY', project: 'PROPOSAL SUBMITTED' };
 
   const cols = buildColumnValues(record, statusOverrides);
   const colsStr = JSON.stringify(JSON.stringify(cols));
 
   if (itemId) {
-    const m = `mutation { change_multiple_column_values(item_id: ${itemId}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`;
-    await mondayQuery(m);
-    record.opsItemId = itemId;
+    await mondayQuery(`mutation { change_multiple_column_values(item_id: ${itemId}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
   } else {
     const itemName = record.projectName || `${record.client} — Activation`;
-    const m = `mutation { create_item(board_id: ${OPS_BOARD}, group_id: "${PROPOSAL_GROUP_ID}", item_name: ${JSON.stringify(itemName)}, column_values: ${colsStr}) { id } }`;
-    const data = await mondayQuery(m);
+    const data = await mondayQuery(`mutation { create_item(board_id: ${OPS_BOARD}, group_id: "${PROPOSAL_GROUP_ID}", item_name: ${JSON.stringify(itemName)}, column_values: ${colsStr}) { id } }`);
     itemId = data.data.create_item.id;
-    record.opsItemId = itemId;
   }
+  record.opsItemId = itemId;
+
+  // Canonical write to Blobs (last so failures here don't leave Monday in a wrong state alone)
+  await writeProposal(slug, record);
 
   return { statusCode: 200, headers, body: JSON.stringify({ success: true, slug, proposal: record }) };
 }
@@ -348,11 +348,8 @@ async function handleLoad(payload, headers) {
   const { slug } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
 
-  const item = await findItemBySlug(slug);
-  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal not found' }) };
-
-  const proposal = itemToProposal(item);
-  if (!proposal) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal data unreadable' }) };
+  const proposal = await readProposal(slug);
+  if (!proposal) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proposal not found' }) };
 
   return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposal }) };
 }
@@ -362,45 +359,44 @@ async function handleList(payload, headers) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
-  // Fetch all activation items, then filter client-side by presence of slug.
-  // Using items_page with no filters is the most reliable across Monday API versions.
-  const data = await mondayQuery(`query {
-    boards(ids: [${OPS_BOARD}]) {
-      items_page(limit: 200) {
-        items {
-          id name updated_at
-          column_values { id text value }
-        }
-      }
-    }
-  }`);
-  const allItems = data.data.boards[0]?.items_page?.items || [];
+  const slugs = await listProposalSlugs();
 
-  const proposals = allItems
-    .map(it => {
-      const cols = {};
-      it.column_values.forEach(c => { cols[c.id] = c; });
-      const slug = (cols[COL.proposalSlug]?.text || '').trim();
-      const isActivation = (cols[COL.activityType]?.text || '') === 'Activation';
-      if (!slug || !isActivation) return null;
-      const p = itemToProposal(it);
-      if (p) p.updatedAt = p.updatedAt || it.updated_at;
-      return p;
-    })
-    .filter(Boolean)
+  // Fetch each blob in parallel. For larger volumes (100+ proposals) we'd add an index;
+  // for now this is fine.
+  const proposals = await Promise.all(slugs.map(async (slug) => {
+    try {
+      const p = await readProposal(slug);
+      if (!p) return null;
+      return {
+        slug: p.slug || slug,
+        client: p.client || '',
+        projectName: p.projectName || '',
+        status: p.status || 'sent',
+        updatedAt: p.updatedAt || '',
+        createdAt: p.createdAt || '',
+        opsItemId: p.opsItemId || '',
+        // Lightweight summary fields for list views
+        eventStartDate: p.schedule?.eventStartDate || '',
+        total: calcTotals(p).total
+      };
+    } catch (e) {
+      console.warn('Failed to read blob', slug, e.message);
+      return null;
+    }
+  }));
+
+  const filtered = proposals.filter(Boolean)
     .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
 
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposals }) };
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, proposals: filtered }) };
 }
 
 async function handleAccept(payload, headers) {
   const { slug } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
 
-  const item = await findItemBySlug(slug);
-  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
-
-  const record = itemToProposal(item);
+  const record = await readProposal(slug);
+  if (!record) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
 
   if (record.status === 'accepted') {
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, alreadyAccepted: true }) };
@@ -410,57 +406,72 @@ async function handleAccept(payload, headers) {
   record.acceptedAt = new Date().toISOString();
   record.updatedAt = record.acceptedAt;
 
-  const cols = buildColumnValues(record, {
-    logistics: 'Setup Scheduled',
-    billing:   'ESTIMATE APPROVED',
-    project:   'IN PROGRESS'
-  });
-  const colsStr = JSON.stringify(JSON.stringify(cols));
-  await mondayQuery(`mutation { change_multiple_column_values(item_id: ${item.id}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
+  // Update Monday status
+  if (record.opsItemId) {
+    const cols = buildColumnValues(record, {
+      logistics: 'Setup Scheduled',
+      billing:   'ESTIMATE APPROVED',
+      project:   'IN PROGRESS'
+    });
+    const colsStr = JSON.stringify(JSON.stringify(cols));
+    try {
+      await mondayQuery(`mutation { change_multiple_column_values(item_id: ${record.opsItemId}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
+      const updateBody = `✓ Activation proposal accepted by client. View: ${getSiteUrl()}/activation-proposal/${slug}`;
+      try {
+        await mondayQuery(`mutation { create_update(item_id: ${record.opsItemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
+      } catch (_) {}
+    } catch (e) {
+      console.warn('Monday update on accept failed (continuing):', e.message);
+    }
+  }
 
-  const updateBody = `✓ Activation proposal accepted by client. View: ${getSiteUrl()}/activation-proposal/${slug}`;
-  try {
-    await mondayQuery(`mutation { create_update(item_id: ${item.id}, body: ${JSON.stringify(updateBody)}) { id } }`);
-  } catch (_) {}
+  // Persist new state to Blob
+  await writeProposal(slug, record);
 
   await sendNotification({
     subject: `✓ ACCEPTED — ${record.client} · ${record.projectName || ''}`,
     body: buildAcceptNotification(record)
   });
 
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: item.id }) };
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: record.opsItemId || null }) };
 }
 
 async function handleChanges(payload, headers) {
   const { slug, notes } = payload;
   if (!slug) return { statusCode: 400, headers, body: JSON.stringify({ error: 'slug required' }) };
 
-  const item = await findItemBySlug(slug);
-  if (!item) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
+  const record = await readProposal(slug);
+  if (!record) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not found' }) };
 
-  const record = itemToProposal(item);
   record.status = 'changes_requested';
   record.lastChangeRequest = { at: new Date().toISOString(), notes: notes || '' };
   record.updatedAt = record.lastChangeRequest.at;
 
-  const cols = buildColumnValues(record, {
-    logistics: 'INFORMATION NEEDED',
-    project:   'INFORMATION NEEDED'
-  });
-  const colsStr = JSON.stringify(JSON.stringify(cols));
-  await mondayQuery(`mutation { change_multiple_column_values(item_id: ${item.id}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
+  if (record.opsItemId) {
+    const cols = buildColumnValues(record, {
+      logistics: 'INFORMATION NEEDED',
+      project:   'INFORMATION NEEDED'
+    });
+    const colsStr = JSON.stringify(JSON.stringify(cols));
+    try {
+      await mondayQuery(`mutation { change_multiple_column_values(item_id: ${record.opsItemId}, board_id: ${OPS_BOARD}, column_values: ${colsStr}) { id } }`);
+      const updateBody = `🔄 Client requested changes:\n\n${notes || '(no notes)'}\n\nProposal: ${getSiteUrl()}/activation-proposal/${slug}`;
+      try {
+        await mondayQuery(`mutation { create_update(item_id: ${record.opsItemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
+      } catch (_) {}
+    } catch (e) {
+      console.warn('Monday update on changes failed (continuing):', e.message);
+    }
+  }
 
-  const updateBody = `🔄 Client requested changes:\n\n${notes || '(no notes)'}\n\nProposal: ${getSiteUrl()}/activation-proposal/${slug}`;
-  try {
-    await mondayQuery(`mutation { create_update(item_id: ${item.id}, body: ${JSON.stringify(updateBody)}) { id } }`);
-  } catch (_) {}
+  await writeProposal(slug, record);
 
   await sendNotification({
     subject: `↩ CHANGES REQUESTED — ${record.client} · ${record.projectName || ''}`,
     body: buildChangeRequestNotification(record, notes)
   });
 
-  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: item.id }) };
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true, opsItemId: record.opsItemId || null }) };
 }
 
 // ─────────────────────────────────────────────────────────────
