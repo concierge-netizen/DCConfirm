@@ -129,8 +129,17 @@ exports.handler = async (event) => {
 };
 
 // ── Auth ──
+// Internal tool: auth gate is disabled by default. We only enforce the
+// password if (a) the request supplies one AND (b) ADMIN_PASSWORD is set
+// in the env. Otherwise calls proceed. The hub PIN gate at /hub guards
+// upstream access; the public proposal view (/activation-proposal/<slug>)
+// is intentionally unauthenticated since the slug acts as the access token.
 function checkAdmin(password) {
-  const expected = process.env.ADMIN_PASSWORD || 'HANDS2026';
+  // No password supplied → allow (internal tool, hub PIN already gates).
+  if (!password) return true;
+  // Password supplied → must match ADMIN_PASSWORD if set.
+  const expected = process.env.ADMIN_PASSWORD;
+  if (!expected) return true; // no env-configured password → accept anything
   return password === expected;
 }
 
