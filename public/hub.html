@@ -1,0 +1,3567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HANDS — Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --white:      #ffffff;
+    --paper:      #f8f7f4;
+    --paper-2:    #f1f0eb;
+    --line:       #e2e0d6;
+    --line-2:     #c8c8c4;
+    --text-2:     #7a7a76;
+    --text:       #111110;
+    --green:      #a0d6b4;
+    --green-d:    #6dba96;
+    --red:        #c94a4a;
+    --amber:      #c8a84b;
+    --blue:       #5b8fc4;
+    --display:    'Cormorant Garamond', Georgia, serif;
+    --body:       'DM Sans', -apple-system, sans-serif;
+    --mono:       'DM Mono', 'SF Mono', Menlo, monospace;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 13px;
+    line-height: 1.45;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .nav {
+    background: var(--text);
+    color: var(--white);
+    height: 160px;
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 2px solid var(--green-d);
+  }
+  .nav::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 90% 30%, rgba(160,214,180,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .nav > * { position: relative; z-index: 1; }
+
+  .brand-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 18px 20px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    gap: 8px;
+  }
+  .brand-logo {
+    display: block;
+    height: 80px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+  }
+  .brand-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+  .brand-meta .dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .stat {
+    padding: 18px 28px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    gap: 8px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+  .stat-num {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: 76px;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    white-space: nowrap;
+  }
+  .stat-num .denom {
+    color: rgba(255,255,255,0.4);
+    font-size: 44px;
+    margin-left: -2px;
+  }
+  .stat-num .pct {
+    color: inherit;
+    font-size: 44px;
+    margin-left: 2px;
+    font-weight: 400;
+  }
+  .stat-num .unit {
+    color: rgba(255,255,255,0.5);
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 12px;
+    vertical-align: 38px;
+  }
+  .stat-num.health-good { color: var(--green); }
+  .stat-num.health-bad  { color: var(--red); }
+  .stat-num.health-warn { color: var(--amber); }
+
+  .stat-side {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-side strong {
+    font-weight: 500;
+    color: var(--white);
+  }
+  .stat-side .up   { color: var(--green); font-weight: 500; }
+  .stat-side .down { color: var(--red);   font-weight: 500; }
+  .stat-side .warn { color: var(--amber); font-weight: 500; }
+
+
+  .nav-tools {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+  .clock {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+    text-align: right;
+  }
+  .clock strong { color: var(--white); font-weight: 500; display: block; font-size: 14px; }
+  .nav-btn {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 9px 16px;
+    font-family: var(--body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-btn:hover { background: var(--green); color: var(--text); border-color: var(--green); }
+  .nav-btn.primary {
+    background: var(--green);
+    color: var(--text);
+    border-color: var(--green);
+  }
+  .nav-btn.primary:hover {
+    background: var(--green-d);
+    color: var(--white);
+    border-color: var(--green-d);
+  }
+  .nav-btn svg { width: 12px; height: 12px; stroke-width: 1.7; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 160px 1fr 320px;
+    height: calc(100vh - 194px);
+    transition: grid-template-columns .25s ease;
+  }
+  body.activity-collapsed .layout {
+    grid-template-columns: 160px 1fr 44px;
+  }
+
+  .sub-banner {
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+    height: 32px;
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+  .sub-banner-brand {
+    padding: 0 20px;
+    border-right: 1px solid var(--line);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: var(--green-d);
+    font-weight: 500;
+  }
+  .sub-banner-context {
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .sub-banner-context .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .sub-banner-context .item strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .sub-banner-context .sep {
+    width: 1px;
+    height: 14px;
+    background: var(--line);
+    flex-shrink: 0;
+  }
+  .sub-banner-context .hol-inline {
+    color: var(--text-2);
+  }
+  .sub-banner-context .hol-inline strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .sub-banner-context .hol-inline .hol-days {
+    color: var(--green-d);
+    font-weight: 500;
+  }
+  .sub-banner-status {
+    padding: 0 22px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 1px solid var(--line);
+  }
+  .sub-banner-status .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-d);
+    animation: pulse 2s infinite;
+  }
+
+  .sidebar {
+    background: var(--white);
+    border-right: 1px solid var(--line);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .side-section {
+    border-bottom: 1px solid var(--line);
+    padding: 10px 0 12px;
+  }
+  .side-section:last-child { border-bottom: none; }
+  .side-section.tool-rail { padding: 8px 0; }
+  .side-section.account { margin-top: auto; }
+
+  .side-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    padding: 6px 14px 6px;
+  }
+  .side-section.tool-rail .side-eyebrow {
+    text-align: center;
+    padding: 4px 0 8px;
+  }
+
+  .side-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 5px 14px;
+    font-family: var(--body);
+    font-size: 12px;
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: background .12s, color .12s;
+  }
+  .side-link:hover { background: var(--paper-2); color: var(--green-d); }
+  .side-link.active {
+    border-left-color: var(--text);
+    background: var(--paper-2);
+    font-weight: 500;
+  }
+  .side-link-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+  }
+  .side-link.active .side-link-meta { color: var(--text); }
+
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 0 8px;
+  }
+  .tool-tile {
+    aspect-ratio: 1;
+    background: var(--paper-2);
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .12s;
+    color: var(--text);
+    text-decoration: none;
+    position: relative;
+  }
+  .tool-tile:hover {
+    background: var(--text);
+    color: var(--white);
+    border-color: var(--text);
+  }
+  .tool-tile svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.6;
+  }
+  .tool-tip {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--text);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+    z-index: 200;
+  }
+  .tool-tip::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 4px solid var(--text);
+  }
+  .tool-tile:hover .tool-tip { opacity: 1; }
+
+  .main {
+    overflow-y: auto;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: grid;
+    border-bottom: 1px solid var(--line);
+  }
+  .row:last-child { border-bottom: none; }
+  .row.r-pipeline { grid-template-columns: 1fr 1fr; }
+  .row.r-board { grid-template-columns: 1fr; }
+  .row.r-bottom { grid-template-columns: 1.4fr 1fr; }
+
+  .panel {
+    background: var(--white);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .panel:last-child { border-right: none; }
+
+  .p-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-2);
+    min-height: 38px;
+  }
+  .p-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .p-title .num {
+    color: var(--green-d);
+    font-weight: 400;
+  }
+  .p-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+  }
+  .p-meta .live::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-d);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+    vertical-align: middle;
+  }
+  .p-tabs {
+    display: flex;
+    gap: 0;
+  }
+  .p-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    cursor: pointer;
+  }
+  .p-tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .p-tab:hover:not(.active) { color: var(--text); }
+
+  .p-body { padding: 14px 16px; flex: 1; min-height: 0; }
+  .p-body.no-pad { padding: 0; }
+
+  .pipe {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pipe-name {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .pipe-name-l {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+  .pipe-name-n {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--text);
+  }
+  .pipe-name-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    margin-left: auto;
+  }
+  .pipe-stages {
+    display: grid;
+    gap: 4px;
+  }
+  .pipe-stages.d5 { grid-template-columns: repeat(5, 1fr); }
+  .pipe-stages.a7 { grid-template-columns: repeat(7, 1fr); }
+  .pipe-stage {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .pipe-stage:hover { background: var(--paper); border-color: var(--text-2); }
+  .pipe-stage.attn { border-color: var(--amber); background: rgba(200,168,75,0.08); }
+  .pipe-stage.full { border-color: var(--green-d); background: rgba(109,186,150,0.06); }
+  .ps-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    line-height: 1.2;
+  }
+  .ps-num {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+  }
+  .pipe-stage.attn .ps-num { color: var(--amber); }
+  .pipe-stage.full .ps-num { color: var(--green-d); }
+
+  .board {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .board thead th {
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    position: sticky;
+    top: 0;
+  }
+  .board tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .board tbody tr { transition: background .1s; }
+  .board tbody tr:hover { background: var(--paper); }
+  .board tbody tr.row-late td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+  .board tbody tr.row-today td:first-child { box-shadow: inset 3px 0 0 var(--green-d); }
+  .board tbody tr.row-tom td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
+
+  .b-time {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .b-time .ago {
+    display: block;
+    font-size: 9px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .b-po {
+    color: var(--green-d);
+    font-weight: 500;
+  }
+  .b-client {
+    font-family: var(--body);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .b-project {
+    font-family: var(--body);
+    font-size: 11.5px;
+    color: var(--text-2);
+    margin-top: 1px;
+  }
+  .b-loc {
+    color: var(--text);
+    font-size: 11px;
+  }
+  .b-status {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--line-2);
+    color: var(--text-2);
+    background: var(--white);
+  }
+  .b-status.s-out { color: var(--green-d); border-color: var(--green-d); }
+  .b-status.s-progress { color: var(--amber); border-color: var(--amber); }
+  .b-status.s-hold { color: var(--text-2); }
+  .b-status.s-sched { color: var(--blue); border-color: var(--blue); }
+  .b-status.s-late { color: var(--red); border-color: var(--red); background: rgba(201,74,74,0.06); }
+
+  .b-actions {
+    display: flex;
+    gap: 2px;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+  }
+  .b-icon-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .12s;
+  }
+  .b-icon-btn:hover {
+    background: var(--text);
+    color: var(--white);
+    border-color: var(--text);
+  }
+  .b-icon-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 1.7;
+  }
+  .b-icon-btn[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity .12s;
+  }
+  .b-icon-btn[data-tip]:hover::after { opacity: 1; }
+
+  .b-menu-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .b-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 220px;
+    z-index: 100;
+    display: none;
+  }
+  .b-menu.open { display: block; }
+  .b-menu-section {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .b-menu-section:last-child { border-bottom: none; }
+  .b-menu-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    padding: 6px 14px 4px;
+  }
+  .b-menu-item {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 7px 14px;
+    text-align: left;
+    font-family: var(--body);
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .b-menu-item:hover { background: var(--paper-2); color: var(--green-d); }
+  .b-menu-item.danger:hover { color: var(--red); background: rgba(201,74,74,0.06); }
+  .b-menu-item svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 1.7;
+    color: var(--text-2);
+    flex-shrink: 0;
+  }
+  .b-menu-item:hover svg { color: inherit; }
+  .b-menu-item .meta {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-2);
+    text-transform: uppercase;
+  }
+
+  .chart-wrap {
+    padding: 14px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+  }
+  .chart-svg {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .leg {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text-2);
+  }
+  .leg .sw { width: 9px; height: 9px; }
+  .leg strong {
+    color: var(--text);
+    font-weight: 500;
+    margin-left: 6px;
+    font-size: 12px;
+  }
+
+  .goals-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+  }
+  .goal-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--line);
+    min-width: 0;
+  }
+  .goal-cell:last-child { border-right: none; }
+  .goal-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+  .goal-num-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .goal-num-now {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+  .goal-num-target {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .goal-track {
+    height: 4px;
+    background: var(--paper-2);
+    position: relative;
+    margin-bottom: 6px;
+  }
+  .goal-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    background: var(--text);
+  }
+  .goal-fill.over { background: var(--green-d); }
+  .goal-pace {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text-2);
+  }
+  .goal-pace.up { color: var(--green-d); }
+  .goal-pace.down { color: var(--red); }
+
+  .activity {
+    border-left: 1px solid var(--line);
+    background: var(--white);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .act-head {
+    padding: 12px 14px 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--text);
+    color: var(--white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+  }
+  .act-head-l {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .act-head-l .label-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .act-head-l .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  .act-head-r {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .act-toggle {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background .12s, transform .25s;
+  }
+  .act-toggle:hover { background: rgba(255,255,255,0.1); }
+  .act-toggle svg { width: 12px; height: 12px; stroke-width: 2; }
+  body.activity-collapsed .act-toggle svg { transform: rotate(180deg); }
+
+  body.activity-collapsed .activity { background: var(--text); }
+  body.activity-collapsed .act-head {
+    flex-direction: column;
+    padding: 10px 4px;
+    gap: 12px;
+    min-height: auto;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  body.activity-collapsed .act-head-l .label-text,
+  body.activity-collapsed .act-head-r {
+    display: none;
+  }
+  body.activity-collapsed .act-head-l {
+    flex: none;
+    justify-content: center;
+  }
+  body.activity-collapsed .act-list { display: none; }
+  body.activity-collapsed .act-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 4px;
+    color: rgba(255,255,255,0.5);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    line-height: 1;
+  }
+  .act-mini { display: none; }
+  .act-mini-count {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--green);
+    letter-spacing: 0;
+  }
+  .act-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .act-item {
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 12px;
+  }
+  .act-item:hover { background: var(--paper); }
+  .act-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+    padding-top: 1px;
+  }
+  .act-msg {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .act-msg .po {
+    font-family: var(--mono);
+    color: var(--green-d);
+    font-weight: 500;
+  }
+  .act-msg .lbl {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid var(--line-2);
+    color: var(--text-2);
+    margin-left: 4px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .act-msg .lbl.ok { color: var(--green-d); border-color: var(--green-d); }
+  .act-msg .lbl.bad { color: var(--red); border-color: var(--red); }
+  .act-who {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .claude-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: var(--white);
+    width: 52px;
+    height: 52px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    z-index: 50;
+    transition: transform .18s, background .18s;
+  }
+  .claude-fab:hover { background: var(--green-d); transform: translateY(-2px); }
+  .claude-fab svg { width: 20px; height: 20px; stroke-width: 1.7; }
+  .claude-fab .pulse {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--green);
+    border: 2px solid var(--text);
+    border-radius: 50%;
+  }
+
+  .scrim {
+    position: fixed; inset: 0;
+    background: rgba(17,17,16,0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    z-index: 90;
+  }
+  .scrim.open { opacity: 1; pointer-events: all; }
+
+  .drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 460px;
+    background: var(--white);
+    transform: translateX(100%);
+    transition: transform .3s ease;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .dr-head {
+    background: var(--text);
+    color: var(--white);
+    padding: 18px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dr-head::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 90% 30%, rgba(160,214,180,0.12) 0%, transparent 55%);
+  }
+  .dr-head > * { position: relative; }
+  .dr-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .dr-title {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+  .dr-title em { font-style: italic; color: var(--green); font-weight: 400; }
+  .dr-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 26px; height: 26px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dr-close:hover { background: rgba(255,255,255,0.1); }
+  .dr-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+  .dr-intro {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-2);
+    margin-bottom: 18px;
+  }
+  .dr-intro strong { color: var(--text); font-weight: 500; }
+  .dr-prompts-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-bottom: 10px;
+  }
+  .dr-prompt {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 0;
+    text-align: left;
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dr-prompt:hover { color: var(--green-d); }
+  .dr-prompt::after { content: '→'; color: var(--text-2); }
+  .dr-prompt:hover::after { color: var(--green-d); }
+  .dr-input-wrap {
+    border-top: 1px solid var(--line);
+    padding: 14px 22px 18px;
+  }
+  .dr-input-row { display: flex; gap: 8px; }
+  .dr-input {
+    flex: 1;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--text);
+    resize: none;
+    outline: none;
+    min-height: 40px;
+  }
+  .dr-input:focus { border-color: var(--text); background: var(--white); }
+  .dr-send {
+    background: var(--text);
+    color: var(--white);
+    border: none;
+    padding: 0 18px;
+    font-family: var(--body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .dr-send:hover { background: var(--green-d); }
+  .dr-foot {
+    margin-top: 8px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-2);
+    letter-spacing: 0.04em;
+  }
+
+/* ───── MODAL STYLES ───── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(17,17,16,0.55);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 200; padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--white);
+  width: 100%; max-width: 520px; max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+}
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+}
+.modal-title {
+  font-family: var(--display); font-size: 22px; font-weight: 400;
+}
+.modal-close {
+  background: transparent; border: 1px solid var(--line);
+  width: 28px; height: 28px;
+  font-size: 20px; line-height: 1; cursor: pointer; color: var(--text-2);
+}
+.modal-close:hover { color: var(--text); border-color: var(--text); }
+.modal-body { padding: 20px; overflow-y: auto; }
+.tabs {
+  display: flex; border-bottom: 1px solid var(--line); margin-bottom: 18px;
+}
+.tab {
+  background: transparent; border: none; padding: 8px 16px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.f-group { margin-bottom: 14px; }
+.f-label {
+  display: block; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-2);
+  margin-bottom: 6px;
+}
+.f-label .opt { letter-spacing: 0; text-transform: none; color: var(--mid-grey); font-size: 11px; }
+.f-input, .f-textarea {
+  width: 100%; padding: 10px 12px; font-family: var(--body); font-size: 13px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 0;
+  color: var(--text); outline: none;
+}
+.f-input:focus, .f-textarea:focus { border-color: var(--text); background: var(--white); }
+.f-textarea { min-height: 64px; resize: vertical; }
+.fetch-summary {
+  margin-top: 8px; padding: 0; display: none;
+  background: var(--paper-2); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11px; color: var(--text);
+}
+.fetch-summary.show { display: block; padding: 10px 12px; }
+.fetch-summary.err { background: rgba(201,74,74,0.06); border-color: var(--red); color: var(--red); }
+.fs-row { display: flex; justify-content: space-between; padding: 3px 0; }
+.fs-label { color: var(--text-2); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.btn-primary {
+  background: var(--text); color: var(--white); border: 1px solid var(--text);
+  padding: 10px 24px; font-family: var(--body); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+}
+.btn-primary:hover { background: var(--green-d); border-color: var(--green-d); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.m-result {
+  margin-top: 12px; padding: 0; display: none;
+  font-family: var(--mono); font-size: 11px;
+}
+.m-result.show { display: block; padding: 10px 12px; }
+.m-result.ok { background: rgba(109,186,150,0.08); border: 1px solid var(--green-d); color: var(--text); }
+.m-result.err { background: rgba(201,74,74,0.06); border: 1px solid var(--red); color: var(--red); }
+.m-result pre { margin-top: 6px; font-size: 10px; color: var(--text-2); white-space: pre-wrap; word-break: break-all; }
+
+/* ───── CHAT MESSAGES inside drawer ───── */
+.chat-msg { margin-bottom: 14px; }
+.chat-msg-role {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--text-2); margin-bottom: 4px;
+}
+.chat-msg-user .chat-msg-role { color: var(--green-d); }
+.chat-msg-body {
+  font-size: 13px; line-height: 1.5; color: var(--text);
+  background: var(--paper-2); padding: 8px 12px;
+  border-left: 2px solid var(--line);
+}
+.chat-msg-user .chat-msg-body { background: rgba(109,186,150,0.08); border-left-color: var(--green-d); }
+.chat-msg-body code {
+  background: var(--white); padding: 1px 4px;
+  font-family: var(--mono); font-size: 11px;
+  border: 1px solid var(--line);
+}
+.chat-typing span {
+  display: inline-block; opacity: 0.4;
+  animation: typing 1.4s infinite;
+}
+.chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%, 60%, 100% { opacity: 0.4; } 30% { opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand-block">
+    <img class="brand-logo" src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics">
+    <div class="brand-meta"><span class="dot"></span>Live · Las Vegas</div>
+  </div>
+  <div class="stats-strip">
+    <div class="stat">
+      <div class="stat-label">Outbound Today</div>
+      <div class="stat-num health-bad">9</div>
+      <div class="stat-side">
+        5 done · 4 still out · <span class="down">2 late</span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Monthly KPI · Apr</div>
+      <div class="stat-num">27<span class="denom">/47</span></div>
+      <div class="stat-side">
+        <span class="warn">57%</span> · day 25/30 · pacing
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Avg Cycle · 30d</div>
+      <div class="stat-num health-good">3.4<span class="unit">days</span></div>
+      <div class="stat-side">
+        intake → delivered · <span class="up">−0.6d</span> mo
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">New Intake · WK</div>
+      <div class="stat-num">11</div>
+      <div class="stat-side">
+        <span class="up">+3</span> vs last wk · top: <strong>Bacardi</strong>
+      </div>
+    </div>
+  </div>
+  <div class="nav-tools">
+    <div class="clock"><strong id="clock-time">8:42 PM</strong>Sat · Apr 25</div>
+    <button class="nav-btn">TV</button>
+    <button class="nav-btn primary" onclick="openClaude()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Ask Claude
+    </button>
+  </div>
+</nav>
+
+<div class="sub-banner">
+  <div class="sub-banner-brand">01 / Operations</div>
+  <div class="sub-banner-context" id="banner-context">
+    <span class="item"><strong id="banner-date">—</strong></span>
+    <span class="sep"></span>
+    <span class="item">Week <strong id="banner-week">—</strong></span>
+    <span class="sep"></span>
+    <span class="item">Day <strong id="banner-day">—</strong> / <span id="banner-days">—</span></span>
+    <span class="sep" id="hol-sep-1"></span>
+    <span class="item hol-inline" id="hol-1">—</span>
+    <span class="sep" id="hol-sep-2"></span>
+    <span class="item hol-inline" id="hol-2">—</span>
+  </div>
+  <div class="sub-banner-status">
+    <span class="pulse"></span>
+    <span>Sync <strong id="banner-sync">—</strong></span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="side-section">
+      <div class="side-eyebrow">View</div>
+      <a class="side-link active">Dashboard <span class="side-link-meta">●</span></a>
+      <a class="side-link">Pipeline <span class="side-link-meta">55</span></a>
+      <a class="side-link">Today <span class="side-link-meta">14</span></a>
+      <a class="side-link">Calendar</a>
+      <a class="side-link">Activity log</a>
+    </div>
+    <div class="side-section tool-rail">
+      <div class="side-eyebrow">Tools</div>
+      <div class="tool-grid">
+        <a class="tool-tile" title="Schedule a delivery">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="tool-tip">Schedule</span>
+        </a>
+        <a class="tool-tile" title="POD upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="tool-tip">POD upload</span>
+        </a>
+        <a class="tool-tile" title="DC confirm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/><polyline points="9,15 11,17 15,13"/></svg>
+          <span class="tool-tip">DC confirm</span>
+        </a>
+        <a class="tool-tile" title="Driver dispatch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="tool-tip">Dispatch</span>
+        </a>
+        <a class="tool-tile" title="Work orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span class="tool-tip">Work orders</span>
+        </a>
+        <a class="tool-tile" title="Label generator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          <span class="tool-tip">Labels</span>
+        </a>
+        <a class="tool-tile" title="Warehouse I/O form">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><line x1="12" y1="11" x2="12" y2="21"/><polyline points="3 7 12 11 21 7"/></svg>
+          <span class="tool-tip">I/O form</span>
+        </a>
+        <a class="tool-tile" title="Client I/O portal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+          <span class="tool-tip">Client portal</span>
+        </a>
+        <a class="tool-tile" title="Estimate generator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span class="tool-tip">Estimates</span>
+        </a>
+        <a class="tool-tile" title="CEO dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="22" x2="21" y2="22"/></svg>
+          <span class="tool-tip">CEO dash</span>
+        </a>
+        <a class="tool-tile" title="Procurement">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="tool-tip">Procurement</span>
+        </a>
+        <a class="tool-tile" title="Billing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="0"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <span class="tool-tip">Billing</span>
+        </a>
+      </div>
+    </div>
+    <div class="side-section account">
+      <div class="side-eyebrow">Account</div>
+      <a class="side-link">Jon Williams</a>
+      <a class="side-link">Settings</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="row r-pipeline">
+
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title"><span class="num">01</span> Delivery pipeline <span style="color:var(--text-2);font-weight:400;letter-spacing:0;">· 34 in flight</span></div>
+          <div class="p-meta"><span class="live">live</span></div>
+        </div>
+        <div class="p-body">
+          <div class="pipe-stages d5">
+            <div class="pipe-stage"><div class="ps-label">Intake</div><div class="ps-num">5</div></div>
+            <div class="pipe-stage full"><div class="ps-label">Scheduled</div><div class="ps-num">12</div></div>
+            <div class="pipe-stage attn"><div class="ps-label">In motion</div><div class="ps-num">8</div></div>
+            <div class="pipe-stage"><div class="ps-label">Delivered</div><div class="ps-num">7</div></div>
+            <div class="pipe-stage"><div class="ps-label">Billed</div><div class="ps-num">2</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title"><span class="num">02</span> Activation pipeline <span style="color:var(--text-2);font-weight:400;letter-spacing:0;">· 21 in flight</span></div>
+          <div class="p-meta"><span class="live">live</span></div>
+        </div>
+        <div class="p-body">
+          <div class="pipe-stages a7">
+            <div class="pipe-stage"><div class="ps-label">Proposal</div><div class="ps-num">3</div></div>
+            <div class="pipe-stage"><div class="ps-label">Approved</div><div class="ps-num">4</div></div>
+            <div class="pipe-stage attn"><div class="ps-label">Procurement</div><div class="ps-num">6</div></div>
+            <div class="pipe-stage"><div class="ps-label">Setup</div><div class="ps-num">3</div></div>
+            <div class="pipe-stage full"><div class="ps-label">Live</div><div class="ps-num">2</div></div>
+            <div class="pipe-stage"><div class="ps-label">Strike</div><div class="ps-num">2</div></div>
+            <div class="pipe-stage"><div class="ps-label">Wrapped</div><div class="ps-num">1</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row r-board">
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title">
+            <span class="num">03</span> Active board
+            <span style="color:var(--text-2);font-weight:400;letter-spacing:0;">· 14 deliveries</span>
+          </div>
+          <div class="p-tabs">
+            <button class="p-tab active">Today</button>
+            <button class="p-tab">This week</button>
+            <button class="p-tab">All active</button>
+            <button class="p-tab">Completed</button>
+          </div>
+          <div class="p-meta">
+            <span>updated 03s ago</span>
+          </div>
+        </div>
+        <div class="p-body no-pad">
+          <table class="board">
+            <thead>
+              <tr>
+                <th style="width:78px;">Time</th>
+                <th style="width:115px;">PO #</th>
+                <th style="width:38%;">Client / Project</th>
+                <th style="width:24%;">Location</th>
+                <th style="width:80px;">Status</th>
+                <th style="width:170px;text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row-late">
+                <td class="b-time">10:00 AM<span class="ago">2h late</span></td>
+                <td class="b-po">#1284392001</td>
+                <td><div class="b-client">Bacardi</div><div class="b-project">Cinco de Mayo display install</div></td>
+                <td class="b-loc">Total Wine Henderson</td>
+                <td><span class="b-status s-out">Out</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr class="row-today">
+                <td class="b-time">2:30 PM<span class="ago">in 5h</span></td>
+                <td class="b-po">#1284392058</td>
+                <td><div class="b-client">GHOST Energy</div><div class="b-project">The STRAT pickup</div></td>
+                <td class="b-loc">The STRAT Las Vegas</td>
+                <td><span class="b-status s-sched">Sched</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr class="row-today">
+                <td class="b-time">5:00 PM<span class="ago">in 8h</span></td>
+                <td class="b-po">#1284392067</td>
+                <td><div class="b-client">Campari</div><div class="b-project">Aperol activation strike</div></td>
+                <td class="b-loc">Encore Beach Club</td>
+                <td><span class="b-status s-progress">Prog</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr class="row-tom">
+                <td class="b-time">9:00 AM<span class="ago">tomorrow</span></td>
+                <td class="b-po">#1284392071</td>
+                <td><div class="b-client">Diageo</div><div class="b-project">Don Julio sample drop</div></td>
+                <td class="b-loc">Wynn Las Vegas</td>
+                <td><span class="b-status s-sched">Sched</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr class="row-tom">
+                <td class="b-time">11:30 AM<span class="ago">tomorrow</span></td>
+                <td class="b-po">#1284392073</td>
+                <td><div class="b-client">Pernod Ricard</div><div class="b-project">Absolut event load-in</div></td>
+                <td class="b-loc">TAO Beach</td>
+                <td><span class="b-status s-hold">Hold</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="b-time">4:00 PM<span class="ago">tomorrow</span></td>
+                <td class="b-po">#1284392078</td>
+                <td><div class="b-client">Diageo</div><div class="b-project">Crown Royal sponsorship drop</div></td>
+                <td class="b-loc">Resorts World</td>
+                <td><span class="b-status s-sched">Sched</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="b-time">9:30 AM<span class="ago">Mon</span></td>
+                <td class="b-po">#1284392081</td>
+                <td><div class="b-client">Bacardi</div><div class="b-project">Patron retail rotation</div></td>
+                <td class="b-loc">Lee's Discount Liquor (4)</td>
+                <td><span class="b-status s-sched">Sched</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="b-time">2:00 PM<span class="ago">Mon</span></td>
+                <td class="b-po">#1284392084</td>
+                <td><div class="b-client">GHOST Energy</div><div class="b-project">7-Eleven cold-box reset</div></td>
+                <td class="b-loc">7-Eleven (12 locations)</td>
+                <td><span class="b-status s-sched">Sched</span></td>
+                <td><div class="b-actions">
+                  <button class="b-icon-btn" data-tip="Open in Monday" title="Open in Monday">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Send DC email" title="Send DC email">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="POD upload" title="POD upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="b-icon-btn" data-tip="Print label" title="Print label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  </button>
+                  <div class="b-menu-wrap">
+                    <button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions" title="More actions">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div class="b-menu">
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Documents</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Status</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <div class="b-menu-eyebrow">Communicate</div>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>
+                        <button class="b-menu-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>
+                      </div>
+                      <div class="b-menu-section">
+                        <button class="b-menu-item danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row r-bottom">
+
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title"><span class="num">04</span> Pipeline by week <span style="color:var(--text-2);font-weight:400;letter-spacing:0;">· last 5 weeks</span></div>
+          <div class="p-tabs">
+            <button class="p-tab">1W</button>
+            <button class="p-tab active">1M</button>
+            <button class="p-tab">3M</button>
+            <button class="p-tab">YTD</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg class="chart-svg" viewBox="0 0 800 260" preserveAspectRatio="none">
+            <line x1="0" y1="220" x2="800" y2="220" stroke="#e2e0d6" stroke-width="1"/>
+            <line x1="0" y1="170" x2="800" y2="170" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
+            <line x1="0" y1="120" x2="800" y2="120" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
+            <line x1="0" y1="70"  x2="800" y2="70"  stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>
+            <text x="6" y="174" font-family="DM Mono" font-size="9" fill="#c8c8c4">5</text>
+            <text x="6" y="124" font-family="DM Mono" font-size="9" fill="#c8c8c4">10</text>
+            <text x="6" y="74"  font-family="DM Mono" font-size="9" fill="#c8c8c4">15</text>
+
+            <g transform="translate(60,0)">
+              <rect x="0"  y="190" width="20" height="30" fill="#6dba96"/>
+              <rect x="22" y="170" width="20" height="50" fill="#a0d6b4"/>
+              <rect x="44" y="180" width="20" height="40" fill="#c8c8c4"/>
+              <rect x="66" y="195" width="20" height="25" fill="#7a7a76"/>
+              <rect x="88" y="205" width="20" height="15" fill="#111110"/>
+              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W13</text>
+            </g>
+
+            <g transform="translate(220,0)">
+              <rect x="0"  y="180" width="20" height="40" fill="#6dba96"/>
+              <rect x="22" y="155" width="20" height="65" fill="#a0d6b4"/>
+              <rect x="44" y="170" width="20" height="50" fill="#c8c8c4"/>
+              <rect x="66" y="185" width="20" height="35" fill="#7a7a76"/>
+              <rect x="88" y="195" width="20" height="25" fill="#111110"/>
+              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W14</text>
+            </g>
+
+            <g transform="translate(380,0)">
+              <rect x="0"  y="175" width="20" height="45" fill="#6dba96"/>
+              <rect x="22" y="140" width="20" height="80" fill="#a0d6b4"/>
+              <rect x="44" y="160" width="20" height="60" fill="#c8c8c4"/>
+              <rect x="66" y="175" width="20" height="45" fill="#7a7a76"/>
+              <rect x="88" y="190" width="20" height="30" fill="#111110"/>
+              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W15</text>
+            </g>
+
+            <g transform="translate(540,0)">
+              <rect x="0"  y="180" width="20" height="40" fill="#6dba96"/>
+              <rect x="22" y="135" width="20" height="85" fill="#a0d6b4"/>
+              <rect x="44" y="155" width="20" height="65" fill="#c8c8c4"/>
+              <rect x="66" y="170" width="20" height="50" fill="#7a7a76"/>
+              <rect x="88" y="185" width="20" height="35" fill="#111110"/>
+              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#7a7a76">W16</text>
+            </g>
+
+            <g transform="translate(700,0)">
+              <rect x="-2" y="-2" width="116" height="226" fill="none" stroke="#111110" stroke-width="1" stroke-dasharray="2 3"/>
+              <rect x="0"  y="170" width="20" height="50" fill="#6dba96"/>
+              <rect x="22" y="100" width="20" height="120" fill="#a0d6b4"/>
+              <rect x="44" y="140" width="20" height="80" fill="#c8c8c4"/>
+              <rect x="66" y="150" width="20" height="70" fill="#7a7a76"/>
+              <rect x="88" y="200" width="20" height="20" fill="#111110"/>
+              <text x="10" y="163" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">5</text>
+              <text x="32" y="93"  text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">12</text>
+              <text x="54" y="133" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">8</text>
+              <text x="76" y="143" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">7</text>
+              <text x="98" y="193" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">2</text>
+              <text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="#111110" font-weight="500">W17 · NOW</text>
+            </g>
+          </svg>
+          <div class="chart-legend">
+            <div class="leg"><span class="sw" style="background:#6dba96;"></span>Intake <strong>5</strong></div>
+            <div class="leg"><span class="sw" style="background:#a0d6b4;"></span>Sched <strong>12</strong></div>
+            <div class="leg"><span class="sw" style="background:#c8c8c4;"></span>Motion <strong>8</strong></div>
+            <div class="leg"><span class="sw" style="background:#7a7a76;"></span>Delivered <strong>7</strong></div>
+            <div class="leg"><span class="sw" style="background:#111110;"></span>Billed <strong>2</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title"><span class="num">05</span> Monthly goals · Apr</div>
+          <div class="p-meta">day 25/30 · 83% elapsed</div>
+        </div>
+        <div class="p-body no-pad">
+          <div class="goals-grid">
+            <div class="goal-cell">
+              <div class="goal-label">Delivery</div>
+              <div class="goal-num-row">
+                <span class="goal-num-now">12</span>
+                <span class="goal-num-target">/ 18</span>
+              </div>
+              <div class="goal-track"><div class="goal-fill" style="width:67%;"></div></div>
+              <div class="goal-pace up">↑ on pace · 67%</div>
+            </div>
+            <div class="goal-cell">
+              <div class="goal-label">Activation</div>
+              <div class="goal-num-row">
+                <span class="goal-num-now">4</span>
+                <span class="goal-num-target">/ 10</span>
+              </div>
+              <div class="goal-track"><div class="goal-fill" style="width:40%;"></div></div>
+              <div class="goal-pace down">↓ behind · 40%</div>
+            </div>
+            <div class="goal-cell">
+              <div class="goal-label">I/O Ship</div>
+              <div class="goal-num-row">
+                <span class="goal-num-now">8</span>
+                <span class="goal-num-target">/ 13</span>
+              </div>
+              <div class="goal-track"><div class="goal-fill" style="width:62%;"></div></div>
+              <div class="goal-pace up">↑ on pace · 62%</div>
+            </div>
+            <div class="goal-cell">
+              <div class="goal-label">Sourcing</div>
+              <div class="goal-num-row">
+                <span class="goal-num-now">3</span>
+                <span class="goal-num-target">/ 6</span>
+              </div>
+              <div class="goal-track"><div class="goal-fill" style="width:50%;"></div></div>
+              <div class="goal-pace down">↓ behind · 50%</div>
+            </div>
+            <div class="goal-cell">
+              <div class="goal-label">Production</div>
+              <div class="goal-num-row">
+                <span class="goal-num-now">11</span>
+                <span class="goal-num-target">/ 10</span>
+              </div>
+              <div class="goal-track"><div class="goal-fill over" style="width:100%;"></div></div>
+              <div class="goal-pace up">↑ ahead · 110%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <aside class="activity">
+    <div class="act-head">
+      <div class="act-head-l"><span class="dot"></span><span class="label-text">Live activity</span></div>
+      <div class="act-head-r">last 1h</div>
+      <button class="act-toggle" onclick="toggleActivity()" title="Collapse / expand activity rail" aria-label="Toggle activity">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="act-mini">
+      <span>Live activity</span>
+      <span class="act-mini-count">11</span>
+    </div>
+    <div class="act-list">
+      <div class="act-item">
+        <div class="act-time">3m</div>
+        <div>
+          <div class="act-msg">POD uploaded · <span class="po">#1284392058</span> <span class="lbl ok">2 photos</span></div>
+          <div class="act-who">Charles · field team</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">12m</div>
+        <div>
+          <div class="act-msg"><span class="po">#1284392071</span> moved to <span class="lbl">Sched</span></div>
+          <div class="act-who">Jon Williams</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">28m</div>
+        <div>
+          <div class="act-msg">Inbound notice sent · Bacardi Q2 stock</div>
+          <div class="act-who">Zapier · automated</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">42m</div>
+        <div>
+          <div class="act-msg">DC email sent · <span class="po">#1284392067</span> · 2 cc</div>
+          <div class="act-who">Jon Williams</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">55m</div>
+        <div>
+          <div class="act-msg">New intake · Diageo · Don Julio sample drop</div>
+          <div class="act-who">Form intake (intake.handslogistics.com)</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">1h 4m</div>
+        <div>
+          <div class="act-msg"><span class="po">#1284392001</span> marked <span class="lbl bad">Late</span></div>
+          <div class="act-who">System · auto-flag</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">1h 12m</div>
+        <div>
+          <div class="act-msg">Procurement quote signed · GHOST Q3</div>
+          <div class="act-who">Jon Williams · Square</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">1h 28m</div>
+        <div>
+          <div class="act-msg">Label batch printed · 24 labels · Arkscan</div>
+          <div class="act-who">Charles · warehouse</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">1h 40m</div>
+        <div>
+          <div class="act-msg">Reminder created · Bacardi pickup tomorrow 9 AM</div>
+          <div class="act-who">Jon Williams · Reminders</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">2h 02m</div>
+        <div>
+          <div class="act-msg">Calendar event added · Wynn delivery</div>
+          <div class="act-who">Claude · agent</div>
+        </div>
+      </div>
+      <div class="act-item">
+        <div class="act-time">2h 18m</div>
+        <div>
+          <div class="act-msg">POD uploaded · <span class="po">#1284392052</span> <span class="lbl ok">3 photos</span></div>
+          <div class="act-who">Charles · field team</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<button class="claude-fab" onclick="openClaude()" aria-label="Ask Claude">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <span class="pulse"></span>
+</button>
+
+<div class="scrim" id="scrim" onclick="closeClaude()"></div>
+
+<aside class="drawer" id="drawer">
+  <div class="dr-head">
+    <div class="dr-eyebrow">HANDS Assistant</div>
+    <div class="dr-title">A <em>second pair</em> of hands.</div>
+    <button class="dr-close" onclick="closeClaude()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="dr-body" id="chatBody">
+    <div class="dr-empty" id="chatEmpty">
+      <div class="dr-intro">
+        <strong>Read the board. Move things. Send the email.</strong> Full Monday agent — same powers you have in chat. Confirms before anything client-facing fires.
+      </div>
+      <div class="dr-prompts-eyebrow">Try one of these</div>
+      <button class="dr-prompt">What's in Unconfirmed right now?</button>
+      <button class="dr-prompt">Send DCs for everything Scheduled without one yet</button>
+      <button class="dr-prompt">Move anything overdue to On Hold and post a note</button>
+      <button class="dr-prompt">Show me anything billed but not yet invoiced</button>
+      <button class="dr-prompt">Draft a delay email to Bacardi about tomorrow</button>
+    </div>
+    <div class="dr-err" id="chatErr" style="display:none;color:var(--red);font-family:var(--mono);font-size:11px;padding:10px 0;"></div>
+  </div>
+  <div class="dr-input-wrap">
+    <div class="dr-input-row">
+      <textarea class="dr-input" id="chatInput" rows="1" placeholder="Ask anything about the operation…"></textarea>
+      <button class="dr-send" id="chatSend">Send</button>
+    </div>
+    <div class="dr-foot">Claude Haiku 4.5 · Monday read/write + email</div>
+  </div>
+</aside>
+
+<script>
+
+// ─────────────────────────────────────────────
+// HANDS HUB v3 — Production data layer
+// Preserves proven helpers from prior hub for stability
+// ─────────────────────────────────────────────
+
+// Board IDs and column constants (verified against live Monday)
+var OPS_BOARD     = '4550650855';
+var GOALS_BOARD   = '18406032754';
+var IO_BOARD      = '18405667848';
+var ACTIVITY_COL  = 'color_mm1wxn5k';
+var GOALS_NUM_COL = 'numeric_mm1wqa26';
+var GOALS_ANN_COL = 'numeric_mm1w9yck';
+var GOALS_DATE_COL= 'date_mm1w3zdc';
+var PENDING_STATUSES = ['Unconfirmed','IN PROGRESS','DELIVERY SCHEDULED','OUT FOR DELIVERY','ON HOLD'];
+var EXCLUDE_STATUSES = ['COMPLETE','Proposal Need'];
+
+var ACTIVITY_TYPES = [
+  { label: 'Delivery',        color: '#6dba96' },
+  { label: 'Activation',      color: '#c8a84b' },
+  { label: 'I/O Shipping',    color: '#5b8fc4' },
+  { label: 'Sourcing',        color: '#9a7fc1' },
+  { label: 'Production',      color: '#c75a5a' }
+];
+
+var MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Mutable state
+var cachedAllItems  = [];
+var cachedGoalRows  = [];
+var cachedActivity  = [];
+var cachedIO        = [];
+var lastRefresh     = null;
+
+// Monday API via existing proxy (unchanged from prior hub)
+function mondayQuery(q) {
+  return fetch('/api/monday-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: q })
+  }).then(function(r) { return r.json(); });
+}
+
+// Date parsing — the text2 column is plain text in MONTH D, YYYY format
+var MMAP = { JANUARY:0, FEBRUARY:1, MARCH:2, APRIL:3, MAY:4, JUNE:5, JULY:6, AUGUST:7, SEPTEMBER:8, OCTOBER:9, NOVEMBER:10, DECEMBER:11 };
+function parseDeliveryDate(text) {
+  if (!text) return null;
+  var m = String(text).trim().toUpperCase().match(/^([A-Z]+)\s+(\d+),?\s*(\d{4})$/);
+  if (!m || MMAP[m[1]] === undefined) return null;
+  return new Date(parseInt(m[3]), MMAP[m[1]], parseInt(m[2]));
+}
+function parseMondayDate(text) {
+  if (!text) return null;
+  var d = new Date(text);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// Pipeline column readers (preserve verbatim from prior hub)
+function pipeGet(item, id) {
+  var c = (item.column_values || []).find(function(c){ return c.id === id; });
+  return c ? (c.text || '') : '';
+}
+function pipeGetValue(item, id) {
+  var c = (item.column_values || []).find(function(c){ return c.id === id; });
+  return c ? c.value : null;
+}
+function pipeIsChecked(item, id) {
+  var v = pipeGetValue(item, id);
+  if (!v) return false;
+  try { return JSON.parse(v).checked === 'true' || JSON.parse(v).checked === true; }
+  catch (e) { return false; }
+}
+function pipeHasPhoto(item) {
+  return !!(pipeGet(item,'link_mm1pgr61') || pipeGet(item,'link_mm1pay5j'));
+}
+
+// Personnel filter — items with null Activity Type are roster rows, exclude
+function isPersonnel(item) { return !pipeGet(item, ACTIVITY_COL); }
+
+// ─────────────────────────────────────────────
+// Pipeline classifiers (5-stage delivery, 7-stage activation)
+// ─────────────────────────────────────────────
+function classifyDelivery(item) {
+  var status   = (pipeGet(item, 'color') || '').toUpperCase();
+  var hasPOD   = pipeHasPhoto(item);
+  var billed   = pipeIsChecked(item, 'boolean_mm1jr3gr');
+  if (billed) return 'billed';
+  if (status === 'COMPLETE' || hasPOD) return 'delivered';
+  if (status === 'OUT FOR DELIVERY') return 'motion';
+  if (status === 'DELIVERY SCHEDULED' || status === 'IN PROGRESS' || status === 'ON HOLD') return 'scheduled';
+  return 'intake'; // Unconfirmed and anything else
+}
+function classifyActivation(item) {
+  var status = (pipeGet(item, 'color') || '').toUpperCase();
+  // For now, map activations to delivery-ish stages until activation-specific columns exist
+  if (status === 'COMPLETE') return 'wrapped';
+  if (status === 'OUT FOR DELIVERY') return 'live';
+  if (status === 'IN PROGRESS') return 'setup';
+  if (status === 'DELIVERY SCHEDULED') return 'approved';
+  return 'proposal';
+}
+
+// ─────────────────────────────────────────────
+// Status pill helper
+// ─────────────────────────────────────────────
+function statusPillClass(label) {
+  var s = (label || '').toUpperCase();
+  if (s === 'OUT FOR DELIVERY') return 's-out';
+  if (s === 'DELIVERY SCHEDULED') return 's-sched';
+  if (s === 'IN PROGRESS') return 's-progress';
+  if (s === 'ON HOLD') return 's-hold';
+  if (s === 'COMPLETE') return 's-out';
+  return 's-sched';
+}
+function statusPillShort(label) {
+  var s = (label || '').toUpperCase();
+  if (s === 'OUT FOR DELIVERY') return 'OUT';
+  if (s === 'DELIVERY SCHEDULED') return 'SCHED';
+  if (s === 'IN PROGRESS') return 'PROG';
+  if (s === 'ON HOLD') return 'HOLD';
+  if (s === 'COMPLETE') return 'DONE';
+  if (s === 'UNCONFIRMED') return 'NEW';
+  return s.split(' ')[0];
+}
+
+// ─────────────────────────────────────────────
+// Time/urgency helpers
+// ─────────────────────────────────────────────
+function urgencyClass(deliveryDate) {
+  if (!deliveryDate) return '';
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var tomorrow = new Date(today.getTime() + 86400000);
+  var item = new Date(deliveryDate.getFullYear(), deliveryDate.getMonth(), deliveryDate.getDate());
+  if (item < today) return 'row-late';
+  if (item.getTime() === today.getTime()) return 'row-today';
+  if (item.getTime() === tomorrow.getTime()) return 'row-tom';
+  return '';
+}
+function urgencyAgo(deliveryDate, deliveryTimeText) {
+  if (!deliveryDate) return '';
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var tomorrow = new Date(today.getTime() + 86400000);
+  var item = new Date(deliveryDate.getFullYear(), deliveryDate.getMonth(), deliveryDate.getDate());
+  if (item < today) {
+    var hoursLate = Math.floor((now - deliveryDate) / 3600000);
+    if (hoursLate < 24) return hoursLate + 'h late';
+    return Math.floor(hoursLate / 24) + 'd late';
+  }
+  if (item.getTime() === today.getTime()) {
+    if (deliveryTimeText) {
+      var t = parseTimeText(deliveryTimeText);
+      if (t) {
+        var d = new Date(today); d.setHours(t.h, t.m, 0, 0);
+        var diff = d - now;
+        if (diff > 0) {
+          var hr = Math.floor(diff / 3600000);
+          if (hr < 1) return 'in ' + Math.floor(diff / 60000) + 'm';
+          return 'in ' + hr + 'h';
+        }
+      }
+    }
+    return 'today';
+  }
+  if (item.getTime() === tomorrow.getTime()) return 'tomorrow';
+  var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return dayNames[item.getDay()];
+}
+function parseTimeText(text) {
+  if (!text) return null;
+  var m = String(text).match(/^(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);
+  if (!m) return null;
+  var h = parseInt(m[1]);
+  var min = m[2] ? parseInt(m[2]) : 0;
+  var ampm = m[3] ? m[3].toUpperCase() : null;
+  if (ampm === 'PM' && h < 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return { h: h, m: min };
+}
+function formatTimeShort(text) {
+  var t = parseTimeText(text);
+  if (!t) return text || '';
+  var ampm = t.h >= 12 ? 'PM' : 'AM';
+  var h = t.h % 12 || 12;
+  return h + ':' + (t.m < 10 ? '0' + t.m : t.m) + ' ' + ampm;
+}
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function timeAgoShort(date) {
+  if (!date) return '';
+  var diff = (Date.now() - date.getTime()) / 1000;
+  if (diff < 60) return Math.floor(diff) + 's';
+  if (diff < 3600) return Math.floor(diff/60) + 'm';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h';
+  return Math.floor(diff/86400) + 'd';
+}
+
+
+// ─────────────────────────────────────────────
+// v3 RENDER LAYER — binds live data to v3 panels
+// ─────────────────────────────────────────────
+
+// Get current week-of-year (ISO week)
+function isoWeek(d) {
+  d = new Date(d.getTime());
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  var yearStart = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// Status strip: 4 KPIs
+function renderStatusBar() {
+  var items = cachedAllItems.filter(function(it){ return !isPersonnel(it); });
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  // Outbound today: items with delivery date == today and Activity = Delivery
+  var deliveries = items.filter(function(it){ return pipeGet(it, ACTIVITY_COL) === 'Delivery'; });
+  var todayItems = deliveries.filter(function(it){
+    var d = parseDeliveryDate(pipeGet(it, 'text2'));
+    if (!d) return false;
+    return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+  });
+  var outboundCount = todayItems.length;
+  var outboundDone = todayItems.filter(function(it){ return classifyDelivery(it) === 'delivered' || classifyDelivery(it) === 'billed'; }).length;
+  var outboundLate = todayItems.filter(function(it){
+    var stage = classifyDelivery(it);
+    return stage !== 'delivered' && stage !== 'billed' && parseDeliveryDate(pipeGet(it,'text2')) < new Date(now - 30*60000);
+  }).length;
+  var outboundOut = outboundCount - outboundDone;
+
+  // Outbound health
+  var outHealth = '';
+  if (outboundLate > 0) outHealth = 'health-bad';
+  else if (outboundOut > 0) outHealth = 'health-warn';
+  else if (outboundDone > 0) outHealth = 'health-good';
+
+  // Monthly KPI: completed across all activities for current month
+  var monthYear = now.getFullYear();
+  var monthIdx = now.getMonth();
+  var totalGoal = 0;
+  var totalDone = 0;
+  ACTIVITY_TYPES.forEach(function(at){
+    var goal = getMonthlyGoalFromCache(at.label, monthYear, monthIdx);
+    var done = countCompletedFromCache(at.label, monthYear, monthIdx);
+    totalGoal += goal;
+    totalDone += done;
+  });
+  var pct = totalGoal > 0 ? Math.round((totalDone / totalGoal) * 100) : 0;
+  var dayOfMonth = now.getDate();
+  var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var elapsedPct = Math.round((dayOfMonth / daysInMonth) * 100);
+
+  // Avg cycle time (last 30d)
+  var cutoff = new Date(now.getTime() - 30*86400000);
+  var cycleSamples = items.filter(function(it){
+    var stage = classifyDelivery(it);
+    if (stage !== 'delivered' && stage !== 'billed') return false;
+    var d = parseDeliveryDate(pipeGet(it, 'text2'));
+    return d && d >= cutoff;
+  }).map(function(it){
+    var dDate = parseDeliveryDate(pipeGet(it, 'text2'));
+    var created = parseMondayDate(it.created_at) || new Date(it.created_at);
+    if (!created || isNaN(created.getTime()) || !dDate) return null;
+    return Math.max(0.1, (dDate - created) / 86400000);
+  }).filter(Boolean);
+  var avgCycle = cycleSamples.length > 0 ? (cycleSamples.reduce(function(a,b){return a+b;}, 0) / cycleSamples.length).toFixed(1) : '—';
+  var cycleHealth = 'health-good';
+  if (avgCycle === '—') cycleHealth = '';
+  else if (parseFloat(avgCycle) > 7) cycleHealth = 'health-warn';
+  else if (parseFloat(avgCycle) > 14) cycleHealth = 'health-bad';
+
+  // New intake this week
+  var weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+  var newThisWeek = items.filter(function(it){
+    var c = parseMondayDate(it.created_at);
+    return c && c >= weekStart;
+  });
+  var topClient = '';
+  var clientCounts = {};
+  newThisWeek.forEach(function(it){
+    var name = pipeGet(it, 'text') || 'Unknown';
+    clientCounts[name] = (clientCounts[name] || 0) + 1;
+  });
+  var topClientCount = 0;
+  Object.keys(clientCounts).forEach(function(k){
+    if (clientCounts[k] > topClientCount) { topClient = k; topClientCount = clientCounts[k]; }
+  });
+
+  // Render
+  var strip = document.querySelector('.stats-strip');
+  if (!strip) return;
+  strip.innerHTML =
+    '<div class="stat">' +
+      '<div class="stat-label">Outbound Today</div>' +
+      '<div class="stat-num ' + outHealth + '">' + outboundCount + '</div>' +
+      '<div class="stat-side">' + outboundDone + ' done · ' + outboundOut + ' still out' +
+        (outboundLate > 0 ? ' · <span class="down">' + outboundLate + ' late</span>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="stat">' +
+      '<div class="stat-label">Monthly KPI · ' + MONTH_SHORT[monthIdx] + '</div>' +
+      '<div class="stat-num">' + totalDone + '<span class="denom">/' + totalGoal + '</span></div>' +
+      '<div class="stat-side">' +
+        '<span class="' + (pct >= elapsedPct ? 'up' : 'warn') + '">' + pct + '%</span> · day ' + dayOfMonth + '/' + daysInMonth + ' · pacing' +
+      '</div>' +
+    '</div>' +
+    '<div class="stat">' +
+      '<div class="stat-label">Avg Cycle · 30d</div>' +
+      '<div class="stat-num ' + cycleHealth + '">' + avgCycle + '<span class="unit">days</span></div>' +
+      '<div class="stat-side">intake → delivered · last 30 days</div>' +
+    '</div>' +
+    '<div class="stat">' +
+      '<div class="stat-label">New Intake · WK</div>' +
+      '<div class="stat-num">' + newThisWeek.length + '</div>' +
+      '<div class="stat-side">this week' +
+        (topClient ? ' · top: <strong>' + escHtml(topClient) + '</strong>' : '') +
+      '</div>' +
+    '</div>';
+
+  // Update brand "Live · Las Vegas" timestamp
+  var brandMeta = document.querySelector('.brand-meta');
+  if (brandMeta) {
+    brandMeta.innerHTML = '<span class="dot"></span>Live · ' + (lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'syncing');
+  }
+}
+
+// Helpers used by status bar
+function getMonthlyGoalFromCache(actLabel, yr, mo) {
+  var row = cachedGoalRows.find(function(r){ return r.name === actLabel; });
+  if (!row) return 0;
+  var cv = row.column_values || [];
+  var monthlyCol = cv.find(function(c){ return c.id === GOALS_NUM_COL; });
+  return monthlyCol && monthlyCol.text ? parseInt(monthlyCol.text) || 0 : 0;
+}
+function countCompletedFromCache(actLabel, yr, mo) {
+  return cachedAllItems.filter(function(it){
+    if (isPersonnel(it)) return false;
+    if (pipeGet(it, ACTIVITY_COL) !== actLabel) return false;
+    var stage = classifyDelivery(it);
+    if (stage !== 'delivered' && stage !== 'billed') return false;
+    var d = parseDeliveryDate(pipeGet(it, 'text2'));
+    if (!d) return false;
+    return d.getFullYear() === yr && d.getMonth() === mo;
+  }).length;
+}
+
+// Pipeline panels (Delivery + Activation)
+function renderPipelinesV3() {
+  var items = cachedAllItems.filter(function(it){ return !isPersonnel(it); });
+  var deliveryItems = items.filter(function(it){ return pipeGet(it, ACTIVITY_COL) === 'Delivery'; });
+  var activationItems = items.filter(function(it){ return pipeGet(it, ACTIVITY_COL) === 'Activation'; });
+
+  var dStages = { intake:0, scheduled:0, motion:0, delivered:0, billed:0 };
+  deliveryItems.forEach(function(it){ dStages[classifyDelivery(it)]++; });
+  var aStages = { proposal:0, approved:0, procurement:0, setup:0, live:0, strike:0, wrapped:0 };
+  activationItems.forEach(function(it){
+    var s = classifyActivation(it);
+    if (aStages[s] !== undefined) aStages[s]++;
+  });
+
+  // Update delivery panel
+  var dPanel = document.querySelector('.row.r-pipeline .panel:nth-child(1) .pipe-stages');
+  if (dPanel) {
+    dPanel.innerHTML =
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'intake\',\'delivery\')"><div class="ps-label">Intake</div><div class="ps-num">' + dStages.intake + '</div></div>' +
+      '<div class="pipe-stage' + (dStages.scheduled > 0 ? ' full' : '') + '" onclick="filterBoardByStage(\'scheduled\',\'delivery\')"><div class="ps-label">Scheduled</div><div class="ps-num">' + dStages.scheduled + '</div></div>' +
+      '<div class="pipe-stage' + (dStages.motion > 0 ? ' attn' : '') + '" onclick="filterBoardByStage(\'motion\',\'delivery\')"><div class="ps-label">In motion</div><div class="ps-num">' + dStages.motion + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'delivered\',\'delivery\')"><div class="ps-label">Delivered</div><div class="ps-num">' + dStages.delivered + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'billed\',\'delivery\')"><div class="ps-label">Billed</div><div class="ps-num">' + dStages.billed + '</div></div>';
+  }
+  var dTitle = document.querySelector('.row.r-pipeline .panel:nth-child(1) .p-title span:last-child');
+  if (dTitle && dTitle.classList.length === 0) dTitle.textContent = '· ' + deliveryItems.length + ' in flight';
+
+  // Update activation panel
+  var aPanel = document.querySelector('.row.r-pipeline .panel:nth-child(2) .pipe-stages');
+  if (aPanel) {
+    aPanel.innerHTML =
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'proposal\',\'activation\')"><div class="ps-label">Proposal</div><div class="ps-num">' + aStages.proposal + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'approved\',\'activation\')"><div class="ps-label">Approved</div><div class="ps-num">' + aStages.approved + '</div></div>' +
+      '<div class="pipe-stage' + (aStages.procurement > 0 ? ' attn' : '') + '" onclick="filterBoardByStage(\'procurement\',\'activation\')"><div class="ps-label">Procurement</div><div class="ps-num">' + aStages.procurement + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'setup\',\'activation\')"><div class="ps-label">Setup</div><div class="ps-num">' + aStages.setup + '</div></div>' +
+      '<div class="pipe-stage' + (aStages.live > 0 ? ' full' : '') + '" onclick="filterBoardByStage(\'live\',\'activation\')"><div class="ps-label">Live</div><div class="ps-num">' + aStages.live + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'strike\',\'activation\')"><div class="ps-label">Strike</div><div class="ps-num">' + aStages.strike + '</div></div>' +
+      '<div class="pipe-stage" onclick="filterBoardByStage(\'wrapped\',\'activation\')"><div class="ps-label">Wrapped</div><div class="ps-num">' + aStages.wrapped + '</div></div>';
+  }
+  var aTitle = document.querySelector('.row.r-pipeline .panel:nth-child(2) .p-title span:last-child');
+  if (aTitle && aTitle.classList.length === 0) aTitle.textContent = '· ' + activationItems.length + ' in flight';
+}
+
+// Active board (today / this week / all active / completed)
+var boardTab = 'today';
+function setBoardTab(tab) {
+  boardTab = tab;
+  var tabs = document.querySelectorAll('.row.r-board .p-tabs .p-tab');
+  tabs.forEach(function(t){ t.classList.remove('active'); });
+  if (tabs[ {today:0, week:1, all:2, completed:3}[tab] ]) tabs[ {today:0, week:1, all:2, completed:3}[tab] ].classList.add('active');
+  renderActiveBoard();
+}
+function filterBoardByStage(stage, pipeline) {
+  // Switch to All Active and re-render filtered
+  setBoardTab('all');
+  var filtered = cachedAllItems.filter(function(it){
+    if (isPersonnel(it)) return false;
+    var act = pipeGet(it, ACTIVITY_COL);
+    if (pipeline === 'delivery' && act !== 'Delivery') return false;
+    if (pipeline === 'activation' && act !== 'Activation') return false;
+    var s = pipeline === 'delivery' ? classifyDelivery(it) : classifyActivation(it);
+    return s === stage;
+  });
+  renderBoardRows(filtered);
+}
+
+function renderActiveBoard() {
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var weekEnd = new Date(today.getTime() + 7 * 86400000);
+  var items = cachedAllItems.filter(function(it){ return !isPersonnel(it); });
+
+  var filtered = items.filter(function(it){
+    var stage = classifyDelivery(it);
+    var d = parseDeliveryDate(pipeGet(it, 'text2'));
+    if (boardTab === 'today') {
+      if (!d) return false;
+      if (stage === 'delivered' || stage === 'billed') return false;
+      return d <= today || (d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate());
+    }
+    if (boardTab === 'week') {
+      if (!d) return false;
+      if (stage === 'delivered' || stage === 'billed') return false;
+      return d <= weekEnd;
+    }
+    if (boardTab === 'all') {
+      return stage !== 'billed' && stage !== 'delivered';
+    }
+    if (boardTab === 'completed') {
+      return stage === 'delivered' || stage === 'billed';
+    }
+    return true;
+  });
+
+  // Sort by delivery date asc
+  filtered.sort(function(a, b){
+    var da = parseDeliveryDate(pipeGet(a, 'text2'));
+    var db = parseDeliveryDate(pipeGet(b, 'text2'));
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+  renderBoardRows(filtered);
+
+  var meta = document.querySelector('.row.r-board .p-meta');
+  if (meta) meta.innerHTML = '<span>updated ' + (lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'just now') + '</span>';
+  var titleMeta = document.querySelector('.row.r-board .p-title span:last-child');
+  if (titleMeta && titleMeta.classList.length === 0) titleMeta.textContent = '· ' + filtered.length + ' deliveries';
+}
+
+function renderBoardRows(items) {
+  var tbody = document.querySelector('.board tbody');
+  if (!tbody) return;
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:40px 16px;text-align:center;color:var(--text-2);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;">No items match this filter</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.slice(0, 30).map(buildRow).join('');
+}
+
+function buildRow(item) {
+  var po = item.id;
+  var dDate = parseDeliveryDate(pipeGet(item, 'text2'));
+  var dTime = pipeGet(item, 'text9');
+  var client = pipeGet(item, 'text');
+  var project = pipeGet(item, 'text5');
+  var addr = pipeGet(item, 'long_text8') || '';
+  var loc = addr.split(',')[0] || '—';
+  var status = pipeGet(item, 'color');
+
+  var rowClass = urgencyClass(dDate);
+  var ago = urgencyAgo(dDate, dTime);
+  var timeLabel = formatTimeShort(dTime) || (dDate ? MONTH_SHORT[dDate.getMonth()] + ' ' + dDate.getDate() : '—');
+
+  return '<tr class="' + rowClass + '" data-po="' + po + '">' +
+    '<td class="b-time">' + escHtml(timeLabel) + '<span class="ago">' + escHtml(ago) + '</span></td>' +
+    '<td class="b-po">#' + po + '</td>' +
+    '<td><div class="b-client">' + escHtml(client || '—') + '</div><div class="b-project">' + escHtml(project || '') + '</div></td>' +
+    '<td class="b-loc">' + escHtml(loc) + '</td>' +
+    '<td><span class="b-status ' + statusPillClass(status) + '">' + escHtml(statusPillShort(status)) + '</span></td>' +
+    buildActionsCell(po) +
+  '</tr>';
+}
+
+function buildActionsCell(po) {
+  return '<td><div class="b-actions">' +
+    '<button class="b-icon-btn" data-tip="Open in Monday" onclick="openInMonday(\'' + po + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+    '</button>' +
+    '<button class="b-icon-btn" data-tip="Send DC email" onclick="quickAction(\'dc\',\'' + po + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' +
+    '</button>' +
+    '<button class="b-icon-btn" data-tip="POD upload" onclick="quickAction(\'pod\',\'' + po + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+    '</button>' +
+    '<button class="b-icon-btn" data-tip="Print label" onclick="quickAction(\'label\',\'' + po + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>' +
+    '</button>' +
+    '<div class="b-menu-wrap">' +
+      '<button class="b-icon-btn" onclick="toggleRowMenu(this, event)" data-tip="More actions">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>' +
+      '</button>' +
+      '<div class="b-menu">' +
+        '<div class="b-menu-section">' +
+          '<div class="b-menu-eyebrow">Documents</div>' +
+          '<button class="b-menu-item" onclick="rowAction(\'bol\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Generate BOL<span class="meta">PDF</span></button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'wo\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Generate work order</button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'invoice\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Generate invoice</button>' +
+        '</div>' +
+        '<div class="b-menu-section">' +
+          '<div class="b-menu-eyebrow">Status</div>' +
+          '<button class="b-menu-item" onclick="rowAction(\'mark-out\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Mark out for delivery</button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'mark-delivered\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mark delivered</button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'flag\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Flag issue</button>' +
+        '</div>' +
+        '<div class="b-menu-section">' +
+          '<div class="b-menu-eyebrow">Communicate</div>' +
+          '<button class="b-menu-item" onclick="rowAction(\'note\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Post update<span class="meta">Monday</span></button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'reminder\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Add reminder</button>' +
+          '<button class="b-menu-item" onclick="rowAction(\'cal\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Add to calendar</button>' +
+        '</div>' +
+        '<div class="b-menu-section">' +
+          '<button class="b-menu-item danger" onclick="rowAction(\'cancel\',\'' + po + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Cancel delivery</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div></td>';
+}
+
+// Row action dispatchers
+function openInMonday(po) {
+  window.open('https://handslogistics.monday.com/boards/' + OPS_BOARD + '/pulses/' + po, '_blank');
+}
+function quickAction(kind, po) {
+  if (kind === 'dc' || kind === 'pod') {
+    openModal('modalSendEmail');
+    var tab = document.querySelector('#modalSendEmail .tab[data-kind="' + kind + '"]');
+    if (tab) tab.click();
+    var poInput = document.getElementById('em_po_' + kind);
+    if (poInput) {
+      poInput.value = po;
+      poInput.dispatchEvent(new Event('input'));
+    }
+  } else if (kind === 'label') {
+    window.open('https://handslabel.netlify.app/?po=' + po, '_blank');
+  }
+}
+function rowAction(action, po) {
+  // Close any open menu
+  document.querySelectorAll('.b-menu.open').forEach(function(m){ m.classList.remove('open'); });
+  switch (action) {
+    case 'bol':
+    case 'wo':
+    case 'invoice':
+      askClaudeForAction('Generate ' + (action === 'bol' ? 'BOL' : action === 'wo' ? 'work order' : 'invoice') + ' for PO #' + po);
+      break;
+    case 'mark-out':
+      askClaudeForAction('Move PO #' + po + ' to Out for Delivery and post a note');
+      break;
+    case 'mark-delivered':
+      askClaudeForAction('Mark PO #' + po + ' as delivered (status COMPLETE)');
+      break;
+    case 'flag':
+      askClaudeForAction('Flag PO #' + po + ' as needing attention — what should I look at?');
+      break;
+    case 'note':
+      askClaudeForAction('Post an update on PO #' + po + ': ');
+      break;
+    case 'reminder':
+      askClaudeForAction('Create a reminder for PO #' + po + ' tomorrow morning');
+      break;
+    case 'cal':
+      askClaudeForAction('Add PO #' + po + ' to my Google Calendar');
+      break;
+    case 'cancel':
+      if (confirm('Cancel delivery PO #' + po + '? This will move it to ON HOLD and you can permanently archive in Monday.')) {
+        askClaudeForAction('Move PO #' + po + ' to On Hold (cancellation requested)');
+      }
+      break;
+  }
+}
+function askClaudeForAction(prompt) {
+  if (typeof openChat === 'function') openChat();
+  var input = document.getElementById('chatInput');
+  if (input) {
+    input.value = prompt;
+    input.focus();
+  }
+}
+
+// Pipeline-by-week chart
+function renderChart() {
+  // Build last 5 weeks of data from cachedAllItems
+  var now = new Date();
+  var currentWeek = isoWeek(now);
+  var weeksData = [];
+  for (var i = 4; i >= 0; i--) {
+    var weekDate = new Date(now.getTime() - i * 7 * 86400000);
+    var w = isoWeek(weekDate);
+    weeksData.push({ week: w, isCurrent: i === 0, stages: { intake:0, scheduled:0, motion:0, delivered:0, billed:0 } });
+  }
+  // Distribute items across weeks based on delivery date
+  cachedAllItems.forEach(function(it){
+    if (isPersonnel(it)) return;
+    if (pipeGet(it, ACTIVITY_COL) !== 'Delivery') return;
+    var d = parseDeliveryDate(pipeGet(it, 'text2'));
+    if (!d) return;
+    var w = isoWeek(d);
+    var bucket = weeksData.find(function(b){ return b.week === w; });
+    if (!bucket) return;
+    var stage = classifyDelivery(it);
+    if (bucket.stages[stage] !== undefined) bucket.stages[stage]++;
+  });
+
+  // Find max for scaling
+  var maxVal = 1;
+  weeksData.forEach(function(wd){
+    Object.values(wd.stages).forEach(function(v){ if (v > maxVal) maxVal = v; });
+  });
+  // Round up to nearest 5 for nicer scale
+  maxVal = Math.ceil(maxVal / 5) * 5;
+  if (maxVal < 5) maxVal = 5;
+
+  var stages = ['intake','scheduled','motion','delivered','billed'];
+  var stageColors = { intake:'#6dba96', scheduled:'#a0d6b4', motion:'#c8c8c4', delivered:'#7a7a76', billed:'#111110' };
+  var stageLabels = { intake:'Intake', scheduled:'Sched', motion:'Motion', delivered:'Delivered', billed:'Billed' };
+
+  var maxBarHeight = 200;
+  var barAreaTop = 20;
+  var barAreaBottom = 220;
+  function yForVal(v) { return barAreaBottom - (v / maxVal) * maxBarHeight; }
+
+  var svg = '<svg class="chart-svg" viewBox="0 0 800 260" preserveAspectRatio="none">';
+  // Y-axis grid lines at 25%, 50%, 75% of max
+  [0.25, 0.5, 0.75, 1].forEach(function(frac){
+    var y = barAreaBottom - frac * maxBarHeight;
+    svg += '<line x1="20" y1="' + y + '" x2="800" y2="' + y + '" stroke="#efefed" stroke-width="0.5" stroke-dasharray="3 4"/>';
+    svg += '<text x="6" y="' + (y + 4) + '" font-family="DM Mono" font-size="9" fill="#c8c8c4">' + Math.round(frac * maxVal) + '</text>';
+  });
+  svg += '<line x1="20" y1="' + barAreaBottom + '" x2="800" y2="' + barAreaBottom + '" stroke="#e2e0d6" stroke-width="1"/>';
+
+  // Render each week cluster
+  weeksData.forEach(function(wd, wi){
+    var clusterX = 60 + wi * 160;
+    var clusterTransform = 'translate(' + clusterX + ',0)';
+    svg += '<g transform="' + clusterTransform + '">';
+    if (wd.isCurrent) {
+      svg += '<rect x="-2" y="-2" width="116" height="226" fill="none" stroke="#111110" stroke-width="1" stroke-dasharray="2 3"/>';
+    }
+    stages.forEach(function(stg, si){
+      var v = wd.stages[stg];
+      var h = (v / maxVal) * maxBarHeight;
+      var y = barAreaBottom - h;
+      var x = si * 22;
+      svg += '<rect x="' + x + '" y="' + y + '" width="20" height="' + h + '" fill="' + stageColors[stg] + '"/>';
+      if (wd.isCurrent && v > 0) {
+        svg += '<text x="' + (x + 10) + '" y="' + (y - 6) + '" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" font-weight="500" fill="#111110">' + v + '</text>';
+      }
+    });
+    svg += '<text x="54" y="240" text-anchor="middle" font-family="DM Mono" font-size="10" letter-spacing="2" fill="' + (wd.isCurrent ? '#111110' : '#7a7a76') + '" font-weight="' + (wd.isCurrent ? '500' : '400') + '">W' + wd.week + (wd.isCurrent ? ' · NOW' : '') + '</text>';
+    svg += '</g>';
+  });
+  svg += '</svg>';
+
+  var chartArea = document.querySelector('.chart-wrap');
+  if (chartArea) {
+    var existing = chartArea.querySelector('.chart-svg');
+    if (existing) existing.outerHTML = svg;
+  }
+
+  // Legend with current totals
+  var legend = document.querySelector('.chart-legend');
+  if (legend && weeksData.length > 0) {
+    var current = weeksData[weeksData.length - 1].stages;
+    legend.innerHTML =
+      '<div class="leg"><span class="sw" style="background:#6dba96;"></span>Intake <strong>' + current.intake + '</strong></div>' +
+      '<div class="leg"><span class="sw" style="background:#a0d6b4;"></span>Sched <strong>' + current.scheduled + '</strong></div>' +
+      '<div class="leg"><span class="sw" style="background:#c8c8c4;"></span>Motion <strong>' + current.motion + '</strong></div>' +
+      '<div class="leg"><span class="sw" style="background:#7a7a76;"></span>Delivered <strong>' + current.delivered + '</strong></div>' +
+      '<div class="leg"><span class="sw" style="background:#111110;"></span>Billed <strong>' + current.billed + '</strong></div>';
+  }
+}
+
+// Monthly goals (5-column row)
+function renderGoalsV3() {
+  var now = new Date();
+  var monthIdx = now.getMonth();
+  var monthYear = now.getFullYear();
+  var dayOfMonth = now.getDate();
+  var daysInMonth = new Date(monthYear, monthIdx + 1, 0).getDate();
+  var elapsedPct = Math.round((dayOfMonth / daysInMonth) * 100);
+
+  var grid = document.querySelector('.goals-grid');
+  if (!grid) return;
+  grid.innerHTML = ACTIVITY_TYPES.map(function(at){
+    var goal = getMonthlyGoalFromCache(at.label, monthYear, monthIdx);
+    var done = countCompletedFromCache(at.label, monthYear, monthIdx);
+    var pct = goal > 0 ? Math.round((done / goal) * 100) : 0;
+    var fillClass = pct >= 100 ? ' over' : '';
+    var fillWidth = Math.min(100, pct);
+    var paceClass, paceLabel;
+    if (pct >= 100) { paceClass = 'up'; paceLabel = '↑ ahead · ' + pct + '%'; }
+    else if (pct >= elapsedPct - 5) { paceClass = 'up'; paceLabel = '↑ on pace · ' + pct + '%'; }
+    else { paceClass = 'down'; paceLabel = '↓ behind · ' + pct + '%'; }
+    return '<div class="goal-cell">' +
+      '<div class="goal-label">' + escHtml(at.label) + '</div>' +
+      '<div class="goal-num-row"><span class="goal-num-now">' + done + '</span><span class="goal-num-target">/ ' + goal + '</span></div>' +
+      '<div class="goal-track"><div class="goal-fill' + fillClass + '" style="width:' + fillWidth + '%;"></div></div>' +
+      '<div class="goal-pace ' + paceClass + '">' + paceLabel + '</div>' +
+    '</div>';
+  }).join('');
+
+  var meta = document.querySelector('.row.r-bottom .panel:last-child .p-meta');
+  if (meta) meta.textContent = 'day ' + dayOfMonth + '/' + daysInMonth + ' · ' + elapsedPct + '% elapsed';
+}
+
+// Live activity feed (real Monday updates)
+function renderActivity() {
+  var list = document.querySelector('.act-list');
+  if (!list) return;
+  if (cachedActivity.length === 0) {
+    list.innerHTML = '<div style="padding:24px 18px;text-align:center;color:var(--text-2);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">no recent activity</div>';
+    return;
+  }
+  list.innerHTML = cachedActivity.slice(0, 30).map(function(act){
+    return '<div class="act-item"><div class="act-time">' + escHtml(act.time) + '</div>' +
+      '<div><div class="act-msg">' + act.msg + '</div>' +
+      '<div class="act-who">' + escHtml(act.who) + '</div></div></div>';
+  }).join('');
+}
+
+// Load updates from Monday
+function loadActivity() {
+  // Query the most recent updates across the ops board
+  var q = '{ boards(ids:[' + OPS_BOARD + ']) { updates(limit: 30) { id body created_at creator { name } item_id } } }';
+  return mondayQuery(q).then(function(res){
+    var updates = (res && res.data && res.data.boards && res.data.boards[0] && res.data.boards[0].updates) || [];
+    cachedActivity = updates.map(function(u){
+      var d = new Date(u.created_at);
+      var msg = (u.body || '').replace(/<[^>]*>/g,'').trim();
+      if (msg.length > 90) msg = msg.slice(0, 87) + '...';
+      // Style POs as a green tag if mentioned
+      msg = escHtml(msg).replace(/#(\d{8,})/g, '<span class="po">#$1</span>');
+      return {
+        time: timeAgoShort(d),
+        msg: msg || '<em style="color:var(--text-2)">(no message)</em>',
+        who: (u.creator && u.creator.name) || 'system'
+      };
+    });
+    renderActivity();
+  }).catch(function(){
+    cachedActivity = [];
+    renderActivity();
+  });
+}
+
+// ─────────────────────────────────────────────
+// MASTER LOAD
+// ─────────────────────────────────────────────
+function loadAllV3() {
+  var opsQ = '{ boards(ids:[' + OPS_BOARD + ']) { items_page(limit:200) { items { id name created_at column_values(ids:["text","text4","text5","text2","text9","long_text8","color","' + ACTIVITY_COL + '","boolean_mm1jv595","boolean_mm1jr3gr","link_mm1pgr61","link_mm1pay5j","client_email1"]) { id text value } } } } }';
+  var goalsQ = '{ boards(ids:[' + GOALS_BOARD + ']) { items_page(limit:200) { items { id name column_values(ids:["' + GOALS_NUM_COL + '","' + GOALS_ANN_COL + '","' + GOALS_DATE_COL + '"]) { id text } } } } }';
+
+  return Promise.all([mondayQuery(opsQ), mondayQuery(goalsQ)]).then(function(res){
+    cachedAllItems = (res[0] && res[0].data && res[0].data.boards[0] && res[0].data.boards[0].items_page && res[0].data.boards[0].items_page.items) || [];
+    cachedGoalRows = (res[1] && res[1].data && res[1].data.boards[0] && res[1].data.boards[0].items_page && res[1].data.boards[0].items_page.items) || [];
+    lastRefresh = new Date();
+
+    renderStatusBar();
+    renderPipelinesV3();
+    renderActiveBoard();
+    renderChart();
+    renderGoalsV3();
+    return loadActivity();
+  }).catch(function(err){
+    console.error('Load failed:', err);
+    var brandMeta = document.querySelector('.brand-meta');
+    if (brandMeta) brandMeta.innerHTML = '<span class="dot" style="background:var(--red);"></span>Sync error';
+  });
+}
+
+// Wire up board tabs
+function wireBoardTabs() {
+  var tabs = document.querySelectorAll('.row.r-board .p-tabs .p-tab');
+  if (tabs[0]) tabs[0].onclick = function(){ setBoardTab('today'); };
+  if (tabs[1]) tabs[1].onclick = function(){ setBoardTab('week'); };
+  if (tabs[2]) tabs[2].onclick = function(){ setBoardTab('all'); };
+  if (tabs[3]) tabs[3].onclick = function(){ setBoardTab('completed'); };
+}
+
+
+// ─────────────────────────────────────────────
+// CHAT BACKEND — wires v3 drawer to existing /api/claude-chat
+// ─────────────────────────────────────────────
+var CLAUDE_CHAT_ENDPOINT = '/api/claude-chat';
+var CLAUDE_CHAT_SECRET   = 'HANDS-HUB-2026';
+var DCCONFIRM_BASE       = '';
+var chatHistory = [];
+
+function openChat() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('scrim').classList.add('open');
+  setTimeout(function(){
+    var inp = document.getElementById('chatInput');
+    if (inp) inp.focus();
+  }, 200);
+}
+function closeChat() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('scrim').classList.remove('open');
+}
+// Aliases used by mockup
+function openClaude(){ openChat(); }
+function closeClaude(){ closeChat(); }
+
+function buildPipelineContext() {
+  if (!cachedAllItems || cachedAllItems.length === 0) return '';
+  var items = cachedAllItems.filter(function(it){ return !isPersonnel(it); });
+  return 'There are ' + items.length + ' active items on the Ops board.';
+}
+
+function mdToHtml(text) {
+  if (!text) return '';
+  var html = escHtml(text);
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+function renderMessage(role, content) {
+  var body = document.getElementById('chatBody');
+  if (!body) return;
+  var empty = document.getElementById('chatEmpty');
+  if (empty) empty.style.display = 'none';
+  var promptsBlock = document.querySelector('.dr-empty');
+  if (promptsBlock) promptsBlock.style.display = 'none';
+  var div = document.createElement('div');
+  div.className = 'chat-msg chat-msg-' + role;
+  div.innerHTML = '<div class="chat-msg-role">' + (role === 'user' ? 'You' : 'Claude') + '</div><div class="chat-msg-body">' + mdToHtml(content) + '</div>';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function renderTyping() {
+  var body = document.getElementById('chatBody');
+  if (!body) return;
+  var div = document.createElement('div');
+  div.id = 'chatTyping';
+  div.className = 'chat-msg chat-msg-assistant';
+  div.innerHTML = '<div class="chat-msg-role">Claude</div><div class="chat-msg-body chat-typing">thinking<span>.</span><span>.</span><span>.</span></div>';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function removeTyping() {
+  var t = document.getElementById('chatTyping');
+  if (t) t.remove();
+}
+
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var sendBtn = document.getElementById('chatSend');
+  var errEl = document.getElementById('chatErr');
+  if (!input) return;
+  var text = input.value.trim();
+  if (!text) return;
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  renderMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  input.value = '';
+  input.style.height = 'auto';
+  if (sendBtn) sendBtn.disabled = true;
+  renderTyping();
+
+  fetch(CLAUDE_CHAT_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: CLAUDE_CHAT_SECRET,
+      messages: chatHistory,
+      pipelineContext: buildPipelineContext()
+    })
+  }).then(function(r){
+    return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; });
+  }).then(function(out){
+    removeTyping();
+    if (!out.ok) {
+      if (errEl) {
+        errEl.style.display = 'block';
+        errEl.textContent = 'Error: ' + (out.body && out.body.error ? out.body.error : 'HTTP ' + out.status);
+      }
+      return;
+    }
+    var reply = out.body.reply || out.body.text || '(no reply)';
+    chatHistory.push({ role: 'assistant', content: reply });
+    renderMessage('assistant', reply);
+    // After Claude action, refresh data
+    if (/created|updated|moved|sent|posted|deleted/i.test(reply)) {
+      setTimeout(loadAllV3, 1500);
+    }
+  }).catch(function(err){
+    removeTyping();
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'Network error: ' + err.message;
+    }
+  }).then(function(){
+    if (sendBtn) sendBtn.disabled = false;
+    var inp = document.getElementById('chatInput');
+    if (inp) inp.focus();
+  });
+}
+
+function wireChat() {
+  var sendBtn = document.getElementById('chatSend');
+  var input = document.getElementById('chatInput');
+  if (sendBtn) sendBtn.addEventListener('click', sendChat);
+  if (input) {
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChat();
+      }
+    });
+  }
+  // Wire example prompt chips to fill the input
+  document.querySelectorAll('.dr-prompt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.textContent.trim();
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    });
+  });
+}
+
+
+// ─────────────────────────────────────────────
+// MODAL HANDLERS — preserved from prior hub
+// ─────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function showResult(el, ok, msg, detail){
+  el.className = 'm-result show ' + (ok ? 'ok' : 'err');
+  el.innerHTML = msg + (detail ? '<pre>' + (typeof detail === 'string' ? detail : JSON.stringify(detail,null,2)) + '</pre>' : '');
+}
+function hideResult(el){ el.className = 'm-result'; el.innerHTML=''; }
+function parseCCs(raw){
+  if (!raw) return [];
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return raw.split(/[,;]/).map(function(s){return s.trim();}).filter(function(e){return e && EMAIL.test(e);});
+}
+
+function wireModals() {
+  Array.prototype.forEach.call(document.querySelectorAll('.modal-overlay'), function(ov){
+    ov.addEventListener('click', function(e){ if (e.target === ov) ov.classList.remove('show'); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.modal-close'), function(btn){
+    btn.addEventListener('click', function(){ var id = btn.getAttribute('data-close'); closeModal(id); });
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') Array.prototype.forEach.call(document.querySelectorAll('.modal-overlay.show'), function(ov){ ov.classList.remove('show'); });
+  });
+
+  // Tabs in send-email modal
+  Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab'), function(tabEl){
+    tabEl.addEventListener('click', function(){
+      var kind = tabEl.getAttribute('data-kind');
+      Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab'), function(t){ t.classList.toggle('active', t === tabEl); });
+      Array.prototype.forEach.call(document.querySelectorAll('#modalSendEmail .tab-panel'), function(p){
+        p.classList.toggle('active', p.getAttribute('data-panel') === kind);
+      });
+    });
+  });
+
+  // PO lookup with debounce
+  ['dc','pod'].forEach(function(kind){
+    var poInput = document.getElementById('em_po_' + kind);
+    var summary = document.getElementById('em_summary_' + kind);
+    if (!poInput || !summary) return;
+    var timer = null;
+    poInput.addEventListener('input', function(){
+      clearTimeout(timer);
+      hideResult(document.getElementById('em_result_' + kind));
+      var v = poInput.value.trim();
+      if (!v || v.length < 6) { summary.className = 'fetch-summary'; summary.innerHTML = ''; return; }
+      timer = setTimeout(function(){ lookupPO(v, summary); }, 400);
+    });
+  });
+
+  // Send buttons
+  ['dc','pod'].forEach(function(kind){
+    var sendBtn = document.getElementById('em_send_' + kind);
+    if (!sendBtn) return;
+    sendBtn.addEventListener('click', function(){
+      var po = document.getElementById('em_po_' + kind).value.trim();
+      var ccRaw = document.getElementById('em_cc_' + kind).value.trim();
+      var resEl = document.getElementById('em_result_' + kind);
+      if (!po) { showResult(resEl, false, 'Enter a PO number first.'); return; }
+      var ccEmails = parseCCs(ccRaw);
+      var endpoint = '/api/' + (kind === 'dc' ? 'send-confirmation' : 'send-pod');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+      hideResult(resEl);
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: po, ccEmails: ccEmails })
+      }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
+        .then(function(out){
+          if (out.ok && out.body.success) {
+            var ccLine = (out.body.ccSentTo && out.body.ccSentTo.length) ? ' (cc: ' + out.body.ccSentTo.join(', ') + ')' : '';
+            showResult(resEl, true, '&#10003; Sent to <strong>' + out.body.sentTo + '</strong>' + ccLine);
+          } else {
+            showResult(resEl, false, 'Failed: ' + (out.body.error || 'unknown'), out.body);
+          }
+        })
+        .catch(function(err){ showResult(resEl, false, 'Network error: ' + err.message); })
+        .then(function(){
+          sendBtn.disabled = false;
+          sendBtn.textContent = kind === 'dc' ? 'Send DC' : 'Send POD';
+        });
+    });
+  });
+}
+
+function lookupPO(poNum, summaryEl) {
+  var q = '{items(ids:[' + poNum + ']){id name column_values(ids:["text","text4","text5","client_email1","text2","text9","long_text8"]){id text}}}';
+  return mondayQuery(q).then(function(res){
+    var it = res && res.data && res.data.items && res.data.items[0];
+    if (!it) { summaryEl.className = 'fetch-summary show err'; summaryEl.innerHTML = 'No item found for PO #' + poNum; return null; }
+    var g = function(id){ var c = (it.column_values || []).find(function(x){ return x.id === id; }); return c && c.text ? c.text : ''; };
+    summaryEl.className = 'fetch-summary show';
+    summaryEl.innerHTML =
+      '<div class="fs-row"><span class="fs-label">Client</span><span>' + (g('text') || '—') + '</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Account</span><span>' + (g('text4') || '—') + '</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Project</span><span>' + (g('text5') || '—') + '</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Client email</span><span>' + (g('client_email1') || '<em>(none)</em>') + '</span></div>' +
+      '<div class="fs-row"><span class="fs-label">Delivery</span><span>' + (g('text2') || 'TBD') + ' · ' + (g('text9') || 'TBD') + '</span></div>';
+    return it;
+  }).catch(function(err){
+    summaryEl.className = 'fetch-summary show err';
+    summaryEl.innerHTML = 'Lookup failed: ' + err.message;
+  });
+}
+
+
+// Row menu toggle (preserved from mockup)
+function toggleRowMenu(btn, e) {
+  e.stopPropagation();
+  var menu = btn.parentElement.querySelector('.b-menu');
+  var isOpen = menu.classList.contains('open');
+  document.querySelectorAll('.b-menu.open').forEach(function(m){ m.classList.remove('open'); });
+  if (!isOpen) menu.classList.add('open');
+}
+document.addEventListener('click', function(){
+  document.querySelectorAll('.b-menu.open').forEach(function(m){ m.classList.remove('open'); });
+});
+
+// Activity rail collapse
+function toggleActivity() {
+  document.body.classList.toggle('activity-collapsed');
+}
+
+// Clock
+function tickClock() {
+  var d = new Date();
+  var h = d.getHours();
+  var m = String(d.getMinutes()).padStart(2,'0');
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  var el = document.getElementById('clock-time');
+  if (el) el.textContent = h + ':' + m + ' ' + ampm;
+  updateBanner();
+}
+
+// ─────────────────────────────────────────────
+// HOLIDAYS + DRINK DAYS — calendar of activation-relevant dates
+// Indexed by month (0-11). Comprehensive calendar of national/international drink days,
+// US federal holidays, and major observances relevant to a beverage-industry 3PL.
+// Floating dates (Memorial Day, Thanksgiving, etc.) computed in computeFloatingHolidays.
+// Sources: alushlifemanual, ReserveBar, KegWorks, WSET, holidays-and-observances, drinkdays
+// ─────────────────────────────────────────────
+var HOLIDAYS_FIXED = [
+  // JANUARY
+  { m: 0,  d: 1,  name: 'New Year\u2019s Day' },
+  { m: 0,  d: 1,  name: 'National Bloody Mary Day' },
+  { m: 0,  d: 11, name: 'National Hot Toddy Day' },
+  { m: 0,  d: 17, name: 'National Hot Buttered Rum Day' },
+  { m: 0,  d: 25, name: 'Burns Night' },
+  { m: 0,  d: 25, name: 'National Irish Coffee Day' },
+  { m: 0,  d: 31, name: 'National Brandy Alexander Day' },
+  // FEBRUARY
+  { m: 1,  d: 6,  name: 'International Pisco Sour Day' },
+  { m: 1,  d: 8,  name: 'International Scotch Day' },
+  { m: 1,  d: 14, name: 'Valentine\u2019s Day' },
+  { m: 1,  d: 22, name: 'National Margarita Day' },
+  { m: 1,  d: 24, name: 'World Bartender Day' },
+  { m: 1,  d: 27, name: 'National Kahlua Day' },
+  // MARCH
+  { m: 2,  d: 3,  name: 'Irish Whiskey Day' },
+  { m: 2,  d: 3,  name: 'Moscow Mule Day' },
+  { m: 2,  d: 5,  name: 'Absinthe Day' },
+  { m: 2,  d: 17, name: 'St. Patrick\u2019s Day' },
+  { m: 2,  d: 21, name: 'World Vermouth Day' },
+  { m: 2,  d: 24, name: 'National Cocktail Day' },
+  { m: 2,  d: 27, name: 'International Whiskey Day' },
+  // APRIL
+  { m: 3,  d: 7,  name: 'National Beer Day' },
+  { m: 3,  d: 9,  name: 'National Gin & Tonic Day' },
+  { m: 3,  d: 19, name: 'National Amaretto Day' },
+  // MAY
+  { m: 4,  d: 5,  name: 'Cinco de Mayo' },
+  { m: 4,  d: 13, name: 'World Cocktail Day' },
+  { m: 4,  d: 16, name: 'National Mimosa Day' },
+  { m: 4,  d: 22, name: 'World Paloma Day' },
+  { m: 4,  d: 25, name: 'National Wine Day' },
+  { m: 4,  d: 26, name: 'World Sherry Day' },
+  { m: 4,  d: 30, name: 'National Mint Julep Day' },
+  // JUNE
+  { m: 5,  d: 4,  name: 'National Cognac Day' },
+  { m: 5,  d: 5,  name: 'National Moonshine Day' },
+  { m: 5,  d: 9,  name: 'International Dark \u2018n Stormy Day' },
+  { m: 5,  d: 14, name: 'National Bourbon Day' },
+  { m: 5,  d: 14, name: 'National Old Fashioned Day' },
+  { m: 5,  d: 19, name: 'National Martini Day' },
+  // JULY
+  { m: 6,  d: 2,  name: 'National Anisette Day' },
+  { m: 6,  d: 4,  name: 'Independence Day' },
+  { m: 6,  d: 10, name: 'National Pi\u00f1a Colada Day' },
+  { m: 6,  d: 11, name: 'National Mojito Day' },
+  { m: 6,  d: 11, name: 'World Rum Day' },
+  { m: 6,  d: 12, name: 'National Michelada Day' },
+  { m: 6,  d: 14, name: 'National Grand Marnier Day' },
+  { m: 6,  d: 14, name: 'Bastille Day' },
+  { m: 6,  d: 19, name: 'National Daiquiri Day' },
+  { m: 6,  d: 24, name: 'National Tequila Day' },
+  { m: 6,  d: 27, name: 'National Scotch Day' },
+  // AUGUST
+  { m: 7,  d: 8,  name: 'International Scottish Gin Day' },
+  { m: 7,  d: 9,  name: 'World Baijiu Day' },
+  { m: 7,  d: 16, name: 'National Rum Day' },
+  { m: 7,  d: 25, name: 'National Whiskey Sour Day' },
+  { m: 7,  d: 28, name: 'National Red Wine Day' },
+  { m: 7,  d: 30, name: 'National Mai Tai Day' },
+  // SEPTEMBER
+  { m: 8,  d: 2,  name: 'National Espresso Martini Day' },
+  { m: 8,  d: 7,  name: 'National Beer Lover\u2019s Day' },
+  { m: 8,  d: 10, name: 'International Canned Cocktail Day' },
+  { m: 8,  d: 15, name: 'National Creme de Menthe Day' },
+  { m: 8,  d: 19, name: 'Oktoberfest opens' },
+  { m: 8,  d: 20, name: 'National Rum Punch Day' },
+  { m: 8,  d: 29, name: 'National Coffee Day' },
+  // OCTOBER
+  { m: 9,  d: 1,  name: 'World Sake Day' },
+  { m: 9,  d: 4,  name: 'National Vodka Day' },
+  { m: 9,  d: 16, name: 'National Liqueur Day' },
+  { m: 9,  d: 19, name: 'International Gin & Tonic Day' },
+  { m: 9,  d: 21, name: 'National Mezcal Day' },
+  { m: 9,  d: 27, name: 'National American Beer Day' },
+  { m: 9,  d: 31, name: 'Halloween' },
+  // NOVEMBER
+  { m: 10, d: 5,  name: 'International Stout Day' },
+  { m: 10, d: 8,  name: 'National Harvey Wallbanger Day' },
+  { m: 10, d: 12, name: 'National Happy Hour Day' },
+  { m: 10, d: 18, name: 'International Poit\u00edn Day' },
+  { m: 10, d: 23, name: 'National Espresso Day' },
+  // DECEMBER
+  { m: 11, d: 5,  name: 'Repeal Day' },
+  { m: 11, d: 12, name: 'National Coquito Day' },
+  { m: 11, d: 14, name: 'National Screwdriver Day' },
+  { m: 11, d: 20, name: 'National Sangria Day' },
+  { m: 11, d: 24, name: 'National Eggnog Day' },
+  { m: 11, d: 25, name: 'Christmas Day' },
+  { m: 11, d: 31, name: 'National Champagne Day' },
+  { m: 11, d: 31, name: 'New Year\u2019s Eve' }
+];
+
+// US federal holidays + drink days that float (computed per year)
+function computeFloatingHolidays(year) {
+  function nthWeekdayOfMonth(year, month, weekday, n) {
+    var firstOfMonth = new Date(year, month, 1);
+    var firstWeekday = firstOfMonth.getDay();
+    var offset = (weekday - firstWeekday + 7) % 7;
+    return new Date(year, month, 1 + offset + (n - 1) * 7);
+  }
+  function lastWeekdayOfMonth(year, month, weekday) {
+    var lastDay = new Date(year, month + 1, 0);
+    var lastWeekday = lastDay.getDay();
+    var offset = (lastWeekday - weekday + 7) % 7;
+    return new Date(year, month, lastDay.getDate() - offset);
+  }
+
+  var mlk           = nthWeekdayOfMonth(year, 0, 1, 3);          // 3rd Mon in Jan
+  var presidents    = nthWeekdayOfMonth(year, 1, 1, 3);          // 3rd Mon in Feb
+  var natlBubbly    = nthWeekdayOfMonth(year, 5, 6, 1);          // 1st Sat in Jun (per holidays-and-observances)
+  var pisco         = nthWeekdayOfMonth(year, 1, 6, 1);          // 1st Sat in Feb
+  var kentuckyDerby = nthWeekdayOfMonth(year, 4, 6, 1);          // 1st Sat in May
+  var motherDay     = nthWeekdayOfMonth(year, 4, 0, 2);          // 2nd Sun in May
+  var worldWhisky   = nthWeekdayOfMonth(year, 4, 6, 3);          // 3rd Sat in May
+  var memorial      = lastWeekdayOfMonth(year, 4, 1);            // Last Mon in May
+  var worldGin      = nthWeekdayOfMonth(year, 5, 6, 2);          // 2nd Sat in Jun
+  var natlRose      = nthWeekdayOfMonth(year, 5, 6, 2);          // 2nd Sat in Jun (same as Gin)
+  var fatherDay     = nthWeekdayOfMonth(year, 5, 0, 3);          // 3rd Sun in Jun
+  var worldRumDay   = nthWeekdayOfMonth(year, 6, 6, 2);          // 2nd Sat in Jul (different from Jul 11 fixed)
+  var intlBeerDay   = nthWeekdayOfMonth(year, 7, 5, 1);          // 1st Fri in Aug
+  var laborDay      = nthWeekdayOfMonth(year, 8, 1, 1);          // 1st Mon in Sep
+  var negroniWeek   = nthWeekdayOfMonth(year, 8, 1, 3);          // 3rd Mon in Sep (start of Negroni Week)
+  var globalChamp   = nthWeekdayOfMonth(year, 9, 5, 4);          // 4th Fri in Oct (Global Champagne Day)
+  var thanksgiving  = nthWeekdayOfMonth(year, 10, 4, 4);         // 4th Thu in Nov
+  var blackFriday   = new Date(thanksgiving.getTime() + 86400000);
+  var drinksgiving  = new Date(thanksgiving.getTime() - 86400000);
+  var natlBartender = nthWeekdayOfMonth(year, 11, 5, 1);         // 1st Fri in Dec
+
+  return [
+    { date: mlk,           name: 'MLK Day' },
+    { date: presidents,    name: 'Presidents Day' },
+    { date: pisco,         name: 'International Pisco Sour Day' },
+    { date: kentuckyDerby, name: 'Kentucky Derby' },
+    { date: motherDay,     name: 'Mother\u2019s Day' },
+    { date: worldWhisky,   name: 'World Whisky Day' },
+    { date: memorial,      name: 'Memorial Day' },
+    { date: natlBubbly,    name: 'National Bubbly Day' },
+    { date: worldGin,      name: 'World Gin Day' },
+    { date: natlRose,      name: 'National Ros\u00e9 Day' },
+    { date: fatherDay,     name: 'Father\u2019s Day' },
+    { date: worldRumDay,   name: 'World Rum Day' },
+    { date: intlBeerDay,   name: 'International Beer Day' },
+    { date: laborDay,      name: 'Labor Day' },
+    { date: negroniWeek,   name: 'Negroni Week' },
+    { date: globalChamp,   name: 'Global Champagne Day' },
+    { date: drinksgiving,  name: 'Drinksgiving' },
+    { date: thanksgiving,  name: 'Thanksgiving' },
+    { date: blackFriday,   name: 'Black Friday' },
+    { date: natlBartender, name: 'National Bartender Day' }
+  ];
+}
+
+function getUpcomingHolidays(now, count) {
+  count = count || 2;
+  var year = now.getFullYear();
+  var todayMidnight = new Date(year, now.getMonth(), now.getDate());
+
+  var candidates = [];
+  HOLIDAYS_FIXED.forEach(function(h){
+    candidates.push({ date: new Date(year, h.m, h.d), name: h.name });
+    candidates.push({ date: new Date(year + 1, h.m, h.d), name: h.name });
+  });
+  computeFloatingHolidays(year).forEach(function(h){ candidates.push(h); });
+  computeFloatingHolidays(year + 1).forEach(function(h){ candidates.push(h); });
+
+  var seen = {};
+  var upcoming = candidates.filter(function(h){
+    if (h.date < todayMidnight) return false;
+    var key = h.date.toISOString().slice(0,10) + '|' + h.name;
+    if (seen[key]) return false;
+    seen[key] = true;
+    return true;
+  }).sort(function(a, b){ return a.date - b.date; });
+
+  return upcoming.slice(0, count);
+}
+
+function renderHolidays() {
+  var now = new Date();
+  var todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var upcoming = getUpcomingHolidays(now, 2);
+
+  function fmt(h) {
+    if (!h) return '';
+    var days = Math.round((h.date - todayMidnight) / 86400000);
+    var dayLabel;
+    if (days === 0) dayLabel = 'today';
+    else if (days === 1) dayLabel = 'tomorrow';
+    else dayLabel = days + 'd';
+    var dateLabel = MONTH_SHORT[h.date.getMonth()] + ' ' + h.date.getDate();
+    return '<strong>' + dateLabel + '</strong> \u00b7 ' + h.name + ' \u00b7 <span class="hol-days">' + dayLabel + '</span>';
+  }
+
+  var s1 = document.getElementById('hol-sep-1');
+  var s2 = document.getElementById('hol-sep-2');
+  var h1 = document.getElementById('hol-1');
+  var h2 = document.getElementById('hol-2');
+
+  if (h1) {
+    if (upcoming[0]) { h1.innerHTML = fmt(upcoming[0]); h1.style.display = ''; if (s1) s1.style.display = ''; }
+    else { h1.style.display = 'none'; if (s1) s1.style.display = 'none'; }
+  }
+  if (h2) {
+    if (upcoming[1]) { h2.innerHTML = fmt(upcoming[1]); h2.style.display = ''; if (s2) s2.style.display = ''; }
+    else { h2.style.display = 'none'; if (s2) s2.style.display = 'none'; }
+  }
+}
+
+function updateBanner() {
+  var d = new Date();
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var dayLabel = days[d.getDay()];
+  var dateLabel = MONTH_SHORT[d.getMonth()] + ' ' + d.getDate();
+  var bd = document.getElementById('banner-date');
+  if (bd) bd.textContent = dayLabel + ' \u00b7 ' + dateLabel;
+  var bw = document.getElementById('banner-week');
+  if (bw && typeof isoWeek === 'function') bw.textContent = isoWeek(d);
+  var bdd = document.getElementById('banner-day');
+  var bdds = document.getElementById('banner-days');
+  var dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  if (bdd) bdd.textContent = d.getDate();
+  if (bdds) bdds.textContent = dim;
+  var bs = document.getElementById('banner-sync');
+  if (bs) bs.textContent = lastRefresh ? timeAgoShort(lastRefresh) + ' ago' : 'pending';
+  renderHolidays();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', function(){
+  tickClock();
+  setInterval(tickClock, 30000);
+  wireBoardTabs();
+  wireChat();
+  wireModals();
+  loadAllV3();
+  // Refresh every 90s
+  setInterval(loadAllV3, 90000);
+});
+</script>
+
+
+<!-- ────────────────────────────── -->
+<!-- SEND EMAIL MODAL (DC + POD) -->
+<!-- ────────────────────────────── -->
+<div class="modal-overlay" id="modalSendEmail">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Send Client Email</div>
+      <button class="modal-close" data-close="modalSendEmail" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" data-kind="dc" type="button">Delivery Confirmation</button>
+        <button class="tab" data-kind="pod" type="button">Proof of Delivery</button>
+      </div>
+      <div class="tab-panel active" data-panel="dc">
+        <div class="f-group">
+          <label class="f-label">Monday PO#</label>
+          <input type="text" class="f-input" id="em_po_dc" placeholder="e.g. 1234567890" autocomplete="off" inputmode="numeric">
+          <div class="fetch-summary" id="em_summary_dc"></div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">CC additional recipients <span class="opt">(optional, comma-separated)</span></label>
+          <input type="text" class="f-input" id="em_cc_dc" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="em_send_dc" type="button">Send DC</button>
+        </div>
+        <div class="m-result" id="em_result_dc"></div>
+      </div>
+      <div class="tab-panel" data-panel="pod">
+        <div class="f-group">
+          <label class="f-label">Monday PO#</label>
+          <input type="text" class="f-input" id="em_po_pod" placeholder="e.g. 1234567890" autocomplete="off" inputmode="numeric">
+          <div class="fetch-summary" id="em_summary_pod"></div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">CC additional recipients <span class="opt">(optional, comma-separated)</span></label>
+          <input type="text" class="f-input" id="em_cc_pod" placeholder="email1@co.com, email2@co.com" autocomplete="off" inputmode="email">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="em_send_pod" type="button">Send POD</button>
+        </div>
+        <div class="m-result" id="em_result_pod"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
