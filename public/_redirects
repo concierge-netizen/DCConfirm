@@ -3,3 +3,11 @@
 /api/submit-pod     /.netlify/functions/submit-pod     200
 /api/preview-pod    /.netlify/functions/preview-pod    200
 /pod                /pod.html                          200
+
+# HANDS Phases 4-6 — hub + estimates + warehouse + bol
+/api/monday-proxy    /.netlify/functions/monday-proxy    200
+/api/send-io-notice  /.netlify/functions/send-io-notice  200
+/hub                 /hub.html                           200
+/estimates           /estimates.html                     200
+/warehouse           /warehouse.html                     200
+/bol                 /bol.html                           200
