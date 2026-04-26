@@ -252,8 +252,8 @@
 </head>
 <body>
 
-<!-- LOGIN GATE -->
-<div id="loginGate" class="login-wrap">
+<!-- LOGIN GATE — disabled (internal tool, hub PIN already gates access) -->
+<div id="loginGate" class="login-wrap" style="display: none;">
   <div class="login-card">
     <div class="section-eyebrow">HANDS · Activation Admin</div>
     <h2 class="section-title">Enter password</h2>
@@ -267,7 +267,7 @@
 </div>
 
 <!-- MAIN ADMIN -->
-<div id="adminMain" style="display: none;">
+<div id="adminMain">
 
   <nav>
     <div class="nav-brand">
@@ -545,36 +545,21 @@
     });
   }
 
-  // ── LOGIN ──
+  // ── LOGIN (DISABLED — internal tool, hub PIN gates access at the hub level) ──
+  // Stubs kept so any existing call sites work. adminPassword stays null;
+  // the API has been patched to no-op auth when password is missing.
   document.getElementById("passwordInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") login();
   });
 
   async function login() {
-    const pw = document.getElementById("passwordInput").value;
-    if (!pw) return;
-    try {
-      const res = await fetch("/api/activation-proposals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "list", password: pw })
-      });
-      if (res.status === 401) { showToast("Wrong password", true); return; }
-      if (!res.ok) { showToast("Login error — check network", true); return; }
-      adminPassword = pw;
-      sessionStorage.setItem("hands_act_admin_pw", pw);
-      document.getElementById("loginGate").style.display = "none";
-      document.getElementById("adminMain").style.display = "block";
-      initAdmin();
-    } catch (err) {
-      showToast("Connection error", true);
-    }
+    // Auth disabled; just init.
+    initAdmin();
   }
 
   function logout() {
-    sessionStorage.removeItem("hands_act_admin_pw");
-    adminPassword = null;
-    location.reload();
+    // No-op; nothing to log out of. Provide a friendly redirect to the hub.
+    location.href = "/hub";
   }
 
   function initAdmin() {
@@ -590,11 +575,8 @@
   }
 
   window.addEventListener("load", () => {
-    const saved = sessionStorage.getItem("hands_act_admin_pw");
-    if (saved) {
-      document.getElementById("passwordInput").value = saved;
-      login();
-    }
+    // Skip login gate entirely — go straight to admin.
+    initAdmin();
   });
 
   // ── TABS ──
