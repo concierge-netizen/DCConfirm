@@ -1233,7 +1233,7 @@
     stack.innerHTML = slides.map(s => `
       <div class="slide-card">
         ${s.imageUrl
-          ? `<div class="slide-card-image"><img src="${escapeAttr(s.imageUrl)}" alt="${escapeAttr(s.caption || '')}" loading="lazy" /></div>`
+          ? `<div class="slide-card-image"><img src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.caption || '')}" loading="lazy" /></div>`
           : ''}
         ${s.caption
           ? `<div class="slide-card-caption">${escapeHtml(s.caption)}</div>`
@@ -1253,7 +1253,7 @@
         <div class="deliverable-card">
           <div class="deliverable-image">
             ${d.schematicUrl
-              ? `<img src="${escapeAttr(d.schematicUrl)}" alt="${escapeAttr(d.title || '')}" loading="lazy" />`
+              ? `<img src="${escapeHtml(d.schematicUrl)}" alt="${escapeHtml(d.title || '')}" loading="lazy" />`
               : `<div class="no-image">Schematic pending</div>`}
           </div>
           <div class="deliverable-body">
@@ -1297,7 +1297,7 @@
       <div class="sourcing-row">
         <div class="src-photo">
           ${i.photoUrl
-            ? `<img src="${escapeAttr(i.photoUrl)}" alt="${escapeAttr(i.name || '')}" loading="lazy" />`
+            ? `<img src="${escapeHtml(i.photoUrl)}" alt="${escapeHtml(i.name || '')}" loading="lazy" />`
             : `<div class="no-photo">Photo<br/>TBD</div>`}
         </div>
         <div class="src-name">${escapeHtml(i.name || '—')}</div>
