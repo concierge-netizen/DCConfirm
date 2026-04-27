@@ -1128,11 +1128,42 @@
 
   // ── Load catalog ───────────────────────────────────────────────
   function loadCatalog() {
-    fetch('/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) + '&endpoint=products&per_page=100')
-      .then(function(r) { return r.json(); })
-      .then(function(json) {
-        var raw = (json && json.data) || [];
-        state.products = raw
+    var PER_PAGE = 100;
+    var MAX_PAGES = 20;  // safety cap (handles up to 2000 products)
+    var allProducts = [];
+    var page = 1;
+
+    function fetchPage() {
+      var url = '/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) +
+                '&endpoint=' + encodeURIComponent('products?per_page=' + PER_PAGE + '&page=' + page);
+      return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+          var batch = (json && json.data) || [];
+          allProducts = allProducts.concat(batch);
+
+          // Pagination signals (any one of these tells us we have more)
+          var meta = (json && json.meta) || {};
+          var hasMore = false;
+          if (typeof meta.total_count === 'number') {
+            hasMore = allProducts.length < meta.total_count;
+          } else if (json && json.links && json.links.next) {
+            hasMore = true;
+          } else {
+            // Fallback: if this page returned a full batch, there might be more
+            hasMore = batch.length === PER_PAGE;
+          }
+
+          if (hasMore && page < MAX_PAGES) {
+            page++;
+            return fetchPage();
+          }
+        });
+    }
+
+    fetchPage()
+      .then(function() {
+        state.products = allProducts
           .map(parseProduct)
           .filter(function(p) { return !p.archived; });
         state.products.forEach(function(p) { state.productsById[p.id] = p; });
