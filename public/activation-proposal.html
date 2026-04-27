@@ -823,6 +823,27 @@
   .slide-card .slide-card-image img { transition: transform 0.4s; }
   .slide-card:hover .slide-card-image img { transform: scale(1.02); }
 
+  /* Phase B revision 2 — re-position zoom cue + hover effects on side-by-side deliverable */
+  .deliverable-card .deliverable-image { position: relative; }
+  .deliverable-card .deliverable-image .zoom-cue {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(17,17,16,0.7);
+    color: var(--white);
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .deliverable-card:hover .zoom-cue { opacity: 1; }
+  .deliverable-card .deliverable-image img { transition: transform 0.4s; }
+  .deliverable-card:hover .deliverable-image img { transform: scale(1.02); }
+
 </style>
 </head>
 <body>
@@ -1622,6 +1643,49 @@
             <div class="d-title">${escapeHtml(d.title || 'Custom build')}</div>
             ${hasMeta ? `
               <div class="d-meta-row">
+                ${d.dimensions ? `
+                  <div class="meta-item">
+                    <div class="meta-label">Dimensions</div>
+                    <div class="meta-value">${escapeHtml(d.dimensions)}</div>
+                  </div>` : ''}
+                ${d.window ? `
+                  <div class="meta-item">
+                    <div class="meta-label">Install Window</div>
+                    <div class="meta-value window-pill">${escapeHtml(d.window)}</div>
+                  </div>` : ''}
+              </div>` : ''}
+            ${d.notes ? `<div class="d-notes">${escapeHtml(d.notes)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('deliverablesSection').style.display = 'block';
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // PHASE B revision 2 — Revert deliverables to side-by-side layout
+  // (image left, meta right) but keep lightbox click-to-zoom.
+  // ─────────────────────────────────────────────────────────────
+  renderDeliverablesPublic = function() {
+    const items = (proposal.deliverables || []).filter(d => d && (d.title || d.schematicUrl || d.dimensions || d.notes));
+    if (items.length === 0) return;
+    const stack = document.getElementById('deliverablesStack');
+    stack.innerHTML = items.map(d => {
+      const hasMeta = d.dimensions || d.window;
+      const safeUrl = (d.schematicUrl || '').replace(/'/g, "\\'");
+      const safeTitle = (d.title || '').replace(/'/g, "\\'");
+      return `
+        <div class="deliverable-card">
+          <div class="deliverable-image" ${d.schematicUrl ? `onclick="openLightbox('${safeUrl}', '${safeTitle}')" style="cursor: zoom-in;"` : ''}>
+            ${d.schematicUrl
+              ? `<img src="${escapeHtml(d.schematicUrl)}" alt="${escapeHtml(d.title || '')}" loading="lazy" />
+                 <div class="zoom-cue">↗ View full</div>`
+              : `<div class="no-image">Schematic pending</div>`}
+          </div>
+          <div class="deliverable-body">
+            <div class="d-title">${escapeHtml(d.title || 'Custom build')}</div>
+            ${hasMeta ? `
+              <div class="d-meta">
                 ${d.dimensions ? `
                   <div class="meta-item">
                     <div class="meta-label">Dimensions</div>
