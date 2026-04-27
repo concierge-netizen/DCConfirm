@@ -1271,37 +1271,65 @@
 
   function checkAvailability(productId) {
     if (!state.dates.from || !state.dates.to) return;
-    var from = state.dates.from + 'T08:00:00Z';
-    var till = state.dates.to + 'T17:00:00Z';
+
+    // Format the date range for display (e.g. "Apr 27 – Apr 30")
+    var fromDate = new Date(state.dates.from + 'T12:00:00Z');
+    var toDate   = new Date(state.dates.to   + 'T12:00:00Z');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var fromLabel = months[fromDate.getUTCMonth()] + ' ' + fromDate.getUTCDate();
+    var toLabel   = months[toDate.getUTCMonth()]   + ' ' + toDate.getUTCDate();
+    var dateRange = fromLabel + ' – ' + toLabel;
+
     var url = '/api/booqable-proxy?slug=' + encodeURIComponent(SLUG) +
-              '&endpoint=availabilities' +
-              '&filter[product_id]=' + encodeURIComponent(productId) +
-              '&filter[from]=' + encodeURIComponent(from) +
-              '&filter[till]=' + encodeURIComponent(till);
+              '&endpoint=' + encodeURIComponent('inventory_levels?filter[product_id]=' + productId);
+
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(json) {
         var box = $('availabilityBox');
         if (!box || state.currentProduct === null || state.currentProduct.id !== productId) return;
-        var data = (json && json.data) || [];
-        var hasStock = data.length > 0 && data.some(function(a) {
-          var av = a.attributes || {};
-          var stock = av.stock_count != null ? av.stock_count : (av.available != null ? av.available : 1);
-          return stock > 0;
+
+        // Sum stock across all locations (bulk products often have one record;
+        // multi-location accounts have one per location)
+        var records = (json && json.data) || [];
+        var totalStock = 0;
+        records.forEach(function(rec) {
+          var attrs = rec.attributes || {};
+          // Common field names across Booqable v4: available, total, stock_count, quantity
+          var n = attrs.available != null ? attrs.available
+                : attrs.total != null     ? attrs.total
+                : attrs.stock_count != null ? attrs.stock_count
+                : attrs.quantity != null  ? attrs.quantity
+                : 0;
+          if (typeof n === 'number') totalStock += n;
         });
-        if (hasStock) {
+
+        if (totalStock > 0) {
           box.className = 'modal-availability ok';
-          box.innerHTML = '<strong>✓ Available</strong> for ' + state.dates.from + ' through ' + state.dates.to + '. Subject to final confirmation.';
+          box.innerHTML =
+            '<strong>✓ Available ' + dateRange + '</strong>' +
+            ' &middot; <span style="color:var(--text-soft)">Stock on hand: ' + totalStock + '</span>';
+        } else if (records.length > 0) {
+          // We got a response but stock is zero
+          box.className = 'modal-availability bad';
+          box.innerHTML =
+            '<strong>Out of stock</strong> for ' + dateRange +
+            ' &middot; <span style="color:var(--text-soft)">Submit a request and our team will source it.</span>';
         } else {
+          // Empty response — fall back to manual confirmation
           box.className = 'modal-availability';
-          box.innerHTML = '<strong>Confirm with our team.</strong> We\'ll verify availability for ' + state.dates.from + ' → ' + state.dates.to + ' when you submit.';
+          box.innerHTML =
+            '<strong>Available on request</strong> for ' + dateRange +
+            ' &middot; <span style="color:var(--text-soft)">We\'ll confirm when you submit.</span>';
         }
       })
       .catch(function() {
         var box = $('availabilityBox');
         if (box) {
           box.className = 'modal-availability';
-          box.innerHTML = '<strong>We\'ll confirm availability</strong> when you submit your request.';
+          box.innerHTML =
+            '<strong>Available on request</strong> for ' + dateRange +
+            ' &middot; <span style="color:var(--text-soft)">We\'ll confirm when you submit.</span>';
         }
       });
   }
