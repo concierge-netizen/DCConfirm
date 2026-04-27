@@ -28,6 +28,8 @@ const ALLOWED_ENDPOINTS = [
   /^product_groups(\?.*)?$/,
   /^product_groups\/[a-zA-Z0-9_-]+(\?.*)?$/,
   /^availabilities(\?.*)?$/,
+  /^inventory_levels(\?.*)?$/,
+  /^stock_items(\?.*)?$/,
   /^orders\/[a-zA-Z0-9_-]+(\?.*)?$/
 ];
 
