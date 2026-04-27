@@ -1741,7 +1741,9 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
 
   // ── Brand color palette ──
   function syncBrandColor(source) {
+    /* PHASE A DEAD-CODE GUARD */
     const picker = document.getElementById('brandColorPicker');
+    if (!picker) return;
     const hexEl  = document.getElementById('brandColorHex');
     let hex = source === 'picker' ? picker.value : (hexEl.value || '').trim();
 
@@ -1765,7 +1767,9 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
   }
 
   function renderPalette(baseHex) {
+    /* PHASE A DEAD-CODE GUARD */
     const container = document.getElementById('palettePreview');
+    if (!container) return;
     if (!baseHex) {
       container.innerHTML = '<div class="empty-state" style="padding: 16px; flex: 1; font-size: 11px;">Enter a valid hex to preview palette</div>';
       return;
