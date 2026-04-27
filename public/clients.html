@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Portals — HANDS Logistics</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f8f7f4;
+    --paper-2: #efeee9;
+    --text: #1a1a1a;
+    --text-soft: #555;
+    --text-mute: #888;
+    --line: #e2e0d8;
+    --green: #a0d6b4;
+    --green-dark: #6dba96;
+    --green-deep: #3f8c63;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'DM Mono', ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: inherit; }
+
+  /* ── Nav ─────────────────────────────────────────────────── */
+  .nav {
+    background: var(--text); color: #fff;
+    border-bottom: 2px solid var(--green);
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 24px;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 16px; }
+  .nav-brand img { height: 40px; display: block; }
+  .nav-divider { width: 1px; height: 32px; background: rgba(255,255,255,.2); }
+  .nav-section { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .nav-section-sub {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--green); margin-top: 4px;
+  }
+  .nav-cta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; color: #fff; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.3); padding: 8px 14px;
+    border-radius: 2px; transition: all .15s;
+  }
+  .nav-cta:hover { background: var(--green); color: var(--text); border-color: var(--green); }
+
+  /* ── Hero ────────────────────────────────────────────────── */
+  .hero {
+    background: var(--text); color: #fff;
+    padding: 56px 32px 72px;
+    border-bottom: 1px solid #2a2a2a;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ''; position: absolute; inset: auto 0 0 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green) 50%, transparent);
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; color: var(--green); margin-bottom: 14px;
+  }
+  .hero-title {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -.5px;
+    margin: 0 0 14px; max-width: 800px;
+  }
+  .hero-title em { font-style: italic; color: var(--green); }
+  .hero-sub {
+    font-size: 15px; color: rgba(255,255,255,.72);
+    max-width: 620px; line-height: 1.6; margin: 0;
+  }
+
+  /* ── Wrap & grid ──────────────────────────────────────────── */
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 32px 80px; flex: 1; width: 100%; }
+  .section-head {
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: end; margin-bottom: 24px;
+    border-bottom: 1px solid var(--line); padding-bottom: 16px;
+  }
+  .section-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--green-deep);
+  }
+  .section-title {
+    font-family: var(--serif); font-size: 32px; font-weight: 400;
+    margin: 4px 0 0; letter-spacing: -.3px;
+  }
+  .section-meta {
+    font-family: var(--mono); font-size: 11px; color: var(--text-mute);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line);
+  }
+  .card {
+    background: #fff; padding: 28px 24px;
+    text-decoration: none; color: var(--text);
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 200px; position: relative;
+    transition: background .15s;
+  }
+  .card:hover { background: var(--paper); }
+  .card::after {
+    content: '→';
+    position: absolute; top: 24px; right: 24px;
+    font-size: 18px; color: var(--text-mute);
+    transition: color .15s, transform .15s;
+  }
+  .card:hover::after { color: var(--green-deep); transform: translateX(3px); }
+
+  .card-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--green-deep);
+  }
+  .card-title {
+    font-family: var(--serif); font-size: 28px; font-weight: 400;
+    line-height: 1.15; letter-spacing: -.2px; margin: 0;
+  }
+  .card-desc {
+    font-size: 13px; line-height: 1.6; color: var(--text-soft);
+    margin: 0;
+  }
+  .card-meta {
+    margin-top: auto;
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-mute);
+    padding-top: 12px; border-top: 1px solid var(--line);
+  }
+  .card-meta-item { display: flex; align-items: center; gap: 6px; }
+  .card-meta-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-deep);
+  }
+
+  /* ── Empty state for "more clients soon" ─────────────────── */
+  .placeholder-card {
+    background: var(--paper-2);
+    padding: 28px 24px;
+    border: 1px dashed var(--line);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    color: var(--text-mute);
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 18px;
+  }
+  .placeholder-card-sub {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-mute);
+    margin-top: 8px; font-style: normal;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────── */
+  .foot {
+    background: var(--text); color: rgba(255,255,255,.6);
+    padding: 32px; text-align: center; margin-top: auto;
+  }
+  .foot-tag { font-family: var(--serif); font-size: 20px; color: var(--green); }
+  .foot-meta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; margin-top: 6px;
+  }
+
+  @media (max-width: 720px) {
+    .nav { grid-template-columns: 1fr auto; padding: 14px 18px; gap: 12px; }
+    .nav-brand img { height: 32px; }
+    .nav-divider { height: 26px; }
+    .nav-section { font-size: 16px; }
+    .hero { padding: 40px 18px 56px; }
+    .wrap { padding: 32px 18px 60px; }
+    .grid { grid-template-columns: 1fr; }
+    .card { padding: 22px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics">
+    <div class="nav-divider"></div>
+    <div>
+      <div class="nav-section">Client Portals</div>
+      <div class="nav-section-sub">HANDS Logistics</div>
+    </div>
+  </div>
+  <div></div>
+  <a href="/" class="nav-cta">Back to Hub</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Client Asset Portals</div>
+    <h1 class="hero-title">Each client. <em>Their own portal.</em></h1>
+    <p class="hero-sub">Password-gated portals for HANDS clients to browse their stored assets, request deployments, and track active orders. Each client sees their own inventory pulled live from their Booqable tenant — requests route through to the Operations 2026 board on monday.com.</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">Live Portals</div>
+      <h2 class="section-title">Active clients</h2>
+    </div>
+    <div class="section-meta">1 live</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- WGS — live -->
+    <a class="card" href="/clients/wgs">
+      <div class="card-eyebrow">William Grant &amp; Sons</div>
+      <h3 class="card-title">WGS</h3>
+      <p class="card-desc">Glenfiddich, Hendrick's, Monkey Shoulder, Tullamore D.E.W. — POS displays and corporate assets stored at HANDS LV, deployed for activations.</p>
+      <div class="card-meta">
+        <div class="card-meta-item"><span class="card-meta-dot"></span>Live</div>
+        <div class="card-meta-item">/clients/wgs</div>
+        <div class="card-meta-item">Booqable: williamgs</div>
+      </div>
+    </a>
+
+    <!-- Placeholder — more clients onboarding -->
+    <div class="placeholder-card">
+      More portals coming soon.
+      <div class="placeholder-card-sub">Onboard a client → /clients/{slug}</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-tag">Events and Production. In Better HANDS.</div>
+  <div class="foot-meta">Las Vegas · ops.handslogistics.com</div>
+</footer>
+
+</body>
+</html>
