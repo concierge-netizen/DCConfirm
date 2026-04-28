@@ -407,10 +407,60 @@ async function markSent(itemId) {
   return mondayQuery(token, query);
 }
 
+// Extract POD-specific fields from a Monday item.
+// Includes the photo URLs (link columns), received-by name, and delivered date/time.
+function extractPodFields(item) {
+  const cols = item.column_values || [];
+  return {
+    pulseId:         item.id,
+    itemName:        item.name || '',
+    clientName:      getCol(cols, 'text'),
+    clientEmail:     getCol(cols, 'client_email1'),
+    account:         getCol(cols, 'text4'),
+    projectName:     getCol(cols, 'text5'),
+    deliveryAddress: getCol(cols, 'long_text8'),
+    description:     getCol(cols, 'long_text'),
+    // POD-specific
+    receivedBy:      getCol(cols, 'text_mm1p831b'),
+    deliveredDate:   getCol(cols, 'text0')  || getCol(cols, 'text2'),  // fallback to scheduled date
+    deliveredTime:   getCol(cols, 'text00') || getCol(cols, 'text9'),  // fallback to scheduled time
+    photoUrl:        getLinkUrl(cols, 'link_mm1pgr61'),
+    photoUrl2:       getLinkUrl(cols, 'link_mm1pay5j')
+  };
+}
+
+// Render the POD email with subject + HTML.
+// Uses the existing renderPodHtml template (full POD email with photos, camo footer, etc.).
+function buildPodEmail(f) {
+  const subject = 'Proof of Delivery: ' + (f.account || f.clientName || 'Your Delivery')
+                + (f.projectName ? ' — ' + f.projectName : '');
+  const html = renderPodHtml(f, false);  // false = not preview mode
+  return { subject, html };
+}
+
+// Mark POD Email Sent (boolean_mm1jr3gr) on a Monday item.
+// Distinct from markSent which flips Order Confirmation Sent (boolean_mm1jv595).
+async function markPodSent(itemId) {
+  const token = getMondayToken();
+  const boardId = process.env.MONDAY_BOARD_ID || '4550650855';
+  const colValues = JSON.stringify({ boolean_mm1jr3gr: { checked: 'true' } });
+  const query = `mutation {
+    change_multiple_column_values(
+      item_id: ${itemId},
+      board_id: ${boardId},
+      column_values: ${JSON.stringify(colValues)}
+    ) { id }
+  }`;
+  return mondayQuery(token, query);
+}
+
 module.exports = {
-  // POD email (existing)
+  // POD email
   renderPodHtml,
-  // Delivery Confirmation email (new)
+  extractPodFields,
+  buildPodEmail,
+  markPodSent,
+  // Delivery Confirmation email
   fetchItem,
   extractFields,
   buildEmail,
