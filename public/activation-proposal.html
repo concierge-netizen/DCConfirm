@@ -175,6 +175,9 @@
     border-bottom: 1px solid var(--light-grey);
     align-items: baseline;
   }
+  .line-row.line-row-share {
+    grid-template-columns: 1fr 80px 110px;
+  }
   .line-row:last-child { border-bottom: none; }
   .line-row .ld-desc {
     font-size: 14px; font-weight: 400; color: var(--dark);
@@ -981,12 +984,12 @@
   </section>
 
   <!-- Line Items -->
-  <section class="proposal-section alt">
+  <section class="proposal-section alt" id="investmentSection">
     <div class="proposal-inner">
       <div class="sec-heading">
-        <div class="section-eyebrow">Investment</div>
-        <h2>The full breakdown.</h2>
-        <p>Every line is itemized. Quantities and unit prices are visible &mdash; transparent from start to finish.</p>
+        <div class="section-eyebrow" id="investmentEyebrow">Investment</div>
+        <h2 id="investmentHeadline">The full breakdown.</h2>
+        <p id="investmentBlurb">Every line is itemized. Quantities and unit prices are visible &mdash; transparent from start to finish.</p>
       </div>
       <div class="line-items-table" id="lineItemsTable"></div>
     </div>
@@ -1003,7 +1006,7 @@
   </section>
 
   <!-- Payment Terms -->
-  <section class="proposal-section alt">
+  <section class="proposal-section alt" id="termsSection">
     <div class="proposal-inner">
       <div class="sec-heading">
         <div class="section-eyebrow">Terms</div>
@@ -1017,7 +1020,7 @@
   </section>
 
   <!-- Decision -->
-  <section class="decision-section">
+  <section class="decision-section" id="decisionSection">
     <div class="decision-inner">
       <div class="decision-eyebrow">Your call</div>
       <h2 class="decision-headline">Ready to <em>make it happen</em>?</h2>
@@ -1074,6 +1077,15 @@
   // ── INIT ──
   document.addEventListener("DOMContentLoaded", loadProposal);
 
+  // Share mode = client-facing version with no financials.
+  // Triggered by /share suffix in path or ?share=1 in query.
+  const isShareMode = (() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('share') === '1') return true;
+    if (/\/activation-proposal\/[^\/]+\/share(\/|$|\?)/.test(location.pathname)) return true;
+    return false;
+  })();
+
   function getSlug() {
     // Primary: ?slug=... from rewrite splat
     const params = new URLSearchParams(location.search);
@@ -1083,7 +1095,8 @@
     // Fallback: parse pathname directly. Netlify rewrites with :splat
     // sometimes don't carry the querystring through to the client, so
     // the URL the browser sees is still /activation-proposal/<slug>.
-    const m = location.pathname.match(/\/activation-proposal\/([^\/?#]+)/);
+    // Strip an optional trailing /share segment.
+    const m = location.pathname.match(/\/activation-proposal\/([^\/?#]+)(?:\/share)?/);
     return m ? decodeURIComponent(m[1]) : null;
   }
 
@@ -1167,9 +1180,41 @@
     renderLineItems();
     renderTerms();
     renderNotes();
+    applyShareMode();
 
     document.getElementById("loadingView").style.display = "none";
     document.getElementById("proposalView").style.display = "block";
+  }
+
+  // Adjusts the page when /share is in the URL — hides financials,
+  // payment terms, accept/request flow. Tweaks Investment headline copy
+  // so the "what's included" view reads naturally.
+  function applyShareMode() {
+    if (!isShareMode) return;
+
+    // Hide financial-only sections entirely
+    const termsSect = document.getElementById('termsSection');
+    if (termsSect) termsSect.style.display = 'none';
+    const decisionSect = document.getElementById('decisionSection');
+    if (decisionSect) decisionSect.style.display = 'none';
+
+    // If there are no line items, hide investment section too
+    const items = (proposal && proposal.lineItems) || [];
+    if (items.length === 0) {
+      const invSect = document.getElementById('investmentSection');
+      if (invSect) invSect.style.display = 'none';
+    } else {
+      // Re-headline the investment section for share mode
+      const eyebrow = document.getElementById('investmentEyebrow');
+      const headline = document.getElementById('investmentHeadline');
+      const blurb = document.getElementById('investmentBlurb');
+      if (eyebrow) eyebrow.textContent = 'Scope';
+      if (headline) headline.textContent = "What's included.";
+      if (blurb) blurb.textContent = 'Every line item by category. Pricing details available from your HANDS contact.';
+    }
+
+    // Optionally tag the body so any future CSS hooks work
+    document.body.classList.add('share-mode');
   }
 
   function renderStatusBanner() {
@@ -1236,6 +1281,19 @@
 
   function renderLineItems() {
     const items = proposal.lineItems || [];
+
+    // SHARE MODE: hide the entire investment section if there's nothing to show
+    // beyond what scope/deliverables already cover. We still render the section
+    // (it shows "what's included" without prices) only if there are line items.
+    if (isShareMode && items.length === 0) {
+      const sect = document.getElementById('lineItemsTable');
+      if (sect) {
+        const parentSection = sect.closest('section');
+        if (parentSection) parentSection.style.display = 'none';
+      }
+      return;
+    }
+
     const grouped = {};
     CATEGORY_ORDER.forEach(c => { grouped[c] = []; });
     items.forEach(it => {
@@ -1252,15 +1310,26 @@
         <div class="category-header">${cat}</div>`;
       list.forEach(it => {
         const lineTotal = (it.qty || 0) * (it.unitPrice || 0);
-        html += `
-          <div class="line-row">
-            <div class="ld-desc">${escapeHtml(it.description || '—')}</div>
-            <div class="ld-qty">${it.qty || 0}</div>
-            <div class="ld-unit">${it.unit || 'each'}</div>
-            <div class="ld-price">${fmt(it.unitPrice)}</div>
-            <div class="ld-line">${fmt(lineTotal)}</div>
-          </div>
-        `;
+        if (isShareMode) {
+          // Description + qty + unit only — no prices, no line total
+          html += `
+            <div class="line-row line-row-share">
+              <div class="ld-desc">${escapeHtml(it.description || '—')}</div>
+              <div class="ld-qty">${it.qty || 0}</div>
+              <div class="ld-unit">${it.unit || 'each'}</div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="line-row">
+              <div class="ld-desc">${escapeHtml(it.description || '—')}</div>
+              <div class="ld-qty">${it.qty || 0}</div>
+              <div class="ld-unit">${it.unit || 'each'}</div>
+              <div class="ld-price">${fmt(it.unitPrice)}</div>
+              <div class="ld-line">${fmt(lineTotal)}</div>
+            </div>
+          `;
+        }
       });
       html += '</div>';
     });
@@ -1269,20 +1338,23 @@
       html = '<div class="line-row" style="grid-template-columns: 1fr;"><div style="text-align: center; color: var(--text-grey); padding: 20px;">No line items.</div></div>';
     }
 
-    const subtotal = items.reduce((s, it) => s + (it.qty || 0) * (it.unitPrice || 0), 0);
-    const tax = proposal.includeTax ? subtotal * TAX_RATE : 0;
-    const total = subtotal + tax;
+    let summary = '';
+    if (!isShareMode) {
+      const subtotal = items.reduce((s, it) => s + (it.qty || 0) * (it.unitPrice || 0), 0);
+      const tax = proposal.includeTax ? subtotal * TAX_RATE : 0;
+      const total = subtotal + tax;
 
-    let summary = `<div class="line-items-summary">
-      <div class="ls-row"><span class="label">Subtotal</span><span class="amt">${fmt(subtotal)}</span></div>`;
-    if (proposal.includeTax) {
-      summary += `<div class="ls-row"><span class="label">NV Sales Tax (8.375%)</span><span class="amt">${fmt(tax)}</span></div>`;
+      summary = `<div class="line-items-summary">
+        <div class="ls-row"><span class="label">Subtotal</span><span class="amt">${fmt(subtotal)}</span></div>`;
+      if (proposal.includeTax) {
+        summary += `<div class="ls-row"><span class="label">NV Sales Tax (8.375%)</span><span class="amt">${fmt(tax)}</span></div>`;
+      }
+      summary += `<div class="ls-grand">
+          <span class="label">Total</span>
+          <span class="amt">${fmt(total)}</span>
+        </div>
+      </div>`;
     }
-    summary += `<div class="ls-grand">
-        <span class="label">Total</span>
-        <span class="amt">${fmt(total)}</span>
-      </div>
-    </div>`;
 
     document.getElementById('lineItemsTable').innerHTML = html + summary;
   }
