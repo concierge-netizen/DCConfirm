@@ -1,95 +1,94 @@
-// ───────────────────────────────────────────────────────────────
-// HANDS Logistics — Send Activation Proposal Email via Resend
-// Admin-initiated only (requires password)
-// ───────────────────────────────────────────────────────────────
-//
-// POST body: { password, to, subject, body }
-// Env vars: RESEND_KEY (or RESEND_API_KEY fallback), ADMIN_PASSWORD
-// ───────────────────────────────────────────────────────────────
+// ── send-activation-quote.js ────────────────────────────────────
+// Sends activation proposal/recap emails via Resend.
+// Used for both proposal delivery and recap delivery —
+// the body & subject are passed in by the admin UI.
+// ─────────────────────────────────────────────────────────────────
 
-const FROM_ADDRESS = 'HANDS Logistics <concierge@handslogistics.com>';
-const REPLY_TO     = 'concierge@handslogistics.com';
+const RESEND_KEY = process.env.RESEND_KEY;
+const FROM_EMAIL = 'HANDS Logistics <concierge@handslogistics.com>';
+const REPLY_TO   = 'concierge@handslogistics.com';
+const BCC        = 'jon@handslogistics.com';
 
-exports.handler = async (event) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  };
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type'
+};
 
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
-  if (event.httpMethod !== 'POST')    return { statusCode: 405, headers, body: JSON.stringify({ error: 'POST only' }) };
+exports.handler = async function(event) {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS_HEADERS, body: '' };
+  if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
 
-  const apiKey = process.env.RESEND_KEY || process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'RESEND_KEY not configured in Netlify env vars' }) };
+  if (!RESEND_KEY) {
+    return jsonResponse(500, { error: 'RESEND_KEY env var not configured' });
   }
 
-  let payload;
-  try { payload = JSON.parse(event.body || '{}'); }
-  catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
+  let body;
+  try { body = JSON.parse(event.body || '{}'); }
+  catch { return jsonResponse(400, { error: 'Invalid JSON body' }); }
 
-  const { password, to, subject, body } = payload;
-
-  // Auth gate disabled for internal tool — hub PIN guards upstream access.
-  // If both a password is supplied and ADMIN_PASSWORD is set in env, enforce.
-  // Otherwise allow.
-  const expected = process.env.ADMIN_PASSWORD;
-  if (password && expected && password !== expected) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+  const { to, subject, body: messageBody } = body;
+  if (!to || !subject || !messageBody) {
+    return jsonResponse(400, { error: 'to, subject, body required' });
   }
 
-  if (!to || !to.includes('@')) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Valid recipient email required' }) };
-  }
-  if (!subject || !body) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Subject and body required' }) };
-  }
-
-  const htmlBody = `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8">
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; color: #111110; line-height: 1.6; max-width: 640px; margin: 0 auto; padding: 24px; background: #ffffff; }
-  pre { font-family: inherit; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 15px; }
-</style></head>
-<body><pre>${escapeHtml(body)}</pre></body>
-</html>`;
+  // Convert plain text to HTML — preserve line breaks, autolink URLs.
+  const htmlBody = textToHtml(messageBody);
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        from: FROM_ADDRESS,
+        from: FROM_EMAIL,
         to: [to],
+        bcc: [BCC],
         reply_to: REPLY_TO,
         subject,
-        html: htmlBody,
-        text: body
+        text: messageBody,
+        html: htmlBody
       })
     });
-
-    const result = await response.json();
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        headers,
-        body: JSON.stringify({ error: result.message || 'Resend rejected the send', details: result })
-      };
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || `HTTP ${res.status}`);
     }
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true, id: result.id }) };
+    return jsonResponse(200, { success: true, id: data.id });
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    console.error('send-activation-quote error:', err);
+    return jsonResponse(500, { error: err.message });
   }
 };
 
-function escapeHtml(str) {
-  return String(str)
+function textToHtml(text) {
+  const escaped = String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/>/g, '&gt;');
+  // Autolink http/https URLs
+  const linked = escaped.replace(/(https?:\/\/[^\s<>]+)/g, (url) =>
+    `<a href="${url}" style="color: #6dba96; text-decoration: underline;">${url}</a>`
+  );
+  // Wrap in a clean container
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>HANDS Logistics</title></head>
+<body style="margin:0;padding:0;background:#f8f7f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#111110;">
+  <div style="max-width:560px;margin:32px auto;padding:32px;background:#ffffff;border-left:2px solid #6dba96;">
+    <div style="font-size:15px;line-height:1.7;white-space:pre-wrap;">${linked}</div>
+  </div>
+  <div style="max-width:560px;margin:0 auto 32px;padding:0 32px;text-align:center;font-size:11px;color:#7a7a76;letter-spacing:0.1em;text-transform:uppercase;font-family:Menlo,Monaco,monospace;">
+    HANDS Logistics · 8540 Dean Martin Dr, Suite 160 · Las Vegas, NV
+  </div>
+</body></html>`;
+}
+
+function jsonResponse(status, body) {
+  return {
+    statusCode: status,
+    headers: Object.assign({}, CORS_HEADERS, { 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body)
+  };
 }
