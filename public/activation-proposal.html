@@ -1100,6 +1100,14 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       proposal = data.proposal;
+
+      // If recap has been published, this URL is now the recap URL.
+      // Bounce to /recap/:slug — same conceptual link, different view.
+      if (proposal && proposal.recap && proposal.recap.published) {
+        location.replace('/recap/' + encodeURIComponent(slug));
+        return;
+      }
+
       renderProposal();
     } catch (err) {
       console.error("Load failed:", err);
