@@ -72,3 +72,6 @@
 /activations                  /activations.html                            200
 /activation-proposal/*        /activation-proposal.html?slug=:splat        200
 /recap/*                      /activation-recap.html?slug=:splat           200
+
+# ── Recovery (temporary) ──
+/api/recover-activations    /.netlify/functions/recover-activations    200
