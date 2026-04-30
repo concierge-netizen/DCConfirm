@@ -56,6 +56,11 @@
 /api/activation-proposals    /.netlify/functions/activation-proposals    200
 /api/send-activation-quote   /.netlify/functions/send-activation-quote   200
 /activation-admin            /activation-admin.html                      200
+
+# ── Activations: /share variants (must come BEFORE the splat rules) ──
+/activation-proposal/*/share    /activation-proposal.html?slug=:splat&share=1    200
+/recap/*/share                  /activation-recap.html?slug=:splat&share=1       200
+
 /activation-proposal/*       /activation-proposal.html?slug=:splat       200
 
 # HANDS - Booqable client portals (multi-tenant)
