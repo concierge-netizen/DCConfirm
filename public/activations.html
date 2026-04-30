@@ -818,10 +818,13 @@
 
       <div class="link-banner" id="linkBanner">
         <div class="lb-eyebrow">Proposal Created</div>
-        <div style="font-size: 14px; margin-top: 4px;">Share this link with your client:</div>
+        <div style="font-size: 14px; margin-top: 4px;">Two links — one for your direct client (full pricing), one for them to forward to their internal team (no costs).</div>
         <div class="lb-url" id="lbUrl"></div>
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; color: var(--text-grey); margin-top: 12px; text-transform: uppercase;">Client Share (no financials)</div>
+        <div class="lb-url" id="lbUrlShare" style="opacity: 0.85;"></div>
         <div class="lb-actions">
           <button class="btn-secondary" onclick="copyLink()">Copy Link</button>
+          <button class="btn-secondary" onclick="copyShareLink()">Copy Client Share Link</button>
           <button class="btn-primary" onclick="emailProposal()">Email to Client</button>
         </div>
       </div>
@@ -1158,10 +1161,13 @@
 
         <div class="link-banner" id="recapLinkBanner">
           <div class="lb-eyebrow">Recap Live</div>
-          <div style="font-size: 14px; margin-top: 4px;">Your client's existing proposal link now shows the recap:</div>
+          <div style="font-size: 14px; margin-top: 4px;">Two links — full version and a no-financials share link your client can forward to their internal team.</div>
           <div class="lb-url" id="recapLbUrl"></div>
+          <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; color: var(--text-grey); margin-top: 12px; text-transform: uppercase;">Client Share (no financials)</div>
+          <div class="lb-url" id="recapLbUrlShare" style="opacity: 0.85;"></div>
           <div class="lb-actions">
             <button class="btn-secondary" onclick="copyRecapLink()">Copy Link</button>
+            <button class="btn-secondary" onclick="copyRecapShareLink()">Copy Client Share Link</button>
             <button class="btn-primary" onclick="emailRecap()">Email Client</button>
           </div>
         </div>
@@ -1668,7 +1674,9 @@
       currentSlug = data.slug;
       currentClientEmail = proposal.email;
       const url = `${location.origin}/activation-proposal/${data.slug}`;
+      const shareUrl = `${url}/share`;
       document.getElementById("lbUrl").textContent = url;
+      document.getElementById("lbUrlShare").textContent = shareUrl;
       document.getElementById("linkBanner").classList.add("show");
       window.scrollTo({ top: 0, behavior: "smooth" });
       showToast("Proposal saved");
@@ -1681,6 +1689,22 @@
     const url = document.getElementById("lbUrl").textContent;
     navigator.clipboard.writeText(url).then(
       () => showToast("Link copied"),
+      () => showToast("Copy failed", true)
+    );
+  }
+
+  function copyShareLink() {
+    const url = document.getElementById("lbUrlShare").textContent;
+    navigator.clipboard.writeText(url).then(
+      () => showToast("Client share link copied"),
+      () => showToast("Copy failed", true)
+    );
+  }
+
+  function copyProposalShareLinkFromList(slug) {
+    const url = `${location.origin}/activation-proposal/${slug}/share`;
+    navigator.clipboard.writeText(url).then(
+      () => showToast("Client share link copied"),
       () => showToast("Copy failed", true)
     );
   }
@@ -1757,6 +1781,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
             </div>
             <div class="proposal-status status-${p.status || "sent"}">${statusLabel}</div>
             <a class="proposal-link" href="/activation-proposal/${p.slug}" target="_blank">${p.slug} →</a>
+            <button class="btn-ghost" onclick="copyProposalShareLinkFromList('${p.slug}')" title="Copy client share link (no financials)">Share Link</button>
             <button class="btn-ghost" onclick="editProposal('${p.slug}')">Edit</button>
           </div>`;
       }).join("");
@@ -1813,6 +1838,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
 
       const url = `${location.origin}/activation-proposal/${p.slug}`;
       document.getElementById("lbUrl").textContent = url;
+      document.getElementById("lbUrlShare").textContent = url + "/share";
       document.getElementById("linkBanner").classList.add("show");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -2292,6 +2318,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       currentClientEmail = proposal.email;
       const url = `${location.origin}/activation-proposal/${data.slug}`;
       document.getElementById("lbUrl").textContent = url;
+      document.getElementById("lbUrlShare").textContent = url + "/share";
       document.getElementById("linkBanner").classList.add("show");
       window.scrollTo({ top: 0, behavior: "smooth" });
       showToast("Proposal saved");
@@ -2534,6 +2561,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       currentClientEmail = proposal.email;
       const url = `${location.origin}/activation-proposal/${data.slug}`;
       document.getElementById("lbUrl").textContent = url;
+      document.getElementById("lbUrlShare").textContent = url + "/share";
       document.getElementById("linkBanner").classList.add("show");
       window.scrollTo({ top: 0, behavior: "smooth" });
       showToast("Proposal saved");
@@ -2728,6 +2756,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       if (isPublished) {
         const url = `${location.origin}/recap/${slug}`;
         document.getElementById("recapLbUrl").textContent = url;
+        document.getElementById("recapLbUrlShare").textContent = url + "/share";
       }
     } catch (err) {
       showToast("Load failed: " + err.message, true);
@@ -2942,6 +2971,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       // Update banner state
       const url = `${location.origin}/recap/${recapEditing}`;
       document.getElementById("recapLbUrl").textContent = url;
+      document.getElementById("recapLbUrlShare").textContent = url + "/share";
       document.getElementById("recapLinkBanner").classList.toggle("show", publish);
       document.getElementById("recapUnpublishBtn").style.display = publish ? "inline-flex" : "none";
     } catch (err) {
@@ -2972,6 +3002,14 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
     const url = document.getElementById("recapLbUrl").textContent;
     navigator.clipboard.writeText(url).then(
       () => showToast("Link copied"),
+      () => showToast("Copy failed", true)
+    );
+  }
+
+  function copyRecapShareLink() {
+    const url = document.getElementById("recapLbUrlShare").textContent;
+    navigator.clipboard.writeText(url).then(
+      () => showToast("Client share link copied"),
       () => showToast("Copy failed", true)
     );
   }
