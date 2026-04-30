@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HANDS Logistics — Event Recap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/activation-brand.css" />
+<style>
+  /* Loading state */
+  .loading-state {
+    min-height: 60vh;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    color: var(--text-grey);
+  }
+  .loading-state .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--light-grey);
+    border-top-color: var(--green-dark);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Section frames (re-used pattern) */
+  .recap-section { padding: 80px 80px; }
+  .recap-section.alt { background: var(--off-white); }
+  .recap-inner { max-width: 1200px; margin: 0 auto; }
+  .recap-section .section-title { font-size: 36px; }
+  .recap-section .section-sub { margin-bottom: 36px; }
+
+  .summary-prose {
+    font-family: var(--font-body);
+    font-size: 17px; line-height: 1.75;
+    font-weight: 300;
+    color: var(--dark);
+    max-width: 820px;
+  }
+  .summary-prose p + p { margin-top: 1em; }
+
+  /* Two-column layout for delivered + summary */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  /* Final note card */
+  .final-card {
+    background: var(--dark); color: var(--white);
+    padding: 56px 48px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    margin: 0 auto; max-width: 820px;
+  }
+  .final-card::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(109,186,150,0.15) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 90%, rgba(160,214,180,0.10) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .final-card > * { position: relative; z-index: 1; }
+  .final-card .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--green); margin-bottom: 14px;
+  }
+  .final-card h3 {
+    font-family: var(--font-display); font-size: 32px; font-weight: 400;
+    margin-bottom: 16px; color: var(--white);
+  }
+  .final-card h3 em { font-style: italic; color: var(--green-dark); }
+  .final-card p {
+    font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.75);
+    max-width: 540px; margin: 0 auto 24px;
+  }
+
+  @media (max-width: 1024px) {
+    .recap-section { padding: 64px 40px; }
+  }
+  @media (max-width: 640px) {
+    .recap-section { padding: 48px 24px; }
+    .recap-section .section-title { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-brand">
+    <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1776898277/HANDS_New_Logo1_tppmmp.png" alt="HANDS Logistics" />
+    <div class="divider"></div>
+    <div class="sub">Event Recap</div>
+  </div>
+  <div class="nav-actions">
+    <a href="https://handslogistics.com" class="nav-link" target="_blank">Home</a>
+    <a href="mailto:concierge@handslogistics.com" class="nav-cta">Plan Your Next</a>
+  </div>
+</nav>
+
+<!-- ── LOADING ── -->
+<div id="loadingView" class="loading-state">
+  <div class="spinner"></div>
+  <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;">Loading recap…</div>
+</div>
+
+<!-- ── ERROR ── -->
+<div id="errorView" style="display: none; padding: 96px 48px; text-align: center;">
+  <div class="section-eyebrow" style="color: var(--red);">Not Found</div>
+  <h2 class="section-title">This recap link doesn't exist.</h2>
+  <p class="section-sub">Check with Jon — the link may have expired or been mistyped.</p>
+  <a href="mailto:concierge@handslogistics.com" class="btn-primary">Email HANDS</a>
+</div>
+
+<!-- ── RECAP ── -->
+<div id="recapView" style="display: none;">
+
+  <!-- HERO -->
+  <section class="recap-hero">
+    <div class="recap-hero-bg" id="heroBg"></div>
+    <div class="recap-hero-inner">
+      <div class="recap-hero-eyebrow" id="heroEyebrow">Event Recap</div>
+      <h1 class="recap-hero-headline" id="heroHeadline">Activation</h1>
+      <div class="recap-hero-meta" id="heroMeta">—</div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section class="metrics-strip" id="metricsStrip" style="display: none;">
+    <!-- injected -->
+  </section>
+
+  <!-- THE STORY (summary) -->
+  <section class="recap-section" id="summarySection" style="display: none;">
+    <div class="recap-inner">
+      <div class="section-eyebrow">Recap</div>
+      <h2 class="section-title">The Story</h2>
+      <div class="summary-prose" id="summaryProse"></div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="recap-section alt" id="gallerySection" style="display: none;">
+    <div class="recap-inner">
+      <div class="section-eyebrow">Photos</div>
+      <h2 class="section-title">From the Floor</h2>
+      <p class="section-sub">Click any photo to view full-size.</p>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- DECK -->
+  <section class="recap-section" id="deckSection" style="display: none;">
+    <div class="recap-inner">
+      <div class="section-eyebrow">Recap Deck</div>
+      <h2 class="section-title" id="deckTitle">Full Recap Deck</h2>
+      <p class="section-sub">Open in a new tab to download or share.</p>
+      <div class="deck-card">
+        <div class="deck-card-head">
+          <div class="deck-card-title" id="deckHeading">Recap Deck</div>
+          <a id="deckOpen" class="btn-secondary" target="_blank" rel="noopener">Open / Download</a>
+        </div>
+        <iframe id="deckFrame" class="deck-frame" title="Recap Deck"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- DELIVERED -->
+  <section class="recap-section alt" id="deliveredSection" style="display: none;">
+    <div class="recap-inner">
+      <div class="section-eyebrow">What HANDS Delivered</div>
+      <h2 class="section-title">On Spec, On Time</h2>
+      <div class="two-col">
+        <div>
+          <ul class="delivered-list" id="deliveredList"></ul>
+        </div>
+        <div>
+          <div class="card-dark">
+            <div class="section-eyebrow">Scope Recap</div>
+            <h3 class="section-title">From plan to floor</h3>
+            <p style="color: rgba(255,255,255,0.75); font-size: 14px; line-height: 1.7; margin-top: 12px;" id="scopeRecap">
+              Every line item from the original scope of work was executed. Below is the full breakdown of fabrications, talent, and logistics HANDS delivered.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THANK YOU / NEXT -->
+  <section class="recap-section">
+    <div class="recap-inner">
+      <div class="final-card">
+        <div class="eyebrow">Thank You</div>
+        <h3 id="thankHeadline">It was an <em>honor</em> to build this with you.</h3>
+        <p id="thankCopy">When you're ready for the next one, we're already on it. Concierge logistics for premium brand activations — Las Vegas and beyond.</p>
+        <a href="mailto:concierge@handslogistics.com?subject=Plan%20Our%20Next%20Activation" class="btn-primary" style="background: var(--green-dark); color: var(--dark);">Plan Our Next</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
+  <img class="lightbox-image" id="lightboxImage" alt="" />
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://res.cloudinary.com/dxkpbjicu/image/upload/v1774556178/HANDS_Logo_BlackBG_HiRes_qtkac8.png" alt="HANDS Logistics" />
+    </div>
+    <div class="footer-meta">8540 Dean Martin Dr, Suite 160 · Las Vegas, NV 89139</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let proposal = null;
+  let recap = null;
+  let slug = null;
+
+  document.addEventListener("DOMContentLoaded", loadRecap);
+
+  function getSlug() {
+    const params = new URLSearchParams(location.search);
+    const fromQuery = params.get("slug");
+    if (fromQuery) return fromQuery;
+    const m = location.pathname.match(/\/recap\/([^\/?#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  async function loadRecap() {
+    slug = getSlug();
+    if (!slug) { showError(); return; }
+
+    try {
+      const res = await fetch("/api/activation-proposals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load", slug })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      proposal = data.proposal;
+      recap = (proposal && proposal.recap) || null;
+
+      // If recap isn't published, show "not found" — do not leak draft content.
+      if (!recap || !recap.published) {
+        showError();
+        return;
+      }
+
+      renderRecap();
+    } catch (err) {
+      console.error("Load failed:", err);
+      showError();
+    }
+  }
+
+  function showError() {
+    document.getElementById("loadingView").style.display = "none";
+    document.getElementById("errorView").style.display = "block";
+  }
+
+  function fmtDay(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch { return dateStr; }
+  }
+
+  function renderRecap() {
+    document.title = `${proposal.client || 'HANDS'} — ${proposal.projectName || 'Event'} Recap`;
+
+    // Hero
+    document.getElementById("heroEyebrow").textContent = `${proposal.client || 'Event'} · Recap`;
+    document.getElementById("heroHeadline").innerHTML = escapeHtml(proposal.projectName || 'Activation');
+    const sch = proposal.schedule || {};
+    const venueLine = [proposal.venueName, proposal.venueAddress].filter(Boolean).join(' · ');
+    const dateLine = sch.eventStartDate ? fmtDay(sch.eventStartDate) : '';
+    document.getElementById("heroMeta").textContent = [dateLine, venueLine].filter(Boolean).join('  ·  ') || '—';
+
+    if (recap.heroPhotoUrl) {
+      document.getElementById("heroBg").style.backgroundImage = `url("${recap.heroPhotoUrl}")`;
+    }
+
+    // Metrics
+    renderMetrics();
+
+    // Summary
+    if (recap.summary && recap.summary.trim()) {
+      const paragraphs = recap.summary.trim().split(/\n\n+/);
+      document.getElementById("summaryProse").innerHTML = paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+      document.getElementById("summarySection").style.display = "block";
+    }
+
+    // Gallery
+    renderGallery();
+
+    // Deck
+    renderDeck();
+
+    // Delivered
+    renderDelivered();
+
+    document.getElementById("loadingView").style.display = "none";
+    document.getElementById("recapView").style.display = "block";
+  }
+
+  function renderMetrics() {
+    const metrics = (recap.metrics || []).filter(m => m && (m.label || m.value));
+    if (metrics.length === 0) return;
+    const strip = document.getElementById("metricsStrip");
+    strip.innerHTML = metrics.map(m => `
+      <div class="metric-cell">
+        <div class="metric-value">${escapeHtml(String(m.value || '—'))}</div>
+        <div class="metric-label">${escapeHtml(m.label || '')}</div>
+      </div>
+    `).join('');
+    strip.style.display = "grid";
+  }
+
+  function renderGallery() {
+    const photos = (recap.gallery || []).filter(p => p && p.url);
+    if (photos.length === 0) return;
+    const grid = document.getElementById("galleryGrid");
+    grid.innerHTML = photos.map((p, i) => `
+      <div class="gallery-tile" onclick="openLightbox('${escapeAttr(p.url)}', '${escapeAttr(p.caption || '')}')">
+        <img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || '')}" loading="lazy" />
+        ${p.caption ? `<div class="gallery-tile-caption">${escapeHtml(p.caption)}</div>` : ''}
+      </div>
+    `).join('');
+    document.getElementById("gallerySection").style.display = "block";
+  }
+
+  function renderDeck() {
+    if (!recap.deckUrl) return;
+    const url = recap.deckUrl;
+    const title = recap.deckTitle || 'Full Recap Deck';
+    document.getElementById("deckHeading").textContent = title;
+    document.getElementById("deckOpen").href = url;
+
+    // For PDFs we can embed directly. For pptx (cloudinary delivers raw),
+    // we can't embed inline — so just show the open/download CTA.
+    const isPdf = /\.pdf(\?|$)/i.test(url);
+    const frame = document.getElementById("deckFrame");
+    if (isPdf) {
+      frame.src = url + '#view=FitH';
+      frame.style.display = 'block';
+    } else {
+      frame.style.display = 'none';
+    }
+    document.getElementById("deckSection").style.display = "block";
+  }
+
+  function renderDelivered() {
+    // Source data: combine the proposal's deliverables, sourcing items, and
+    // line items into one "what HANDS delivered" checklist.
+    const items = [];
+
+    (proposal.deliverables || []).forEach(d => {
+      if (!d || !d.title) return;
+      items.push({
+        title: d.title,
+        detail: [d.dimensions, d.window].filter(Boolean).join(' · ')
+      });
+    });
+
+    (proposal.sourcingItems || []).forEach(s => {
+      if (!s || !s.name) return;
+      items.push({
+        title: s.name,
+        detail: [s.vendor, s.qty ? `Qty ${s.qty}` : ''].filter(Boolean).join(' · ')
+      });
+    });
+
+    // Line items — surface only categories the client cares about visually.
+    (proposal.lineItems || []).forEach(li => {
+      if (!li || !li.description) return;
+      // Skip duplicates already covered by deliverables/sourcing
+      if (items.some(it => it.title.toLowerCase() === String(li.description).toLowerCase())) return;
+      items.push({
+        title: li.description,
+        detail: [li.category, li.qty && li.unit ? `${li.qty} ${li.unit}` : ''].filter(Boolean).join(' · ')
+      });
+    });
+
+    if (items.length === 0) return;
+
+    document.getElementById("deliveredList").innerHTML = items.map(it => `
+      <li>
+        <div class="delivered-check">✓</div>
+        <div class="delivered-text">
+          <div class="delivered-title">${escapeHtml(it.title)}</div>
+          ${it.detail ? `<div class="delivered-detail">${escapeHtml(it.detail)}</div>` : ''}
+        </div>
+      </li>
+    `).join('');
+
+    document.getElementById("deliveredSection").style.display = "block";
+  }
+
+  // Lightbox
+  function openLightbox(url, caption) {
+    const overlay = document.getElementById('lightboxOverlay');
+    const img = document.getElementById('lightboxImage');
+    const cap = document.getElementById('lightboxCaption');
+    img.src = url;
+    cap.textContent = caption || '';
+    cap.style.display = caption ? 'block' : 'none';
+    overlay.classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightboxOverlay').classList.remove('open');
+    setTimeout(() => {
+      document.getElementById('lightboxImage').src = '';
+    }, 200);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  // Utils
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function escapeAttr(s) { return escapeHtml(s).replace(/`/g, '&#96;'); }
+
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.toggle("error", isError);
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+  }
+</script>
+
+</body>
+</html>
