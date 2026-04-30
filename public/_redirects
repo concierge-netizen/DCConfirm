@@ -65,3 +65,10 @@
 /clients                   /clients.html                             200
 /clients/wgs/track         /clients/wgs-track.html                   200
 /clients/wgs               /clients/wgs.html                         200
+
+# ── Activations system ──
+/api/activation-proposals     /.netlify/functions/activation-proposals    200
+/api/send-activation-quote    /.netlify/functions/send-activation-quote   200
+/activations                  /activations.html                            200
+/activation-proposal/*        /activation-proposal.html?slug=:splat        200
+/recap/*                      /activation-recap.html?slug=:splat           200
