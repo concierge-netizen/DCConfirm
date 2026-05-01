@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "lalo-tequila-raspado-at-the-pool",
+      "client": "Lalo Tequila",
+      "projectName": "Raspado at the Pool",
+      "contact": "",
+      "email": "",
+      "proposalDate": "2026-05-01",
+      "status": "recap_only",
+      "recapPublished": false,
+      "recapExists": false,
+      "recapOnly": true,
+      "createdAt": "2026-05-01T15:05:08.028Z",
+      "updatedAt": "2026-05-01T15:05:08.028Z"
+    },
+    {
       "slug": "four-seasons-test",
       "client": "Four Seasons",
       "projectName": "Test",
@@ -15,5 +29,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-01T13:52:50.532Z"
+  "updatedAt": "2026-05-01T15:05:09.095Z"
 }
