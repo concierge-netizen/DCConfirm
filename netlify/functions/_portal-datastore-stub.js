@@ -12,8 +12,7 @@ const PLACEHOLDER_NOTICE = 'Connecting to data sources — coming soon.';
 // User lookup. Allowlists Jon and Charles as admins so you can sign in
 // and see the portal shell. Everyone else gets "User not in registry."
 const ALLOWLIST = {
-  // populate with the email you sign into Clerk with
-  // e.g. 'jon@handslogistics.com': { clientId: '*', role: 'admin', status: 'Active' }
+  'jon@handslogistics.com': { clientId: '*', role: 'admin', status: 'Active' },
 };
 
 async function getUserByEmail(email) {
