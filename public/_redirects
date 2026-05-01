@@ -1,82 +1,11 @@
-# HANDS Phase 3 — POD portal routes
-/api/lookup-item    /.netlify/functions/lookup-item    200
-/api/submit-pod     /.netlify/functions/submit-pod     200
-/api/preview-pod    /.netlify/functions/preview-pod    200
-/pod                /pod.html                          200
 
-# HANDS Phases 4-6 — hub + estimates + warehouse + bol
-/api/monday-proxy    /.netlify/functions/monday-proxy    200
-/api/send-io-notice  /.netlify/functions/send-io-notice  200
-/hub                 /hub.html                           200
-/estimates           /estimates.html                     200
-/warehouse           /warehouse.html                     200
-/bol                 /bol.html                           200
 
-# HANDS Phase 7 wave 1 — Driver Dispatch
-/api/fetch-items     /.netlify/functions/fetch-items     200
-/api/send-dispatch   /.netlify/functions/send-dispatch   200
-/dispatch            /dispatch.html                      200
-
-# HANDS Phase 7 wave 1 — Work Order Admin + driver portal
-/api/monday-sync       /.netlify/functions/monday-sync       200
-/api/get-workorder     /.netlify/functions/get-workorder     200
-/api/submit-workorder  /.netlify/functions/submit-workorder  200
-/api/send-email        /.netlify/functions/send-email        200
-/api/save-workorder    /.netlify/functions/save-workorder    200
-/api/catalog           /.netlify/functions/catalog           200
-/api/inventory         /.netlify/functions/inventory         200
-/workorders            /workorders.html                      200
-/workorder-portal      /workorder-portal.html                200
-
-# HANDS Phase 7 wave 2 — CEO Dashboard / Billing Operations
-/api/sheets-budget     /.netlify/functions/sheets-budget     200
-/api/billing-digest    /.netlify/functions/billing-digest    200
-/api/billing-webhook   /.netlify/functions/billing-webhook   200
-/api/claude-stream     /.netlify/functions/claude-stream     200
-/ceo                   /ceo.html                             200
-
-# HANDS Phase 7 wave 3 — Procurement Tool
-/api/lookup-product   /.netlify/functions/lookup-product   200
-/api/save-quote       /.netlify/functions/save-quote       200
-/api/load-quotes      /.netlify/functions/load-quotes      200
-/procure              /procure.html                        200
-
-# Path swap — / now serves hub.html (copied to index.html), DC confirm flow moved to /confirmations
-/confirmations         /confirmations.html                   200
-
-# HANDS Phase A — auth gate (PIN→JWT login)
-/api/hub-login           /.netlify/functions/hub-login           200
-/api/claude-chat         /.netlify/functions/claude-chat         200
-
-# HANDS Phase B — Gmail OAuth bootstrap
-/api/gmail-auth          /.netlify/functions/gmail-auth          200
-/api/gmail-auth-callback /.netlify/functions/gmail-auth-callback 200
-
-# Activation Proposal — admin builder + public client view + APIs
-/api/activation-proposals    /.netlify/functions/activation-proposals    200
-/api/send-activation-quote   /.netlify/functions/send-activation-quote   200
-/activation-admin            /activation-admin.html                      200
-
-# ── Activations: /share variants (must come BEFORE the splat rules) ──
-/activation-proposal/*/share    /activation-proposal.html?slug=:splat&share=1    200
-/recap/*/share                  /activation-recap.html?slug=:splat&share=1       200
-
-/activation-proposal/*       /activation-proposal.html?slug=:splat       200
-
-# HANDS - Booqable client portals (multi-tenant)
-/api/booqable-proxy        /.netlify/functions/booqable-proxy        200
-/api/booqable-create-order /.netlify/functions/booqable-create-order 200
-/api/booqable-webhook-wgs  /.netlify/functions/booqable-webhook-wgs  200
-/clients                   /clients.html                             200
-/clients/wgs/track         /clients/wgs-track.html                   200
-/clients/wgs               /clients/wgs.html                         200
-
-# ── Activations system ──
-/api/activation-proposals     /.netlify/functions/activation-proposals    200
-/api/send-activation-quote    /.netlify/functions/send-activation-quote   200
-/activations                  /activations.html                            200
-/activation-proposal/*        /activation-proposal.html?slug=:splat        200
-/recap/*                      /activation-recap.html?slug=:splat           200
-
-# ── Recovery (temporary) ──
-/api/recover-activations    /.netlify/functions/recover-activations    200
+# ─── HANDS Client Portal (shell) ─────────────────────────
+/portal/api/config             /.netlify/functions/portal-config            200
+/portal/api/ledger             /.netlify/functions/portal-ledger            200
+/portal/api/actions            /.netlify/functions/portal-actions           200
+/portal/api/payments/initiate  /.netlify/functions/portal-payments-initiate 200
+/portal/api/admin/clients      /.netlify/functions/portal-admin-clients     200
+/portal/api/admin/invoices     /.netlify/functions/portal-admin-invoices    200
+/portal/api/admin/actions      /.netlify/functions/portal-admin-actions     200
+/portal/*                      /portal/index.html                            200
