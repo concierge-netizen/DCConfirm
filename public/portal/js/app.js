@@ -197,7 +197,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.4',
+    'HANDS Logistics · Las Vegas · Client Portal v0.5',
   );
 }
 
@@ -209,16 +209,22 @@ function renderAdminPicker() {
 
   const cards = clients.map(c => {
     const summary = c.summary || {};
-    return el('button', {
+    const cid = c.clientId || c.id;
+
+    const handleCardOpen = () => {
+      setClientIdInUrl(cid);
+      state.clientId = cid;
+      clearRoot();
+      root().appendChild(el('div', { class: 'loading' }, 'Loading ledger…'));
+      loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
+    };
+
+    return el('div', {
       class: 'client-card',
-      onclick: () => {
-        const cid = c.clientId || c.id;
-        setClientIdInUrl(cid);
-        state.clientId = cid;
-        clearRoot();
-        root().appendChild(el('div', { class: 'loading' }, 'Loading ledger…'));
-        loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
-      },
+      role: 'button',
+      tabindex: '0',
+      onclick: handleCardOpen,
+      onkeydown: (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); handleCardOpen(); } },
     },
       el('div', { class: 'eyebrow' }, c.clientId || c.id || ''),
       el('div', { class: 'client-card-name' }, c.name || c.clientId || 'Unnamed'),
@@ -231,6 +237,14 @@ function renderAdminPicker() {
           el('div', { class: 'card-label' }, 'Open'),
           el('div', { class: 'client-card-num' }, summary.pendingActions != null ? summary.pendingActions : '0'),
         ),
+      ),
+      // Invite footer — only visible to admins viewing the picker. stopPropagation
+      // prevents drilling into the ledger when the Invite button is clicked.
+      el('div', { class: 'client-card-footer' },
+        el('button', {
+          class: 'btn-invite',
+          onclick: (ev) => { ev.stopPropagation(); openInviteModal(c); },
+        }, 'Invite'),
       ),
     );
   });
@@ -657,6 +671,71 @@ function openInvoiceEditor(inv) {
 function closeInvoiceEditor() {
   const m = document.getElementById('invoice-editor-modal');
   if (m) m.remove();
+}
+
+// ─── Admin invite modal ──────────────────────────────────────────────
+function openInviteModal(c) {
+  const existing = document.getElementById('invite-modal');
+  if (existing) existing.remove();
+
+  const cid = c.clientId || c.id || '';
+  const displayName = c.name || cid || 'this client';
+
+  // The picker payload only carries clientId + name + summary. The recipient
+  // email lives in the Registry — the backend looks it up. We tell the admin
+  // what's about to happen and confirm.
+  const overlay = el('div', { class: 'modal-overlay', id: 'invite-modal',
+    onclick: (e) => { if (e.target === overlay) closeInviteModal(); },
+  });
+
+  const form = el('form', { class: 'modal-form', onsubmit: (e) => onSubmitInvite(e, cid, displayName) },
+    el('div', { class: 'eyebrow' }, 'Admin · Send Portal Invite'),
+    el('h2', { class: 'section-title' }, displayName),
+
+    el('p', { class: 'modal-prose' },
+      'Send a portal invitation email to the address registered for ',
+      el('strong', {}, displayName),
+      '. The email comes from ',
+      el('span', { class: 'mono' }, 'jon@handslogistics.com'),
+      ' and includes the portal URL, the email address they must use to sign in, and a brief overview of what the portal does.',
+    ),
+
+    el('p', { class: 'modal-prose-dim' },
+      'The recipient address comes from the Portal Registry on monday.com. To change it, edit the Registry row first, then send the invite.',
+    ),
+
+    el('div', { class: 'modal-actions' },
+      el('button', { type: 'button', class: 'btn-signout-light', onclick: () => closeInviteModal() }, 'Cancel'),
+      el('button', { type: 'submit', class: 'btn-primary' }, 'Send Invite'),
+    ),
+  );
+
+  overlay.appendChild(form);
+  document.body.appendChild(overlay);
+}
+
+function closeInviteModal() {
+  const m = document.getElementById('invite-modal');
+  if (m) m.remove();
+}
+
+async function onSubmitInvite(ev, clientId, displayName) {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const submitBtn = form.querySelector('button[type=submit]');
+  const original = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+
+  try {
+    const resp = await apiPost('/admin/invite', { clientId: clientId });
+    closeInviteModal();
+    showFlash('Invite sent to ' + (resp.sentTo || displayName), 'good');
+  } catch (err) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = original;
+    showFlash('Could not send invite: ' + err.message, 'error');
+  }
 }
 
 async function onSubmitInvoiceEdit(ev, inv) {
