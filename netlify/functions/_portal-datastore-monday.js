@@ -228,7 +228,7 @@ async function loadRegistry() {
       contact_name:   txt(m, REG_COL_CONTACT),
       role:           role,
       status:         isActive ? 'Active' : 'Inactive',               // auth gates on this
-      terms:          'NET 60'                                        // matches Next Wave standard
+      terms:          'NET 15'                                        // updated 2026-05-01: Net 15 standard across HANDS
     };
   });
 
@@ -622,7 +622,7 @@ async function getPaymentInfo(clientId) {
         payable_to: 'Next Wave Beverages',
         memo:       'Include invoice number(s)'
       },
-      terms:        'NET 60 unless otherwise specified on the invoice'
+      terms:        'NET 15 unless otherwise specified on the invoice'
     }
   };
 }
