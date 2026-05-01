@@ -21,18 +21,46 @@ exports.handler = async (event) => {
 
     // Admins viewing PLACEHOLDER (no clientId picked yet) — return a thin
     // "pick a client" payload so the frontend can render the picker.
+    // Each client card carries a per-client summary so the picker shows
+    // outstanding balance + pending actions without a second round-trip.
     if (client.clientId === 'PLACEHOLDER') {
       const allClients = await ds.listClients();
+
+      // Fan out rollups in parallel. One slow client doesn't tank the picker —
+      // any failure becomes a {summary: null} card showing zeros.
+      const pickerClients = await Promise.all(allClients.map(async (c) => {
+        let summary = null;
+        try {
+          const s = await ds.getClientSummary(c.client_id);
+          if (s) {
+            summary = {
+              outstandingBalance: s.total_outstanding,
+              pendingActions:     s.open_count,
+              totalBilled:        s.total_billed,
+              totalPaid:          s.total_paid,
+              invoiceCount:       s.invoice_count
+            };
+          }
+        } catch (e) {
+          console.error('[portal-ledger] picker rollup failed for ' + c.client_id + ':', e.message);
+        }
+        return {
+          clientId: c.client_id,
+          name:     c.display_name,
+          summary:  summary
+        };
+      }));
+
       return json(200, {
         shellMode: false,
-        client: { clientId: 'PLACEHOLDER', name: 'Select a client', terms: 'NET 60' },
+        client: { clientId: 'PLACEHOLDER', name: 'Select a client', terms: 'NET 15' },
         summary: { outstandingBalance: 0, overdueAmount: 0, pendingActions: 0 },
         invoices: [], payments: [], adjustments: [], actions: [],
         paymentInfo: { open_invoices: [] },
         isAdmin: ctx.isAdmin,
         adminPicker: {
           message: 'Select a client to view their ledger.',
-          clients: allClients.map(c => ({ clientId: c.client_id, name: c.display_name }))
+          clients: pickerClients
         }
       });
     }
