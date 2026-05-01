@@ -80,9 +80,17 @@ function renderSignIn(message) {
   );
   root().appendChild(card);
 
-  // Mount Clerk's hosted sign-in component
+  // Mount Clerk's hosted sign-in component, telling it to redirect back to /portal
+  const PORTAL_URL = window.location.origin + '/portal';
   if (window.Clerk && typeof window.Clerk.mountSignIn === 'function') {
-    window.Clerk.mountSignIn(document.getElementById('clerk-mount'));
+    window.Clerk.mountSignIn(document.getElementById('clerk-mount'), {
+      signInUrl: PORTAL_URL,
+      signUpUrl: PORTAL_URL,
+      afterSignInUrl: PORTAL_URL,
+      afterSignUpUrl: PORTAL_URL,
+      redirectUrl: PORTAL_URL,
+      fallbackRedirectUrl: PORTAL_URL,
+    });
   } else {
     // Fallback if SDK didn't expose mountSignIn (older versions)
     const mount = document.getElementById('clerk-mount');
