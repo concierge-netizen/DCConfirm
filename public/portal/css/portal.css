@@ -1,0 +1,260 @@
+/* HANDS Client Portal — brand-matched stylesheet
+ * Mirrors hub palette: camo paper, brand green #a0d6b4
+ * Cormorant Garamond (display) + DM Sans (UI) + DM Mono (data)
+ */
+
+:root {
+  --paper: #f4f0e8;
+  --paper-2: #e8e2d4;
+  --paper-3: #d8d0bd;
+  --ink: #1a1a1a;
+  --ink-2: #4a4a4a;
+  --ink-3: #6a6a6a;
+  --green: #a0d6b4;
+  --green-deep: #6fa886;
+  --amber: #d4a574;
+  --red: #c97070;
+  --line: rgba(26, 26, 26, 0.12);
+  --line-2: rgba(26, 26, 26, 0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Loading + error states ───────────────────────────────────────── */
+.loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 24px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.error-banner {
+  margin: 24px;
+  padding: 16px 20px;
+  background: #fef0ef;
+  border-left: 3px solid var(--red);
+  color: #6e2c2c;
+  font-size: 13px;
+  border-radius: 2px;
+  max-width: 600px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+.portal-header {
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: 2px solid var(--green);
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  background: var(--green);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.brand-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.brand-text small {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-top: 2px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--paper-3);
+}
+
+.btn-signout {
+  background: transparent;
+  border: 1px solid var(--paper-3);
+  color: var(--paper-3);
+  padding: 6px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.btn-signout:hover { color: var(--paper); border-color: var(--paper); }
+
+/* ── Main canvas ─────────────────────────────────────────────────── */
+.canvas {
+  flex: 1;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green-deep);
+  margin-bottom: 8px;
+}
+
+.h-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+
+/* ── Shell-mode notice ────────────────────────────────────────────── */
+.shell-notice {
+  background: var(--paper-2);
+  border: 1px dashed var(--ink-3);
+  padding: 24px 28px;
+  margin: 24px 0;
+  border-radius: 2px;
+}
+
+.shell-notice .eyebrow { color: var(--amber); }
+
+.shell-notice h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.shell-notice p {
+  color: var(--ink-2);
+  font-size: 13px;
+  max-width: 540px;
+}
+
+/* ── Sign-in card ─────────────────────────────────────────────────── */
+.signin-card {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 40px 32px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.signin-card .brand-mark {
+  margin: 0 auto 20px;
+  width: 56px;
+  height: 56px;
+  font-size: 32px;
+}
+
+.signin-card h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.signin-card p {
+  color: var(--ink-3);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.signin-card .clerk-mount {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Placeholder cards ────────────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 20px 22px;
+  border-radius: 2px;
+}
+
+.card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.card-value {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+.portal-footer {
+  padding: 24px 32px;
+  border-top: 1px solid var(--line);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: center;
+}
