@@ -643,3 +643,41 @@ html, body {
 .flash-good { background: var(--green-deep); color: var(--paper); }
 .flash-error { background: var(--red); color: var(--paper); }
 .flash-fade { opacity: 0; transform: translateY(8px); }
+
+/* ── Payment instructions block (v0.3) ──────────────────────────── */
+.pay-info {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: 2px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px 32px;
+}
+
+.pay-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pay-info-val {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.pay-info-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.pay-info-sub.mono {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
