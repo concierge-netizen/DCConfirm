@@ -1114,10 +1114,17 @@
       if (!res.ok) throw new Error(data.error);
       proposal = data.proposal;
 
+      // Standalone-recap records (created without a real proposal) always
+      // route directly to the recap page. The proposal URL is just a stub.
+      if (proposal && proposal.recapOnly) {
+        location.replace('/recap/' + encodeURIComponent(slug) + (isShareMode ? '/share' : ''));
+        return;
+      }
+
       // If recap has been published, this URL is now the recap URL.
       // Bounce to /recap/:slug — same conceptual link, different view.
       if (proposal && proposal.recap && proposal.recap.published) {
-        location.replace('/recap/' + encodeURIComponent(slug));
+        location.replace('/recap/' + encodeURIComponent(slug) + (isShareMode ? '/share' : ''));
         return;
       }
 
