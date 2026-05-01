@@ -205,14 +205,23 @@ async function loadRegistry() {
   const out = items.map(function (it) {
     const m = colMap(it);
     const account = txt(m, REG_COL_ACCOUNT);
+    // The Registry "Status" column (color_mm2y9adn) is "Done" for active rows.
+    // Map "Done" -> "Active" since that's what _portal-auth.js gates on.
+    const statusLabel = txt(m, 'color_mm2y9adn');
+    const isActive = (statusLabel === 'Done' || statusLabel === 'Active' || statusLabel === '');
+    const role = account === ADMIN_WILDCARD ? 'admin' : 'client';
     return {
       monday_item_id: it.id,
       registry_name:  it.name,
       email:          txt(m, REG_COL_EMAIL).toLowerCase(),
       client_id:      account,                                        // "*" for admins
+      clientId:       account,                                        // camelCase alias for _portal-auth.js
       display_name:   txt(m, REG_COL_DISPLAY) || it.name,
+      name:           txt(m, REG_COL_DISPLAY) || it.name,             // alias expected by auth
       contact_name:   txt(m, REG_COL_CONTACT),
-      role:           account === ADMIN_WILDCARD ? 'admin' : 'client'
+      role:           role,
+      status:         isActive ? 'Active' : 'Inactive',               // auth gates on this
+      terms:          'NET 60'                                        // matches Next Wave standard
     };
   });
 
