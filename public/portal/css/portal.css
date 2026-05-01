@@ -805,3 +805,89 @@ html, body {
   outline: 2px solid var(--green-deep);
   outline-offset: 2px;
 }
+
+/* ── 4-up KPI grid (v0.6) ────────────────────────────────────────── */
+.card-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ── Filter chips above activity table (v0.6) ───────────────────── */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  padding: 7px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  font-weight: 500;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--green-deep);
+  color: var(--ink);
+}
+
+.filter-chip-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.filter-chip-active:hover {
+  background: var(--green-deep);
+  border-color: var(--green-deep);
+  color: var(--paper);
+}
+
+.filter-chip-label {
+  letter-spacing: 1.5px;
+}
+
+.filter-chip-count {
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  min-width: 18px;
+  text-align: center;
+}
+
+.filter-chip:not(.filter-chip-active) .filter-chip-count {
+  background: var(--paper-3);
+  color: var(--ink-3);
+}
+
+/* ── Operational status pill colors (v0.6) ──────────────────────── */
+.status-op-hold {
+  background: #f5e6c9;
+  color: #6b4a1a;
+  border-color: var(--amber);
+}
+
+.status-op-neutral {
+  background: var(--paper-2);
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+
+/* Dim cells for empty-amount operational rows */
+.ledger-table td.dim {
+  color: var(--ink-3);
+  opacity: 0.6;
+}
