@@ -681,3 +681,77 @@ html, body {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
 }
+
+/* ── Payment instructions — v0.4 (HANDS direct AR) ──────────────── */
+
+/* PayPal CTA block — full-width row above the grid */
+.pay-paypal {
+  background: var(--paper);
+  border: 1px solid var(--green-deep);
+  border-left: 3px solid var(--green-deep);
+  border-radius: 2px;
+  padding: 18px 24px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pay-paypal .pay-info-val {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.btn-paypal {
+  display: inline-block;
+  background: var(--green);
+  color: var(--ink);
+  border: 1px solid var(--green-deep);
+  padding: 12px 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-paypal:hover {
+  background: var(--green-deep);
+  color: var(--paper);
+}
+
+/* AR letter / details link inside ACH block */
+.pay-info-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--green-deep);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--green-deep);
+  padding-bottom: 1px;
+  width: fit-content;
+}
+.pay-info-link:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+/* Confidentiality footer */
+.pay-info-confidential {
+  margin-top: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: right;
+  font-style: italic;
+}
