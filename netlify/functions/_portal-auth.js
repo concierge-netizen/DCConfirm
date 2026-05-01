@@ -4,7 +4,7 @@
  */
 
 const { createRemoteJWKSet, jwtVerify } = require('jose');
-const datastore = require('./_portal-datastore-stub');
+const datastore = require('./_portal-datastore-monday');
 
 const CLERK_ISSUER = process.env.CLERK_ISSUER;
 let JWKS;
