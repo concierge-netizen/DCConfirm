@@ -62,7 +62,7 @@ async function resolveTargetClient(ctx, requestedClientId) {
   if (ctx.isAdmin) {
     if (!requestedClientId) {
       // For hollow shell, admins land on a default placeholder client
-      return { clientId: 'PLACEHOLDER', name: 'No clients yet', status: 'Active', terms: 'NET 30' };
+      return { clientId: 'PLACEHOLDER', name: 'No clients yet', status: 'Active', terms: 'NET 15' };
     }
     return await datastore.getClientById(requestedClientId);
   }
