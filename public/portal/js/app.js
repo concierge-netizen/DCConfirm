@@ -197,7 +197,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.3',
+    'HANDS Logistics · Las Vegas · Client Portal v0.4',
   );
 }
 
@@ -302,39 +302,78 @@ function kpiCard(label, value, mode) {
   );
 }
 
-// ─── Section: Payment Info (NEW in v0.3) ─────────────────────────────
+// ─── Section: Payment Info (v0.4 — HANDS direct AR) ──────────────────
 function paymentInfoSection(info) {
   if (!info || !info.instructions) return null;
   const ix = info.instructions;
   const ach = ix.ach || {};
   const check = ix.check || {};
+  const paypal = ix.paypal || {};
+
+  // PayPal block — primary CTA, gets its own row spanning the grid
+  const paypalBlock = paypal.url ? el('div', { class: 'pay-paypal' },
+    el('div', {},
+      el('div', { class: 'card-label' }, 'PayPal'),
+      el('div', { class: 'pay-info-val' }, paypal.label || 'Pay online'),
+      paypal.note ? el('div', { class: 'pay-info-sub' }, paypal.note) : null,
+    ),
+    el('a', {
+      href: paypal.url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      class: 'btn-paypal',
+    }, paypal.label || 'Pay by PayPal'),
+  ) : null;
+
+  // ACH block
+  const achBlock = (ach.bank || ach.details_url) ? el('div', { class: 'pay-info-row' },
+    el('div', { class: 'card-label' }, 'ACH / Wire'),
+    ach.bank ? el('div', { class: 'pay-info-val' }, ach.bank + (ach.account_type ? ' · ' + ach.account_type : '')) : null,
+    ach.details_url ? el('a', {
+      href: ach.details_url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      class: 'pay-info-link',
+    }, '↓ ' + (ach.details_label || 'Download AR letter (PDF)')) : null,
+    ach.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + ach.memo) : null,
+  ) : null;
+
+  // Check block
+  const checkBlock = check.payable_to ? el('div', { class: 'pay-info-row' },
+    el('div', { class: 'card-label' }, 'Check'),
+    el('div', { class: 'pay-info-val' }, 'Payable to ' + check.payable_to),
+    check.mail_to ? el('div', { class: 'pay-info-sub' }, 'Mail to: ' + check.mail_to) : null,
+    check.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + check.memo) : null,
+  ) : null;
+
+  // Remit + terms + EIN row
+  const remitBlock = el('div', { class: 'pay-info-row' },
+    el('div', { class: 'card-label' }, 'Remit To'),
+    el('div', { class: 'pay-info-val' }, ix.remit_to || '—'),
+    ix.remit_email ? el('div', { class: 'pay-info-sub mono' }, ix.remit_email) : null,
+    ix.ein ? el('div', { class: 'pay-info-sub mono' }, 'EIN: ' + ix.ein) : null,
+  );
+
+  const termsBlock = el('div', { class: 'pay-info-row' },
+    el('div', { class: 'card-label' }, 'Terms'),
+    el('div', { class: 'pay-info-val' }, ix.terms || '—'),
+  );
+
+  const confidentialFooter = ix.confidential ? el('div', { class: 'pay-info-confidential' }, ix.confidential) : null;
 
   return el('section', { class: 'ledger-section' },
     el('div', { class: 'section-head' },
       el('div', { class: 'eyebrow' }, 'Payment Instructions'),
       el('h2', { class: 'section-title' }, 'How to Pay'),
     ),
+    paypalBlock,
     el('div', { class: 'pay-info' },
-      el('div', { class: 'pay-info-row' },
-        el('div', { class: 'card-label' }, 'Remit To'),
-        el('div', { class: 'pay-info-val' }, ix.remit_to || '—'),
-        ix.remit_email ? el('div', { class: 'pay-info-sub mono' }, ix.remit_email) : null,
-      ),
-      el('div', { class: 'pay-info-row' },
-        el('div', { class: 'card-label' }, 'Terms'),
-        el('div', { class: 'pay-info-val' }, ix.terms || '—'),
-      ),
-      ach.bank ? el('div', { class: 'pay-info-row' },
-        el('div', { class: 'card-label' }, 'ACH'),
-        el('div', { class: 'pay-info-val' }, ach.bank),
-        ach.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + ach.memo) : null,
-      ) : null,
-      check.payable_to ? el('div', { class: 'pay-info-row' },
-        el('div', { class: 'card-label' }, 'Check'),
-        el('div', { class: 'pay-info-val' }, 'Payable to ' + check.payable_to),
-        check.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + check.memo) : null,
-      ) : null,
+      remitBlock,
+      termsBlock,
+      achBlock,
+      checkBlock,
     ),
+    confidentialFooter,
   );
 }
 
