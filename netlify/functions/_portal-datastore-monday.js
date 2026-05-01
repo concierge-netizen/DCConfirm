@@ -612,17 +612,31 @@ async function getPaymentInfo(clientId) {
     total_outstanding: summary.total_outstanding,
     open_invoices:    open,
     instructions: {
-      remit_to:    'Next Wave Beverages on behalf of HANDS Logistics',
-      remit_email: 'info@nextwavebev.com',
+      remit_to:    'HANDS Enterprises LLC (DBA HANDS Logistics)',
+      remit_email: 'jon@handslogistics.com',
+      ein:         '92-2005743',
       ach: {
-        bank:     'Contact info@nextwavebev.com for current ACH instructions',
-        memo:     'Include invoice number(s)'
+        // Account/routing numbers intentionally NOT included in the API
+        // response. Frontend links to the AR letter PDF for full banking
+        // details. Confidential — for invoice payment only.
+        bank:           'US Bank',
+        account_type:   'Business Checking',
+        details_url:    '/portal/assets/HANDS_AR_Letter.pdf',
+        details_label:  'Banking details on the AR letter',
+        memo:           'Include invoice number(s) — e.g. GHOST-' + (open[0] && open[0].po_id ? open[0].po_id : '<invoice-id>')
       },
       check: {
-        payable_to: 'Next Wave Beverages',
+        payable_to: 'HANDS Enterprises LLC',
+        mail_to:    '8540 Dean Martin Drive, Suite 160, Las Vegas, NV 89139',
         memo:       'Include invoice number(s)'
       },
-      terms:        'NET 15 unless otherwise specified on the invoice'
+      paypal: {
+        url:   PAYPAL_HOSTED_BUTTON_URL,
+        label: 'Pay by PayPal',
+        note:  'Enter the invoice amount on the PayPal hosted page'
+      },
+      terms:        'NET 15 unless otherwise specified on the invoice',
+      confidential: 'Confidential — for invoice payment only.'
     }
   };
 }
