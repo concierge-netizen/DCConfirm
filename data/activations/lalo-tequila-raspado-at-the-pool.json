@@ -1,0 +1,21 @@
+{
+  "client": "Lalo Tequila",
+  "projectName": "Raspado at the Pool",
+  "proposalDate": "2026-05-01",
+  "venueName": "Four Seasons - Las Vegas",
+  "schedule": {
+    "eventStartDate": "2026-05-02",
+    "eventEndDate": "2026-05-02",
+    "loadinDate": "2026-05-02",
+    "strikeDate": "2026-05-02"
+  },
+  "lineItems": [],
+  "deliverables": [],
+  "sourcingItems": [],
+  "status": "recap_only",
+  "recapOnly": true,
+  "slug": "lalo-tequila-raspado-at-the-pool",
+  "recap": null,
+  "createdAt": "2026-05-01T15:05:08.028Z",
+  "updatedAt": "2026-05-01T15:05:08.028Z"
+}
