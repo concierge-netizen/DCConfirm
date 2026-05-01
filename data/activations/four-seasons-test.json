@@ -1,0 +1,21 @@
+{
+  "client": "Four Seasons",
+  "projectName": "Test",
+  "proposalDate": "2026-05-01",
+  "venueName": "FS",
+  "schedule": {
+    "eventStartDate": "2026-05-01",
+    "eventEndDate": "2026-05-01",
+    "loadinDate": "2026-05-01",
+    "strikeDate": "2026-05-01"
+  },
+  "lineItems": [],
+  "deliverables": [],
+  "sourcingItems": [],
+  "status": "recap_only",
+  "recapOnly": true,
+  "slug": "four-seasons-test",
+  "recap": null,
+  "createdAt": "2026-05-01T13:52:49.666Z",
+  "updatedAt": "2026-05-01T13:52:49.666Z"
+}
