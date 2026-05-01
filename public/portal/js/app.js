@@ -1,12 +1,15 @@
-/* HANDS Client Portal — v0.2 (live data)
+/* HANDS Client Portal — v0.3 (live data, schema-aligned)
  * Renders the monday-backed payload from /portal/api/ledger.
- * Branches:
- *   - Admin user, no ?clientId= in URL  → adminPicker grid
- *   - clientId set (or non-admin user)  → real ledger view
- * Wires:
- *   - Pay Invoice         → POST /portal/api/payments/initiate
- *   - Admin invoice edit  → POST /portal/api/admin/invoices
- *   - Client comment      → POST /portal/api/actions
+ *
+ * Schema (snake_case from datastore, passed through by portal-ledger.js):
+ *   invoices[]: { id, po_id, project, account, billing_raw, status, amount,
+ *                 invoice_amount, estimate_amount, due_date, issued_date,
+ *                 completed_on, payment_url, monday_url, ... }
+ *   payments[]: { id, po_id, paid_date, method, amount, ... }
+ *   actions[]:  { po_id, message, at, author?, ... }
+ *   summary:    { outstandingBalance, pendingActions, totalBilled, ... }
+ *   paymentInfo: { instructions: { remit_to, remit_email, ach, check, terms } }
+ *   adminPicker?: { clients: [{ clientId, name, summary }] }
  */
 
 const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null };
@@ -52,6 +55,12 @@ function setClientIdInUrl(clientId) {
   if (clientId) u.searchParams.set('clientId', clientId);
   else u.searchParams.delete('clientId');
   window.history.pushState({}, '', u.toString());
+}
+
+// Pretty-print a billing label: "NOT STARTED" → "Not Started"
+function titleCase(s) {
+  if (!s) return '';
+  return String(s).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ─── API ────────────────────────────────────────────────────────────
@@ -102,7 +111,6 @@ async function initApp() {
     return renderSignIn('Could not retrieve session token. Please sign in again.');
   }
 
-  // Refresh token periodically
   setInterval(async () => {
     try { state.token = await window.Clerk.session.getToken(); } catch (_) {}
   }, 50 * 1000);
@@ -120,13 +128,11 @@ async function initApp() {
 
 window.initApp = initApp;
 
-// Re-render on back/forward
 window.addEventListener('popstate', () => {
   state.clientId = getQueryParam('clientId');
   loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
 });
 
-// ─── Top-level router ────────────────────────────────────────────────
 function routeRender() {
   if (state.ledger && state.ledger.adminPicker) return renderAdminPicker();
   return renderLedger();
@@ -191,7 +197,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.2',
+    'HANDS Logistics · Las Vegas · Client Portal v0.3',
   );
 }
 
@@ -222,7 +228,7 @@ function renderAdminPicker() {
           el('div', { class: 'client-card-num' }, fmtMoney(summary.outstandingBalance)),
         ),
         el('div', {},
-          el('div', { class: 'card-label' }, 'Pending'),
+          el('div', { class: 'card-label' }, 'Open'),
           el('div', { class: 'client-card-num' }, summary.pendingActions != null ? summary.pendingActions : '0'),
         ),
       ),
@@ -255,6 +261,7 @@ function renderLedger() {
   const payments = (state.ledger && state.ledger.payments) || [];
   const adjustments = (state.ledger && state.ledger.adjustments) || [];
   const actions = (state.ledger && state.ledger.actions) || [];
+  const paymentInfo = (state.ledger && state.ledger.paymentInfo) || null;
 
   const showBack = state.isAdmin;
 
@@ -269,17 +276,20 @@ function renderLedger() {
       kpiCard('Total billed', fmtMoney(summary.totalBilled), 'live'),
     ),
 
+    // Payment instructions (NEW in v0.3)
+    paymentInfoSection(paymentInfo),
+
     // Invoices
     invoicesSection(invoices),
 
     // Payments
     paymentsSection(payments),
 
-    // Adjustments (only render if any)
+    // Adjustments (only if any)
     adjustments.length ? adjustmentsSection(adjustments) : null,
 
     // Actions / comments
-    actionsSection(actions),
+    actionsSection(actions, invoices),
   );
 
   root().append(buildHeader({ showBackToPicker: showBack }), canvas, buildFooter());
@@ -289,6 +299,42 @@ function kpiCard(label, value, mode) {
   return el('div', { class: 'card' },
     el('div', { class: 'card-label' }, label),
     el('div', { class: 'card-value' + (mode === 'live' ? ' card-value-live' : '') }, value),
+  );
+}
+
+// ─── Section: Payment Info (NEW in v0.3) ─────────────────────────────
+function paymentInfoSection(info) {
+  if (!info || !info.instructions) return null;
+  const ix = info.instructions;
+  const ach = ix.ach || {};
+  const check = ix.check || {};
+
+  return el('section', { class: 'ledger-section' },
+    el('div', { class: 'section-head' },
+      el('div', { class: 'eyebrow' }, 'Payment Instructions'),
+      el('h2', { class: 'section-title' }, 'How to Pay'),
+    ),
+    el('div', { class: 'pay-info' },
+      el('div', { class: 'pay-info-row' },
+        el('div', { class: 'card-label' }, 'Remit To'),
+        el('div', { class: 'pay-info-val' }, ix.remit_to || '—'),
+        ix.remit_email ? el('div', { class: 'pay-info-sub mono' }, ix.remit_email) : null,
+      ),
+      el('div', { class: 'pay-info-row' },
+        el('div', { class: 'card-label' }, 'Terms'),
+        el('div', { class: 'pay-info-val' }, ix.terms || '—'),
+      ),
+      ach.bank ? el('div', { class: 'pay-info-row' },
+        el('div', { class: 'card-label' }, 'ACH'),
+        el('div', { class: 'pay-info-val' }, ach.bank),
+        ach.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + ach.memo) : null,
+      ) : null,
+      check.payable_to ? el('div', { class: 'pay-info-row' },
+        el('div', { class: 'card-label' }, 'Check'),
+        el('div', { class: 'pay-info-val' }, 'Payable to ' + check.payable_to),
+        check.memo ? el('div', { class: 'pay-info-sub' }, 'Memo: ' + check.memo) : null,
+      ) : null,
+    ),
   );
 }
 
@@ -322,12 +368,15 @@ function invoicesSection(invoices) {
 }
 
 function invoiceRow(inv) {
-  const status = (inv.billingStatus || inv.status || '').toUpperCase();
-  const amount = inv.invoiceAmount != null ? inv.invoiceAmount : inv.amount;
-  const isPayable = ['SUBMITTED', 'INVOICE PENDING', 'READY TO SEND', 'PARTIAL BILL SUBMITTED'].includes(status);
+  const billingRaw = (inv.billing_raw || '').toUpperCase();
+  const amount = inv.invoice_amount > 0
+    ? inv.invoice_amount
+    : (inv.amount != null ? inv.amount : inv.estimate_amount);
+
+  const isPayable = ['SUBMITTED', 'INVOICE PENDING', 'READY TO SEND', 'PARTIAL BILL SUBMITTED'].includes(billingRaw);
 
   const actionCell = el('td', { class: 'action-cell' });
-  if (isPayable && (inv.invoiceId || inv.poId)) {
+  if (isPayable && (inv.id || inv.po_id)) {
     actionCell.appendChild(el('button', {
       class: 'btn-pay',
       onclick: (ev) => onPayInvoice(ev, inv),
@@ -340,19 +389,22 @@ function invoiceRow(inv) {
     }, 'Edit'));
   }
 
-  return el('tr', { 'data-po': inv.poId || '' },
-    el('td', { class: 'mono' }, inv.poId || inv.invoiceId || '—'),
-    el('td', {}, inv.projectName || inv.project || '—'),
-    el('td', { class: 'mono' }, fmtDate(inv.date || inv.invoiceDate || inv.serviceDate)),
-    el('td', {}, el('span', { class: 'status-pill status-' + statusClass(status) }, status || '—')),
+  // Display label: real billing status, title-cased. Empty → "—"
+  const displayStatus = billingRaw ? titleCase(billingRaw) : '—';
+
+  return el('tr', { 'data-po': inv.po_id || '' },
+    el('td', { class: 'mono' }, inv.po_id || inv.id || '—'),
+    el('td', {}, inv.project || '—'),
+    el('td', { class: 'mono' }, fmtDate(inv.issued_date || inv.due_date || inv.completed_on)),
+    el('td', {}, el('span', { class: 'status-pill status-' + statusClass(billingRaw) }, displayStatus)),
     el('td', { class: 'num mono' }, fmtMoney(amount)),
     actionCell,
   );
 }
 
-function statusClass(status) {
-  const s = (status || '').toUpperCase();
-  if (s === 'FUNDED' || s === 'PAID') return 'good';
+function statusClass(billingRaw) {
+  const s = (billingRaw || '').toUpperCase();
+  if (s === 'FUNDED') return 'good';
   if (s === 'CANCELLED' || s === 'NOT ACCEPTED') return 'bad';
   if (s === 'SUBMITTED' || s === 'PARTIAL BILL SUBMITTED' || s === 'INVOICE PENDING' || s === 'READY TO SEND') return 'warn';
   return 'neutral';
@@ -363,12 +415,20 @@ async function onPayInvoice(ev, inv) {
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Opening…';
+
+  // If the datastore already has a per-invoice payment_url, use it directly.
+  if (inv.payment_url) {
+    window.location.href = inv.payment_url;
+    return;
+  }
+
+  // Otherwise ask the backend to mint one (PayPal hosted button or whatever).
   try {
     const resp = await apiPost('/payments/initiate', {
-      invoiceId: inv.invoiceId || inv.poId,
+      invoiceId: inv.id || inv.po_id,
     });
-    if (resp.paymentUrl) {
-      window.location.href = resp.paymentUrl;
+    if (resp.paymentUrl || resp.payment_url) {
+      window.location.href = resp.paymentUrl || resp.payment_url;
     } else {
       throw new Error('No payment URL returned');
     }
@@ -383,10 +443,10 @@ async function onPayInvoice(ev, inv) {
 function paymentsSection(payments) {
   const rows = payments.length
     ? payments.map(p => el('tr', {},
-        el('td', { class: 'mono' }, p.paymentId || p.id || '—'),
-        el('td', { class: 'mono' }, fmtDate(p.date || p.paymentDate)),
+        el('td', { class: 'mono' }, p.id || p.po_id || '—'),
+        el('td', { class: 'mono' }, fmtDate(p.paid_date || p.date)),
         el('td', {}, p.method || p.type || '—'),
-        el('td', {}, p.appliedTo || p.invoiceId || '—'),
+        el('td', { class: 'mono' }, p.po_id || p.applied_to || p.invoice_id || '—'),
         el('td', { class: 'num mono' }, fmtMoney(p.amount)),
       ))
     : [el('tr', {}, el('td', { colspan: '5', class: 'empty-row' }, 'No payments recorded.'))];
@@ -416,9 +476,9 @@ function paymentsSection(payments) {
 // ─── Section: Adjustments ────────────────────────────────────────────
 function adjustmentsSection(adjustments) {
   const rows = adjustments.map(a => el('tr', {},
-    el('td', { class: 'mono' }, fmtDate(a.date)),
+    el('td', { class: 'mono' }, fmtDate(a.dated || a.date)),
     el('td', {}, a.type || '—'),
-    el('td', {}, a.note || a.description || '—'),
+    el('td', {}, a.note || a.description || a.reason || '—'),
     el('td', { class: 'num mono' }, fmtMoney(a.amount)),
   ));
 
@@ -444,26 +504,25 @@ function adjustmentsSection(adjustments) {
 }
 
 // ─── Section: Actions / comments ─────────────────────────────────────
-function actionsSection(actions) {
+function actionsSection(actions, invoices) {
   const list = actions.length
     ? actions.map(a => el('div', { class: 'action-item' },
         el('div', { class: 'action-meta' },
-          el('span', { class: 'mono' }, a.poId || a.itemId || '—'),
+          el('span', { class: 'mono' }, a.po_id || a.itemId || '—'),
           el('span', { class: 'mono dim' }, ' · '),
-          el('span', { class: 'mono dim' }, fmtDate(a.date || a.createdAt)),
+          el('span', { class: 'mono dim' }, fmtDate(a.at || a.date || a.createdAt)),
           a.author ? el('span', { class: 'mono dim' }, ' · ' + a.author) : null,
         ),
         el('div', { class: 'action-body' }, a.message || a.body || ''),
       ))
     : [el('div', { class: 'empty-row' }, 'No comments or actions yet.')];
 
-  // Comment composer — needs a target PO. Use current selection or first invoice.
-  const invoices = (state.ledger && state.ledger.invoices) || [];
+  // Comment composer — needs a target PO. Use invoices list for the dropdown.
   const composer = el('form', { class: 'comment-form', onsubmit: (e) => onSubmitComment(e) },
     el('div', { class: 'comment-row' },
       el('select', { name: 'poId', class: 'comment-po', required: true },
         el('option', { value: '' }, 'Select a PO…'),
-        invoices.map(inv => el('option', { value: inv.poId || inv.invoiceId }, (inv.poId || inv.invoiceId) + ' · ' + (inv.projectName || ''))),
+        invoices.map(inv => el('option', { value: inv.po_id || inv.id }, (inv.po_id || inv.id) + ' · ' + (inv.project || ''))),
       ),
     ),
     el('textarea', { name: 'message', class: 'comment-textarea', placeholder: 'Add a comment or question…', rows: '3', required: true }),
@@ -496,7 +555,6 @@ async function onSubmitComment(ev) {
     await apiPost('/actions', { poId: poId, message: message });
     form.message.value = '';
     showFlash('Comment posted', 'good');
-    // Reload ledger to show the new action
     await loadLedger();
     routeRender();
   } catch (err) {
@@ -509,7 +567,6 @@ async function onSubmitComment(ev) {
 
 // ─── Admin invoice editor (modal) ────────────────────────────────────
 function openInvoiceEditor(inv) {
-  // Remove any existing modal
   const existing = document.getElementById('invoice-editor-modal');
   if (existing) existing.remove();
 
@@ -517,19 +574,23 @@ function openInvoiceEditor(inv) {
     onclick: (e) => { if (e.target === overlay) closeInvoiceEditor(); },
   });
 
+  const currentBilling = (inv.billing_raw || '').toUpperCase();
+  const currentAmount = inv.invoice_amount != null && inv.invoice_amount !== 0
+    ? inv.invoice_amount
+    : (inv.amount != null ? inv.amount : '');
+
   const form = el('form', { class: 'modal-form', onsubmit: (e) => onSubmitInvoiceEdit(e, inv) },
     el('div', { class: 'eyebrow' }, 'Admin · Edit Invoice'),
-    el('h2', { class: 'section-title' }, 'PO ' + (inv.poId || '—')),
+    el('h2', { class: 'section-title' }, 'PO ' + (inv.po_id || '—')),
 
     el('label', { class: 'field' },
       el('span', { class: 'card-label' }, 'Project Name'),
-      el('input', { type: 'text', name: 'projectName', value: inv.projectName || '' }),
+      el('input', { type: 'text', name: 'projectName', value: inv.project || '' }),
     ),
 
     el('label', { class: 'field' },
       el('span', { class: 'card-label' }, 'Invoice Amount ($)'),
-      el('input', { type: 'number', step: '0.01', name: 'invoiceAmount',
-        value: inv.invoiceAmount != null ? inv.invoiceAmount : (inv.amount != null ? inv.amount : '') }),
+      el('input', { type: 'number', step: '0.01', name: 'invoiceAmount', value: currentAmount }),
     ),
 
     el('label', { class: 'field' },
@@ -539,7 +600,7 @@ function openInvoiceEditor(inv) {
           'SUBMITTED', 'PARTIAL BILL SUBMITTED', 'READY TO SEND', 'FUNDED', 'CANCELLED', 'NOT ACCEPTED']
         .map(s => el('option', {
           value: s,
-          selected: ((inv.billingStatus || '').toUpperCase() === s) ? 'selected' : null,
+          selected: (currentBilling === s) ? 'selected' : null,
         }, s || '— No change —')),
       ),
     ),
@@ -562,13 +623,14 @@ function closeInvoiceEditor() {
 async function onSubmitInvoiceEdit(ev, inv) {
   ev.preventDefault();
   const form = ev.currentTarget;
-  const body = { poId: inv.poId };
+  const body = { poId: inv.po_id };
   const projectName = form.projectName.value.trim();
   const invoiceAmount = form.invoiceAmount.value;
   const billingStatus = form.billingStatus.value;
 
-  if (projectName !== (inv.projectName || '')) body.projectName = projectName;
-  if (invoiceAmount !== '' && Number(invoiceAmount) !== Number(inv.invoiceAmount || inv.amount || 0)) {
+  if (projectName !== (inv.project || '')) body.projectName = projectName;
+  const currentNum = Number(inv.invoice_amount || inv.amount || 0);
+  if (invoiceAmount !== '' && Number(invoiceAmount) !== currentNum) {
     body.invoiceAmount = Number(invoiceAmount);
   }
   if (billingStatus) body.billingStatus = billingStatus;
@@ -581,7 +643,9 @@ async function onSubmitInvoiceEdit(ev, inv) {
   try {
     const resp = await apiPost('/admin/invoices', body);
     closeInvoiceEditor();
-    const changeCount = resp.changes ? Object.keys(resp.changes).length : 0;
+    const changeCount = resp.changes
+      ? (Array.isArray(resp.changes) ? resp.changes.length : Object.keys(resp.changes).length)
+      : 0;
     showFlash(changeCount ? ('Saved ' + changeCount + ' change' + (changeCount === 1 ? '' : 's')) : 'No changes', 'good');
     await loadLedger();
     routeRender();
