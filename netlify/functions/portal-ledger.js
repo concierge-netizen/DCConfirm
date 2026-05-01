@@ -38,7 +38,9 @@ exports.handler = async (event) => {
               pendingActions:     s.open_count,
               totalBilled:        s.total_billed,
               totalPaid:          s.total_paid,
-              invoiceCount:       s.invoice_count
+              invoiceCount:       s.invoice_count,
+              operationalCount:   s.operational_count,
+              totalActivity:      s.total_activity
             };
           }
         } catch (e) {
@@ -83,6 +85,8 @@ exports.handler = async (event) => {
       totalPaid:          summary.total_paid,
       invoiceCount:       summary.invoice_count,
       paidCount:          summary.paid_count,
+      operationalCount:   summary.operational_count,
+      totalActivity:      summary.total_activity,
       asOf:               summary.as_of
     } : null;
 
