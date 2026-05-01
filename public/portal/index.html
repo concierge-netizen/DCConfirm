@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>HANDS Logistics — Client Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/portal/css/portal.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23a0d6b4'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='20' font-weight='500' text-anchor='middle' fill='%231a1a1a'%3EH%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <div id="root">
+    <div class="loading">Loading portal…</div>
+  </div>
+
+  <script>
+    (async function bootClerk() {
+      try {
+        const resp = await fetch('/portal/api/config');
+        if (!resp.ok) throw new Error('config endpoint returned ' + resp.status);
+        const cfg = await resp.json();
+        if (!cfg.clerkPublishableKey) {
+          document.getElementById('root').innerHTML =
+            '<div class="error-banner">Portal is not configured. CLERK_PUBLISHABLE_KEY env var is missing in Netlify.</div>';
+          return;
+        }
+        window.__PORTAL_CFG__ = cfg;
+
+        // Derive Clerk frontend domain from the publishable key.
+        // pk_test_<base64>$ where base64 decodes to "<frontend-domain>$"
+        const keyB64 = cfg.clerkPublishableKey.replace(/^pk_(test|live)_/, '').replace(/\$$/, '');
+        let frontendApi = '';
+        try {
+          frontendApi = atob(keyB64).replace(/\$$/, '');
+        } catch (e) {
+          document.getElementById('root').innerHTML =
+            '<div class="error-banner">Invalid Clerk publishable key format.</div>';
+          return;
+        }
+
+        const s = document.createElement('script');
+        s.src = `https://${frontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+        s.setAttribute('data-clerk-publishable-key', cfg.clerkPublishableKey);
+        s.crossOrigin = 'anonymous';
+        s.onload = initApp;
+        s.onerror = () => {
+          document.getElementById('root').innerHTML =
+            '<div class="error-banner">Failed to load authentication SDK.</div>';
+        };
+        document.head.appendChild(s);
+      } catch (err) {
+        document.getElementById('root').innerHTML =
+          `<div class="error-banner">Could not load portal config: ${err.message}</div>`;
+      }
+    })();
+  </script>
+  <script src="/portal/js/app.js"></script>
+</body>
+</html>
