@@ -73,6 +73,13 @@ const OPS_COL_ESTIMATE_LINK = 'link_mm1wdh3';
 const SUB_COL_CLIENT_COMMENT = 'long_text_mm2yppcg';
 const SUB_COL_CLIENT_GROUP   = 'text_mm2yvd45';
 
+// Single PayPal hosted-button link used for all invoices (Plan C, Q2=a).
+// Clients enter the invoice amount on PayPal's hosted page.
+const PAYPAL_HOSTED_BUTTON_URL = 'https://www.paypal.com/ncp/payment/NA9M3B6MBEACQ';
+
+// Notifications: where client-action emails go (Plan C, Q1).
+const NOTIFICATION_EMAIL = 'jon@handslogistics.com';
+
 // Billing status -> portal status projection
 const BILLING_TO_INVOICE_STATUS = {
   'ESTIMATE READY':         'pending',
@@ -621,6 +628,216 @@ async function getPaymentInfo(clientId) {
 }
 
 /**
+ * Cache invalidation — call after any write so subsequent reads see fresh data.
+ */
+function invalidateCache(clientCode) {
+  if (clientCode) {
+    delete cache.posByClient[clientCode.toUpperCase()];
+  } else {
+    cache.registry = null;
+    cache.posByClient = Object.create(null);
+  }
+}
+
+/**
+ * WRITE: post a client-submitted comment as a monday update on a PO.
+ * Used by /api/portal-actions when a client submits a question/dispute.
+ *
+ * Authorization: caller must verify the PO actually belongs to clientCode
+ * BEFORE calling this. The adapter does that check itself as a safety net,
+ * because dropping a comment onto someone else's PO would be a data leak.
+ *
+ * Returns { ok: true, updateId, mondayUrl } on success.
+ */
+async function postClientAction(args) {
+  const poId = String(args.poId || '').trim();
+  const message = String(args.message || '').trim();
+  const submittedBy = String(args.submittedBy || '').trim();
+  const clientCode = String(args.clientCode || '').trim().toUpperCase();
+  const isAdmin = !!args.isAdmin;
+
+  if (!poId) throw new Error('poId is required');
+  if (!message) throw new Error('message is required');
+  if (!submittedBy) throw new Error('submittedBy email is required');
+
+  // Safety: confirm this PO actually belongs to the claimed client (unless admin).
+  if (!isAdmin) {
+    if (!clientCode) throw new Error('clientCode is required for non-admin actions');
+    const owned = await loadPOsForClient(clientCode);
+    const match = owned.find(function (p) { return String(p.id) === poId; });
+    if (!match) {
+      const e = new Error('PO ' + poId + ' does not belong to client ' + clientCode);
+      e.status = 403;
+      throw e;
+    }
+  }
+
+  const body =
+    'CLIENT MESSAGE via portal\n' +
+    'From: ' + submittedBy + '\n' +
+    'At:   ' + new Date().toISOString() + '\n\n' +
+    message;
+
+  const q = `
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) { id }
+    }
+  `;
+  const data = await mondayQuery(q, { itemId: poId, body: body });
+  const updateId = data && data.create_update && data.create_update.id;
+
+  if (clientCode) invalidateCache(clientCode);
+
+  return {
+    ok: true,
+    updateId: updateId,
+    mondayUrl: 'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + poId,
+    notifyEmail: NOTIFICATION_EMAIL
+  };
+}
+
+/**
+ * WRITE: admin updates an invoice (Invoice Amount, BILLING STATUS, Project Name).
+ * Always posts an audit-trail monday update line documenting who changed what.
+ *
+ * args: { poId, fields: { invoiceAmount?, billingStatus?, projectName? }, adminEmail }
+ *
+ * billingStatus must be one of the canonical labels:
+ *   ESTIMATE READY, READY TO SEND, NOT STARTED, CANCELLED, NOT ACCEPTED,
+ *   SUBMITTED, ESTIMATE APPROVED, PARTIAL BILL SUBMITTED, INVOICE PENDING, FUNDED
+ *
+ * Returns { ok: true, changes: [{field, before, after}], updateId }.
+ */
+async function updateInvoice(args) {
+  const poId = String(args.poId || '').trim();
+  const fields = args.fields || {};
+  const adminEmail = String(args.adminEmail || '').trim();
+
+  if (!poId) throw new Error('poId is required');
+  if (!adminEmail) throw new Error('adminEmail is required');
+
+  // Read current values so we can produce a useful audit-trail message.
+  const readQ = `
+    query ($itemId: [ID!]) {
+      items(ids: $itemId) {
+        id
+        column_values(ids: ["${OPS_COL_INVOICE_AMT}", "${OPS_COL_BILLING}", "${OPS_COL_PROJECT}", "${OPS_COL_CLIENT_CODE}"]) {
+          id text value
+        }
+      }
+    }
+  `;
+  const readData = await mondayQuery(readQ, { itemId: [poId] });
+  const item = (readData.items && readData.items[0]) || null;
+  if (!item) throw new Error('PO ' + poId + ' not found');
+  const before = colMap(item);
+  const beforeAmount  = txt(before, OPS_COL_INVOICE_AMT);
+  const beforeBilling = txt(before, OPS_COL_BILLING);
+  const beforeProject = txt(before, OPS_COL_PROJECT);
+  const clientCode    = txt(before, OPS_COL_CLIENT_CODE);
+
+  // Build a column_values blob with only the fields the admin actually set.
+  const colVals = {};
+  const changes = [];
+
+  if (fields.invoiceAmount !== undefined && fields.invoiceAmount !== null && fields.invoiceAmount !== '') {
+    const n = Number(fields.invoiceAmount);
+    if (!isFinite(n) || n < 0) throw new Error('invoiceAmount must be a non-negative number');
+    colVals[OPS_COL_INVOICE_AMT] = String(n);
+    changes.push({ field: 'Invoice Amount', before: beforeAmount || '(empty)', after: '$' + n.toFixed(2) });
+  }
+
+  if (fields.billingStatus !== undefined && fields.billingStatus !== null && fields.billingStatus !== '') {
+    const label = String(fields.billingStatus).trim();
+    const validLabels = Object.keys(BILLING_TO_INVOICE_STATUS);
+    if (validLabels.indexOf(label) === -1) {
+      throw new Error('billingStatus must be one of: ' + validLabels.join(', '));
+    }
+    colVals[OPS_COL_BILLING] = { label: label };
+    changes.push({ field: 'Billing Status', before: beforeBilling || '(empty)', after: label });
+  }
+
+  if (fields.projectName !== undefined && fields.projectName !== null) {
+    const pn = String(fields.projectName).trim();
+    colVals[OPS_COL_PROJECT] = pn;
+    changes.push({ field: 'Project Name', before: beforeProject || '(empty)', after: pn || '(cleared)' });
+  }
+
+  if (changes.length === 0) {
+    return { ok: true, changes: [], note: 'No fields changed.' };
+  }
+
+  // Push the column-value updates.
+  const writeQ = `
+    mutation ($boardId: ID!, $itemId: ID!, $vals: JSON!) {
+      change_multiple_column_values(board_id: $boardId, item_id: $itemId, column_values: $vals) {
+        id
+      }
+    }
+  `;
+  await mondayQuery(writeQ, {
+    boardId: String(OPS_BOARD_ID),
+    itemId:  poId,
+    vals:    JSON.stringify(colVals)
+  });
+
+  // Write the audit-trail update line.
+  const auditLines = ['INVOICE EDITED via portal', 'By: ' + adminEmail, 'At: ' + new Date().toISOString(), ''];
+  for (let i = 0; i < changes.length; i++) {
+    auditLines.push('• ' + changes[i].field + ': ' + changes[i].before + ' → ' + changes[i].after);
+  }
+  const auditQ = `
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) { id }
+    }
+  `;
+  const auditData = await mondayQuery(auditQ, { itemId: poId, body: auditLines.join('\n') });
+  const updateId = auditData && auditData.create_update && auditData.create_update.id;
+
+  if (clientCode) invalidateCache(clientCode);
+
+  return {
+    ok: true,
+    changes: changes,
+    updateId: updateId,
+    mondayUrl: 'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + poId
+  };
+}
+
+/**
+ * Resolve the PayPal payment URL for a given invoice/PO.
+ * Plan C, Q2=a: ALWAYS the hosted button. Per-PO links on the column
+ * are ignored to avoid surprising clients with stale or unreviewed URLs.
+ */
+function getPaymentUrlForInvoice(/* invoiceId */) {
+  return PAYPAL_HOSTED_BUTTON_URL;
+}
+
+/**
+ * Admin view: aggregate getClientActions across all clients in the registry.
+ * Used by /api/portal-admin-actions.
+ */
+async function getAllClientActions() {
+  const clients = await listClients();
+  const out = [];
+  for (let i = 0; i < clients.length; i++) {
+    try {
+      const acts = await getClientActions(clients[i].client_id);
+      for (let j = 0; j < acts.length; j++) {
+        out.push(Object.assign({}, acts[j], {
+          client_id: clients[i].client_id,
+          client_display_name: clients[i].display_name
+        }));
+      }
+    } catch (e) {
+      console.error('[portal-datastore] getAllClientActions: client ' + clients[i].client_id + ' failed:', e.message);
+    }
+  }
+  out.sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); });
+  return out;
+}
+
+/**
  * Strip internal fields before sending to the browser. Endpoint code
  * pipes every outbound payload through this so we don't leak monday IDs
  * unless we mean to.
@@ -673,8 +890,18 @@ module.exports = {
   getPaymentInfo:    getPaymentInfo,
   toClientView:      toClientView,
 
+  // Plan C additions (writes + admin reads + payments):
+  postClientAction:        postClientAction,
+  updateInvoice:           updateInvoice,
+  getPaymentUrlForInvoice: getPaymentUrlForInvoice,
+  getAllClientActions:     getAllClientActions,
+
   // Bonus:
   selfTest:          selfTest,
+
+  // Constants exposed for endpoints:
+  PAYPAL_HOSTED_BUTTON_URL: PAYPAL_HOSTED_BUTTON_URL,
+  NOTIFICATION_EMAIL:       NOTIFICATION_EMAIL,
 
   // Exposed for unit tests / debugging:
   _internal: {
@@ -683,6 +910,7 @@ module.exports = {
     loadPOsForClient: loadPOsForClient,
     projectPO:      projectPO,
     projectActions: projectActions,
+    invalidateCache: invalidateCache,
     BILLING_TO_INVOICE_STATUS: BILLING_TO_INVOICE_STATUS
   }
 };
