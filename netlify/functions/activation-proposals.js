@@ -129,6 +129,7 @@ function summarize(proposal) {
     status: proposal.status || 'sent',
     recapPublished: !!(proposal.recap && proposal.recap.published),
     recapExists: !!proposal.recap,
+    recapOnly: !!proposal.recapOnly,
     createdAt: proposal.createdAt || new Date().toISOString(),
     updatedAt: proposal.updatedAt || new Date().toISOString()
   };
