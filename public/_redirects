@@ -8,4 +8,5 @@
 /portal/api/admin/clients      /.netlify/functions/portal-admin-clients     200
 /portal/api/admin/invoices     /.netlify/functions/portal-admin-invoices    200
 /portal/api/admin/actions      /.netlify/functions/portal-admin-actions     200
+/portal/api/admin/invite       /.netlify/functions/portal-invite            200
 /portal/*                      /portal/index.html                            200
