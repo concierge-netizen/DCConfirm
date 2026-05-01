@@ -1,6 +1,5 @@
 /**
- * GET /portal/api/config — public Clerk publishable key.
- * Hollow-shell version: also returns a flag indicating shell mode.
+ * GET /portal/api/config — public Clerk publishable key + portal status.
  */
 exports.handler = async () => {
   return {
@@ -12,8 +11,8 @@ exports.handler = async () => {
     },
     body: JSON.stringify({
       clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY || '',
-      shellMode: true,
-      shellNotice: 'Connecting to data sources — coming soon.',
+      shellMode: false,
+      version: 'monday-1'
     }),
   };
 };
