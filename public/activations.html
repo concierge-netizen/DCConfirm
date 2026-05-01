@@ -1141,9 +1141,14 @@
 
       <!-- LIST VIEW (default) -->
       <div id="recapsListView">
-        <div class="section-eyebrow">Event Recaps</div>
-        <h2 class="section-title">Build a recap from a past activation</h2>
-        <p class="section-sub">Recaps live at <code style="font-family: var(--font-mono); font-size: 12px;">/recap/&lt;slug&gt;</code> and replace the proposal page once published. Same link your client already has.</p>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 16px;">
+          <div>
+            <div class="section-eyebrow">Event Recaps</div>
+            <h2 class="section-title" style="margin-bottom: 4px;">Build a recap</h2>
+            <p class="section-sub" style="margin-bottom: 0;">From a past proposal, or standalone for events that didn't go through the new system.</p>
+          </div>
+          <button class="btn-primary" onclick="openStandaloneRecapModal()">+ New Standalone Recap</button>
+        </div>
         <div class="proposal-list" id="recapsList">
           <div class="empty-state">Loading…</div>
         </div>
@@ -1310,6 +1315,41 @@
     <div class="sow-modal-foot">
       <button class="btn-secondary" onclick="closeAddonPicker()">Cancel</button>
       <button class="btn-primary" onclick="applySelectedAddons()">Apply Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- Standalone Recap — Quick-Create Modal -->
+<div class="sow-modal-backdrop" id="standaloneRecapModal" onclick="if(event.target===this) closeStandaloneRecapModal()">
+  <div class="sow-modal" style="max-width: 540px;">
+    <div class="sow-modal-head">
+      <h3>New Standalone Recap</h3>
+      <button class="modal-close" onclick="closeStandaloneRecapModal()">&times;</button>
+    </div>
+    <div class="sow-modal-body">
+      <p style="font-size: 13px; color: var(--text-grey); margin-bottom: 20px; line-height: 1.6;">For events that didn't go through the new proposal system. We just need a few basics to anchor the recap — you'll fill in photos, metrics, and summary on the next screen.</p>
+      <div class="field">
+        <label for="srClient">Client *</label>
+        <input id="srClient" type="text" placeholder="LALO Tequila" />
+      </div>
+      <div class="field">
+        <label for="srProject">Project / Event Name *</label>
+        <input id="srProject" type="text" placeholder="Raspado at the Pool" />
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="field">
+          <label for="srDate">Event Date</label>
+          <input id="srDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="srVenue">Venue</label>
+          <input id="srVenue" type="text" placeholder="Four Seasons Las Vegas" />
+        </div>
+      </div>
+    </div>
+    <div class="sow-modal-foot">
+      <button class="btn-secondary" onclick="closeStandaloneRecapModal()">Cancel</button>
+      <button class="btn-primary" id="srCreateBtn" onclick="createStandaloneRecap()">Create &amp; Open Recap Editor</button>
     </div>
   </div>
 </div>
@@ -1765,12 +1805,15 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      if (!data.proposals || data.proposals.length === 0) {
+      // Filter out standalone-recap-only records — those live in the Recaps tab only
+      const realProposals = (data.proposals || []).filter(p => !p.recapOnly);
+
+      if (realProposals.length === 0) {
         listEl.innerHTML = '<div class="empty-state">No proposals yet. Create one above.</div>';
         return;
       }
 
-      listEl.innerHTML = data.proposals.map(p => {
+      listEl.innerHTML = realProposals.map(p => {
         const date = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
         const statusLabel = (p.status || "sent").replace("_", " ");
         return `
@@ -2671,7 +2714,7 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       allProposals = data.proposals || [];
 
       if (allProposals.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">No proposals yet. Create one in the New Proposal tab first.</div>';
+        listEl.innerHTML = '<div class="empty-state">No recaps yet. Build one from a past proposal, or click "+ New Standalone Recap" above.</div>';
         return;
       }
 
@@ -2679,17 +2722,23 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
         const date = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
         const recapState = p.recapPublished ? 'live' : (p.recapExists ? 'draft' : null);
         const pill = recapState ? `<span class="recap-pill ${recapState}">${recapState === 'live' ? 'Recap Live' : 'Recap Draft'}</span>` : '';
+        const standalonePill = p.recapOnly ? `<span class="recap-pill" style="background: var(--green-dark); color: var(--dark);">Standalone</span>` : '';
         const action = p.recapPublished ? 'Edit Recap' : (p.recapExists ? 'Continue Recap' : 'Build Recap');
+        // Standalone recaps link directly to /recap (no proposal page to show)
+        const linkUrl = p.recapOnly || p.recapPublished
+          ? `/recap/${p.slug}`
+          : `/activation-proposal/${p.slug}`;
+        const linkLabel = p.recapOnly || p.recapPublished
+          ? `/recap/${p.slug} →`
+          : `${p.slug} →`;
         return `
           <div class="proposal-card">
             <div>
-              <div class="proposal-name">${escapeHtml(p.client)} &mdash; ${escapeHtml(p.projectName || "")}${pill}</div>
+              <div class="proposal-name">${escapeHtml(p.client)} &mdash; ${escapeHtml(p.projectName || "")}${pill}${standalonePill}</div>
               <div class="proposal-meta">${escapeHtml(p.contact || "—")} · ${date}</div>
             </div>
             <div class="proposal-status status-${p.status || "sent"}">${(p.status || "sent").replace("_", " ")}</div>
-            ${p.recapPublished
-              ? `<a class="proposal-link" href="/recap/${p.slug}" target="_blank">/recap/${p.slug} →</a>`
-              : `<a class="proposal-link" href="/activation-proposal/${p.slug}" target="_blank">${p.slug} →</a>`}
+            <a class="proposal-link" href="${linkUrl}" target="_blank">${linkLabel}</a>
             <button class="btn-ghost" onclick="openRecapEditor('${escapeAttr(p.slug)}')">${action}</button>
           </div>`;
       }).join("");
@@ -2772,6 +2821,77 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
     recapMetrics = [];
     recapGallery = [];
     loadRecapsList(); // refresh
+  }
+
+  // ── Standalone recap (no parent proposal) ──
+  function openStandaloneRecapModal() {
+    document.getElementById('srClient').value = '';
+    document.getElementById('srProject').value = '';
+    document.getElementById('srDate').value = '';
+    document.getElementById('srVenue').value = '';
+    document.getElementById('standaloneRecapModal').classList.add('open');
+    setTimeout(() => document.getElementById('srClient').focus(), 100);
+  }
+
+  function closeStandaloneRecapModal() {
+    document.getElementById('standaloneRecapModal').classList.remove('open');
+  }
+
+  async function createStandaloneRecap() {
+    const client = document.getElementById('srClient').value.trim();
+    const project = document.getElementById('srProject').value.trim();
+    const date = document.getElementById('srDate').value;
+    const venue = document.getElementById('srVenue').value.trim();
+
+    if (!client || !project) {
+      showToast('Client and project name are required', true);
+      return;
+    }
+
+    const btn = document.getElementById('srCreateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    // Build a minimal proposal record. The recap is what matters; the proposal
+    // fields are just enough to render the recap header and identify the event.
+    const proposal = {
+      client,
+      projectName: project,
+      proposalDate: new Date().toISOString().slice(0, 10),
+      venueName: venue,
+      schedule: {
+        eventStartDate: date || '',
+        eventEndDate: date || '',
+        loadinDate: date || '',
+        strikeDate: date || ''
+      },
+      lineItems: [],
+      deliverables: [],
+      sourcingItems: [],
+      status: 'recap_only',
+      recapOnly: true
+    };
+
+    try {
+      const res = await fetch('/api/activation-proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save', proposal })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+
+      closeStandaloneRecapModal();
+      showToast('Recap record created — opening editor');
+
+      // Open the editor on the new slug
+      await openRecapEditor(data.slug);
+    } catch (err) {
+      showToast('Create failed: ' + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create & Open Recap Editor';
+    }
   }
 
   // ── Hero photo ──
