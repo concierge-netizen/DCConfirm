@@ -12,7 +12,7 @@
  *   adminPicker?: { clients: [{ clientId, name, summary }] }
  */
 
-const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null };
+const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all' };
 
 // ─── Utilities ──────────────────────────────────────────────────────
 function el(tag, attrs = {}, ...children) {
@@ -197,7 +197,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.5',
+    'HANDS Logistics · Las Vegas · Client Portal v0.6',
   );
 }
 
@@ -234,8 +234,8 @@ function renderAdminPicker() {
           el('div', { class: 'client-card-num' }, fmtMoney(summary.outstandingBalance)),
         ),
         el('div', {},
-          el('div', { class: 'card-label' }, 'Open'),
-          el('div', { class: 'client-card-num' }, summary.pendingActions != null ? summary.pendingActions : '0'),
+          el('div', { class: 'card-label' }, 'Activity'),
+          el('div', { class: 'client-card-num' }, summary.totalActivity != null ? summary.totalActivity : '0'),
         ),
       ),
       // Invite footer — only visible to admins viewing the picker. stopPropagation
@@ -284,10 +284,11 @@ function renderLedger() {
     el('h1', { class: 'h-display' }, c.name || 'Welcome'),
 
     // KPI cards
-    el('div', { class: 'card-grid' },
+    el('div', { class: 'card-grid card-grid-4' },
       kpiCard('Outstanding balance', fmtMoney(summary.outstandingBalance), 'live'),
       kpiCard('Pending actions', summary.pendingActions != null ? String(summary.pendingActions) : '0', 'live'),
       kpiCard('Total billed', fmtMoney(summary.totalBilled), 'live'),
+      kpiCard('Total activity', summary.totalActivity != null ? String(summary.totalActivity) : '0', 'live'),
     ),
 
     // Payment instructions (NEW in v0.3)
@@ -391,16 +392,43 @@ function paymentInfoSection(info) {
   );
 }
 
-// ─── Section: Invoices ───────────────────────────────────────────────
-function invoicesSection(invoices) {
-  const rows = invoices.length
-    ? invoices.map(invoiceRow)
-    : [el('tr', {}, el('td', { colspan: '6', class: 'empty-row' }, 'No invoices yet.'))];
+// ─── Section: Activity (v0.6 — hybrid invoice + operational rows) ────
+function invoicesSection(allRows) {
+  // Compute counts for each filter
+  const counts = {
+    all: allRows.length,
+    invoices: allRows.filter(r => r.kind === 'invoice').length,
+    operational: allRows.filter(r => r.kind === 'operational').length,
+  };
+
+  // Apply current filter
+  const filter = state.activityFilter || 'all';
+  const filtered = allRows.filter(r => {
+    if (filter === 'all') return true;
+    if (filter === 'invoices') return r.kind === 'invoice';
+    if (filter === 'operational') return r.kind === 'operational';
+    return true;
+  });
+
+  const emptyMessage = {
+    all: 'No activity yet.',
+    invoices: 'No invoices in the billing pipeline.',
+    operational: 'No operational items right now.',
+  }[filter];
+
+  const rows = filtered.length
+    ? filtered.map(invoiceRow)
+    : [el('tr', {}, el('td', { colspan: '6', class: 'empty-row' }, emptyMessage))];
 
   return el('section', { class: 'ledger-section' },
     el('div', { class: 'section-head' },
-      el('div', { class: 'eyebrow' }, 'Invoices'),
-      el('h2', { class: 'section-title' }, 'Billing Activity'),
+      el('div', { class: 'eyebrow' }, 'Activity'),
+      el('h2', { class: 'section-title' }, 'Activity & Invoices'),
+    ),
+    el('div', { class: 'filter-chips' },
+      filterChip('all', 'All', counts.all),
+      filterChip('invoices', 'Invoices', counts.invoices),
+      filterChip('operational', 'Operational', counts.operational),
     ),
     el('div', { class: 'table-wrap' },
       el('table', { class: 'ledger-table' },
@@ -420,13 +448,33 @@ function invoicesSection(invoices) {
   );
 }
 
+function filterChip(value, label, count) {
+  const isActive = (state.activityFilter || 'all') === value;
+  return el('button', {
+    class: 'filter-chip' + (isActive ? ' filter-chip-active' : ''),
+    onclick: () => {
+      state.activityFilter = value;
+      // Re-render only the activity section. Easiest: re-render the whole ledger.
+      routeRender();
+    },
+  },
+    el('span', { class: 'filter-chip-label' }, label),
+    el('span', { class: 'filter-chip-count' }, String(count)),
+  );
+}
+
 function invoiceRow(inv) {
+  const kind = inv.kind || 'invoice';
   const billingRaw = (inv.billing_raw || '').toUpperCase();
+  const logisticsRaw = (inv.logistics_status || inv.logistics || '').toUpperCase();
+
   const amount = inv.invoice_amount > 0
     ? inv.invoice_amount
     : (inv.amount != null ? inv.amount : inv.estimate_amount);
 
-  const isPayable = ['SUBMITTED', 'INVOICE PENDING', 'READY TO SEND', 'PARTIAL BILL SUBMITTED'].includes(billingRaw);
+  // Pay button only for billing rows in payable states.
+  const isPayable = kind === 'invoice' &&
+    ['SUBMITTED', 'INVOICE PENDING', 'READY TO SEND', 'PARTIAL BILL SUBMITTED'].includes(billingRaw);
 
   const actionCell = el('td', { class: 'action-cell' });
   if (isPayable && (inv.id || inv.po_id)) {
@@ -442,15 +490,29 @@ function invoiceRow(inv) {
     }, 'Edit'));
   }
 
-  // Display label: real billing status, title-cased. Empty → "—"
-  const displayStatus = billingRaw ? titleCase(billingRaw) : '—';
+  // Status pill: billing label for invoice rows, logistics label for
+  // operational rows. Empty logistics fallback to "OPERATIONAL".
+  let statusLabel, statusKind;
+  if (kind === 'invoice') {
+    statusLabel = billingRaw ? titleCase(billingRaw) : 'Draft';
+    statusKind = statusClass(billingRaw);
+  } else {
+    statusLabel = logisticsRaw ? titleCase(logisticsRaw) : 'Operational';
+    statusKind = logisticsClass(logisticsRaw);
+  }
 
-  return el('tr', { 'data-po': inv.po_id || '' },
+  // Amount cell: invoice rows show $; operational rows show em-dash unless
+  // there's an estimate or invoice amount on file.
+  const amountCell = (kind === 'invoice' || amount > 0)
+    ? el('td', { class: 'num mono' }, fmtMoney(amount))
+    : el('td', { class: 'num mono dim' }, '—');
+
+  return el('tr', { 'data-po': inv.po_id || '', 'data-kind': kind },
     el('td', { class: 'mono' }, inv.po_id || inv.id || '—'),
     el('td', {}, inv.project || '—'),
     el('td', { class: 'mono' }, fmtDate(inv.issued_date || inv.due_date || inv.completed_on)),
-    el('td', {}, el('span', { class: 'status-pill status-' + statusClass(billingRaw) }, displayStatus)),
-    el('td', { class: 'num mono' }, fmtMoney(amount)),
+    el('td', {}, el('span', { class: 'status-pill status-' + statusKind }, statusLabel)),
+    amountCell,
     actionCell,
   );
 }
@@ -461,6 +523,16 @@ function statusClass(billingRaw) {
   if (s === 'CANCELLED' || s === 'NOT ACCEPTED') return 'bad';
   if (s === 'SUBMITTED' || s === 'PARTIAL BILL SUBMITTED' || s === 'INVOICE PENDING' || s === 'READY TO SEND') return 'warn';
   return 'neutral';
+}
+
+// Logistics status → pill color class. Operational rows only.
+function logisticsClass(logisticsRaw) {
+  const s = (logisticsRaw || '').toUpperCase();
+  if (s === 'COMPLETE' || s === 'DELIVERED' || s === 'DONE') return 'good';
+  if (s === 'CANCELLED' || s === 'CANCEL' || s === 'STUCK') return 'bad';
+  if (s === 'OUT' || s === 'OUT FOR DELIVERY' || s === 'IN PROGRESS' || s === 'PROGRESS' || s === 'WORKING') return 'warn';
+  if (s === 'HOLD' || s === 'ON HOLD') return 'op-hold';
+  return 'op-neutral';
 }
 
 async function onPayInvoice(ev, inv) {
