@@ -258,6 +258,7 @@ async function loadPOsForClient(clientCode) {
           name
           created_at
           updated_at
+          group { id title }
           column_values { id text value }
           subitems {
             id
@@ -273,7 +274,15 @@ async function loadPOsForClient(clientCode) {
     boardId: String(OPS_BOARD_ID),
     code: cacheKey
   });
-  const items = (data.items_page_by_column_values && data.items_page_by_column_values.items) || [];
+  const allItems = (data.items_page_by_column_values && data.items_page_by_column_values.items) || [];
+
+  // v0.6: hide items in groups that look like cancelled/archived. Any other
+  // group (Today, This Week, Kinson to be billed, On Hold, etc.) stays visible.
+  // Trust monday's group structure — admins curate it.
+  const items = allItems.filter(function (it) {
+    const groupTitle = (it.group && it.group.title) || '';
+    return !/cancelled|cancel|archived|archive|deleted/i.test(groupTitle);
+  });
 
   cache.posByClient[cacheKey] = { fetchedAt: Date.now(), items: items };
   return items;
@@ -325,33 +334,36 @@ function projectPO(po, clientCode) {
   const estimateLink= jsonVal(m, OPS_COL_ESTIMATE_LINK);
   const estimateUrl = (estimateLink && estimateLink.url) || null;
 
-  // Only emit an invoice if there's something to bill against.
-  // (Skip POs with empty BILLING STATUS AND no estimate amount — those are
-  // pre-billing operational rows, not invoices.)
-  let invoice = null;
-  if (billingText || invoiceAmt > 0 || estimateAmt > 0) {
-    invoice = {
-      id:           'INV-' + po.id,
-      po_id:        po.id,
-      client_id:    clientCode,
-      number:       'GHOST-' + po.id,                  // matches QBO format from billing skill
-      project:      project,
-      account:      account,
-      activity:     activity,
-      logistics:    logistics,
-      billing_raw:  billingText,
-      status:       invStatus || 'draft',
-      amount:       amount,
-      invoice_amount:  invoiceAmt,
-      estimate_amount: estimateAmt,
-      due_date:     dueDate,
-      issued_date:  po.created_at || null,
-      completed_on: completedOn,
-      estimate_url: estimateUrl,
-      payment_url:  paymentUrl,
-      monday_url:   'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + po.id
-    };
-  }
+  // v0.6: every PO becomes a ledger row. Items with billing activity get
+  // kind='invoice'; pre-billing operational rows get kind='operational'.
+  // The frontend uses `kind` to render different status pills and gate
+  // the Pay button.
+  const isBillingRow = !!(billingText || invoiceAmt > 0 || estimateAmt > 0);
+  const kind = isBillingRow ? 'invoice' : 'operational';
+
+  const invoice = {
+    id:           'INV-' + po.id,
+    po_id:        po.id,
+    client_id:    clientCode,
+    kind:         kind,
+    number:       (clientCode || 'HANDS') + '-' + po.id,  // per-client prefix
+    project:      project,
+    account:      account,
+    activity:     activity,
+    logistics:    logistics,
+    logistics_status: logistics,                          // alias for frontend clarity
+    billing_raw:  billingText,
+    status:       invStatus || (isBillingRow ? 'draft' : 'operational'),
+    amount:       amount,
+    invoice_amount:  invoiceAmt,
+    estimate_amount: estimateAmt,
+    due_date:     dueDate,
+    issued_date:  po.created_at || null,
+    completed_on: completedOn,
+    estimate_url: estimateUrl,
+    payment_url:  paymentUrl,
+    monday_url:   'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + po.id
+  };
 
   // Payment: synth when FUNDED.
   let payment = null;
@@ -507,10 +519,17 @@ async function getClientSummary(clientId) {
   const pos = await loadPOsForClient(client.client_id);
   let totalBilled = 0, totalPaid = 0, totalOutstanding = 0;
   let invoiceCount = 0, paidCount = 0, openCount = 0;
+  let operationalCount = 0;
 
   for (let i = 0; i < pos.length; i++) {
     const p = projectPO(pos[i], client.client_id);
+    // v0.6: every PO produces an invoice object now. Count by kind.
     if (!p.invoice) continue;
+    if (p.invoice.kind === 'operational') {
+      operationalCount += 1;
+      continue;
+    }
+    // kind === 'invoice' — the billing path
     invoiceCount += 1;
     totalBilled += p.invoice.amount;
     if (p.invoice.status === 'paid') {
@@ -529,6 +548,8 @@ async function getClientSummary(clientId) {
     invoice_count:    invoiceCount,
     paid_count:       paidCount,
     open_count:       openCount,
+    operational_count: operationalCount,
+    total_activity:   invoiceCount + operationalCount,
     total_billed:     totalBilled,
     total_paid:       totalPaid,
     total_outstanding:totalOutstanding,
