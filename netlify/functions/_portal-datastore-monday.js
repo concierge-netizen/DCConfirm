@@ -68,6 +68,9 @@ const OPS_COL_DELIV_TIME    = 'text9';
 const OPS_COL_PAYPAL_ORDER  = 'text_mm2pgscy';
 const OPS_COL_PAYMENT_LINK  = 'link_mm2pe3b5';
 const OPS_COL_ESTIMATE_LINK = 'link_mm1wdh3';
+// v0.8: Cloudinary docs metadata. Column created by ensure-column endpoint;
+// ID supplied via OPS_COL_DOCUMENTS env var. Empty string = feature off.
+const OPS_COL_DOCUMENTS     = process.env.OPS_COL_DOCUMENTS || '';
 
 // Subitem column IDs
 const SUB_COL_CLIENT_COMMENT = 'long_text_mm2yppcg';
@@ -166,6 +169,20 @@ function jsonVal(map, id) {
     return JSON.parse(c.value);
   } catch (_e) {
     return null;
+  }
+}
+
+// v0.8: parse the documents JSON stored in the long_text column.
+// Empty column → []. Malformed → []. Always returns an array.
+function parseDocumentsJson(map) {
+  if (!OPS_COL_DOCUMENTS) return [];
+  const raw = txt(map, OPS_COL_DOCUMENTS);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_e) {
+    return [];
   }
 }
 
@@ -362,6 +379,7 @@ function projectPO(po, clientCode) {
     completed_on: completedOn,
     estimate_url: estimateUrl,
     payment_url:  paymentUrl,
+    documents:    parseDocumentsJson(m),
     monday_url:   'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + po.id
   };
 
