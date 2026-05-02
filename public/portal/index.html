@@ -16,6 +16,11 @@
     <div class="loading">Loading portal…</div>
   </div>
 
+  <!-- Load app.js FIRST so window.initApp is defined before the Clerk SDK callback fires.
+       (Earlier order put app.js after the bootloader script, causing iOS Safari timing
+       races where the SDK onload fired before app.js parsed → "Can't find variable: initApp".) -->
+  <script src="/portal/js/app.js"></script>
+
   <script>
     (async function bootClerk() {
       try {
@@ -51,7 +56,26 @@
         s.setAttribute('data-clerk-after-sign-in-url', portalUrl);
         s.setAttribute('data-clerk-after-sign-up-url', portalUrl);
         s.crossOrigin = 'anonymous';
-        s.onload = initApp;
+        // Resolve initApp at callback time, not at script-eval time. Wait briefly
+        // for app.js if it hasn't finished parsing yet (iOS Safari edge case).
+        s.onload = function () {
+          if (typeof window.initApp === 'function') {
+            window.initApp();
+            return;
+          }
+          var tries = 0;
+          var iv = setInterval(function () {
+            tries++;
+            if (typeof window.initApp === 'function') {
+              clearInterval(iv);
+              window.initApp();
+            } else if (tries > 100) {
+              clearInterval(iv);
+              document.getElementById('root').innerHTML =
+                '<div class="error-banner">App script failed to load. Refresh the page or try again in a moment.</div>';
+            }
+          }, 50);
+        };
         s.onerror = () => {
           document.getElementById('root').innerHTML =
             '<div class="error-banner">Failed to load authentication SDK.</div>';
@@ -63,6 +87,5 @@
       }
     })();
   </script>
-  <script src="/portal/js/app.js"></script>
 </body>
 </html>
