@@ -891,3 +891,208 @@ html, body {
   color: var(--ink-3);
   opacity: 0.6;
 }
+
+/* ── Documents (v0.8) ──────────────────────────────────────────── */
+
+/* Paperclip badge on the PO cell */
+.doc-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-2);
+  vertical-align: middle;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Documents field inside the edit modal */
+.doc-field {
+  margin-bottom: 16px;
+}
+
+.doc-list {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 13px;
+}
+.doc-row:last-child { border-bottom: none; }
+
+.doc-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+}
+.doc-link:hover { color: var(--green-deep); }
+
+.doc-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.doc-name {
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.doc-kind {
+  text-transform: uppercase;
+  background: var(--paper-2);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.btn-doc-delete {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 2px;
+  flex-shrink: 0;
+  padding: 0;
+  font-family: -apple-system, sans-serif;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.btn-doc-delete:hover {
+  background: var(--red);
+  color: var(--paper);
+  border-color: var(--red);
+}
+
+.doc-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Upload zone (drag-drop target) */
+.upload-zone {
+  display: block;
+  border: 2px dashed var(--line);
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--paper-2);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.upload-zone:hover,
+.upload-zone-active {
+  border-color: var(--green-deep);
+  background: rgba(160, 214, 180, 0.1);
+}
+
+.upload-zone-icon {
+  font-size: 24px;
+  color: var(--green-deep);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.upload-zone-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.upload-zone-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Upload progress rows */
+.upload-progress {
+  margin-top: 8px;
+}
+
+.upload-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.upload-row-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-row-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+
+.upload-row-done {
+  border-color: var(--green-deep);
+  background: rgba(160, 214, 180, 0.15);
+}
+.upload-row-done .upload-row-status {
+  color: var(--green-deep);
+}
+
+.upload-row-error {
+  border-color: var(--red);
+  background: #fef0ef;
+}
+.upload-row-error .upload-row-status {
+  color: var(--red);
+}
