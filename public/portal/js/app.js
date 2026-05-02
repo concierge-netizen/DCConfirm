@@ -14,6 +14,13 @@
 
 const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all' };
 
+// v0.8 — Cloudinary direct-upload constants. Both values are public
+// (cloud_name appears in every CDN URL; the unsigned preset is by
+// definition discoverable). Putting them here avoids a config round-trip.
+const CLOUDINARY_CLOUD = 'dxkpbjicu';
+const CLOUDINARY_DOC_PRESET = 'hands_documents';
+const CLOUDINARY_DOC_FOLDER = 'hands-docs';
+
 // ─── Utilities ──────────────────────────────────────────────────────
 function el(tag, attrs = {}, ...children) {
   const e = document.createElement(tag);
@@ -197,7 +204,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.6',
+    'HANDS Logistics · Las Vegas · Client Portal v0.8',
   );
 }
 
@@ -507,8 +514,19 @@ function invoiceRow(inv) {
     ? el('td', { class: 'num mono' }, fmtMoney(amount))
     : el('td', { class: 'num mono dim' }, '—');
 
+  // Doc badge — paperclip + count if any documents attached
+  const docCount = Array.isArray(inv.documents) ? inv.documents.length : 0;
+  const poCell = el('td', { class: 'mono' });
+  poCell.appendChild(document.createTextNode(inv.po_id || inv.id || '—'));
+  if (docCount > 0) {
+    poCell.appendChild(el('span', {
+      class: 'doc-badge',
+      title: docCount + ' document' + (docCount === 1 ? '' : 's'),
+    }, '📎 ' + docCount));
+  }
+
   return el('tr', { 'data-po': inv.po_id || '', 'data-kind': kind },
-    el('td', { class: 'mono' }, inv.po_id || inv.id || '—'),
+    poCell,
     el('td', {}, inv.project || '—'),
     el('td', { class: 'mono' }, fmtDate(inv.issued_date || inv.due_date || inv.completed_on)),
     el('td', {}, el('span', { class: 'status-pill status-' + statusKind }, statusLabel)),
@@ -730,6 +748,9 @@ function openInvoiceEditor(inv) {
       ),
     ),
 
+    // v0.8 — Documents section
+    documentsField(inv),
+
     el('div', { class: 'modal-actions' },
       el('button', { type: 'button', class: 'btn-signout-light', onclick: () => closeInvoiceEditor() }, 'Cancel'),
       el('button', { type: 'submit', class: 'btn-primary' }, 'Save Changes'),
@@ -743,6 +764,192 @@ function openInvoiceEditor(inv) {
 function closeInvoiceEditor() {
   const m = document.getElementById('invoice-editor-modal');
   if (m) m.remove();
+}
+
+// ─── Documents (v0.8) ────────────────────────────────────────────────
+function documentsField(inv) {
+  const docs = Array.isArray(inv.documents) ? inv.documents.slice() : [];
+
+  const list = el('div', { class: 'doc-list', id: 'doc-list-' + (inv.po_id || 'x') },
+    docs.length
+      ? docs.map(d => docRow(inv, d))
+      : el('div', { class: 'doc-empty' }, 'No documents attached.'),
+  );
+
+  // File input (hidden) + drop zone label triggers it
+  const fileInput = el('input', {
+    type: 'file',
+    multiple: 'multiple',
+    style: 'display: none',
+    id: 'doc-upload-input-' + (inv.po_id || 'x'),
+    onchange: (ev) => onPickFiles(ev, inv),
+  });
+
+  const dropZone = el('label', {
+    class: 'upload-zone',
+    for: fileInput.id,
+    ondragover: (ev) => { ev.preventDefault(); ev.currentTarget.classList.add('upload-zone-active'); },
+    ondragleave: (ev) => { ev.currentTarget.classList.remove('upload-zone-active'); },
+    ondrop: (ev) => {
+      ev.preventDefault();
+      ev.currentTarget.classList.remove('upload-zone-active');
+      const files = Array.from(ev.dataTransfer && ev.dataTransfer.files || []);
+      if (files.length) uploadFiles(files, inv);
+    },
+  },
+    el('div', { class: 'upload-zone-icon' }, '↑'),
+    el('div', { class: 'upload-zone-label' }, 'Drop files or click to upload'),
+    el('div', { class: 'upload-zone-hint' }, 'PDF, image, or document — any type, up to 25MB each'),
+  );
+
+  // Live progress area populated during upload
+  const progress = el('div', { class: 'upload-progress', id: 'upload-progress-' + (inv.po_id || 'x') });
+
+  return el('div', { class: 'field doc-field' },
+    el('span', { class: 'card-label' }, 'Documents'),
+    list,
+    fileInput,
+    dropZone,
+    progress,
+  );
+}
+
+function docRow(inv, d) {
+  const sizeText = d.bytes ? ' · ' + formatBytes(d.bytes) : '';
+  return el('div', { class: 'doc-row', 'data-public-id': d.public_id },
+    el('a', {
+      href: d.url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      class: 'doc-link',
+    },
+      el('span', { class: 'doc-icon' }, '📄'),
+      el('span', { class: 'doc-name' }, d.filename || d.public_id),
+    ),
+    el('div', { class: 'doc-meta' },
+      el('span', { class: 'doc-kind' }, d.kind || 'other'),
+      el('span', { class: 'doc-bytes' }, sizeText),
+    ),
+    el('button', {
+      type: 'button',
+      class: 'btn-doc-delete',
+      title: 'Remove document',
+      onclick: (ev) => onDeleteDoc(ev, inv, d),
+    }, '×'),
+  );
+}
+
+function formatBytes(b) {
+  if (!b || isNaN(b)) return '';
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function onPickFiles(ev, inv) {
+  const files = Array.from(ev.target.files || []);
+  if (!files.length) return;
+  uploadFiles(files, inv);
+  ev.target.value = '';   // allow re-picking the same file later
+}
+
+async function uploadFiles(files, inv) {
+  const progressArea = document.getElementById('upload-progress-' + (inv.po_id || 'x'));
+  if (!progressArea) return;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const id = 'prog-' + Date.now() + '-' + i;
+    const row = el('div', { class: 'upload-row', id: id },
+      el('span', { class: 'upload-row-name' }, file.name),
+      el('span', { class: 'upload-row-status' }, 'Uploading…'),
+    );
+    progressArea.appendChild(row);
+
+    try {
+      // 1. Direct upload to Cloudinary
+      const cloudResult = await uploadToCloudinary(file);
+
+      // 2. Tell our backend to record it on the monday item
+      const meta = await apiPost('/admin/documents?action=upload-meta', {
+        poId: inv.po_id || inv.id,
+        document: {
+          public_id: cloudResult.public_id,
+          secure_url: cloudResult.secure_url,
+          original_filename: cloudResult.original_filename || file.name,
+          format: cloudResult.format || (file.name.split('.').pop() || ''),
+          bytes: cloudResult.bytes || file.size,
+          kind: 'other',
+          uploaded_at: new Date().toISOString(),
+        },
+      });
+
+      // 3. Update progress row to success + append to live doc list
+      row.querySelector('.upload-row-status').textContent = 'Done';
+      row.classList.add('upload-row-done');
+      setTimeout(() => row.remove(), 2000);
+
+      // Optimistically add to the doc list visible in the modal
+      const listEl = document.getElementById('doc-list-' + (inv.po_id || 'x'));
+      if (listEl) {
+        const empty = listEl.querySelector('.doc-empty');
+        if (empty) empty.remove();
+        // Mutate the in-memory inv so the list reflects what was uploaded
+        inv.documents = Array.isArray(inv.documents) ? inv.documents : [];
+        inv.documents.push(meta.document);
+        listEl.appendChild(docRow(inv, meta.document));
+      }
+    } catch (err) {
+      row.querySelector('.upload-row-status').textContent = 'Failed: ' + err.message;
+      row.classList.add('upload-row-error');
+      // Don't auto-remove failure rows — admin should see what went wrong
+    }
+  }
+}
+
+async function uploadToCloudinary(file) {
+  const url = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/auto/upload';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_DOC_PRESET);
+  fd.append('folder', CLOUDINARY_DOC_FOLDER);
+
+  const res = await fetch(url, { method: 'POST', body: fd });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    throw new Error((data.error && data.error.message) || ('Cloudinary HTTP ' + res.status));
+  }
+  return data;
+}
+
+async function onDeleteDoc(ev, inv, d) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  if (!confirm('Remove "' + (d.filename || d.public_id) + '"?')) return;
+
+  const row = ev.currentTarget.closest('.doc-row');
+  if (row) row.style.opacity = '0.5';
+
+  try {
+    await apiPost('/admin/documents?action=delete', {
+      poId: inv.po_id || inv.id,
+      public_id: d.public_id,
+    });
+    if (row) row.remove();
+    // Remove from in-memory list too
+    if (Array.isArray(inv.documents)) {
+      inv.documents = inv.documents.filter(x => x.public_id !== d.public_id);
+    }
+    // If list is now empty, restore "No documents attached."
+    const listEl = document.getElementById('doc-list-' + (inv.po_id || 'x'));
+    if (listEl && listEl.children.length === 0) {
+      listEl.appendChild(el('div', { class: 'doc-empty' }, 'No documents attached.'));
+    }
+    showFlash('Document removed', 'good');
+  } catch (err) {
+    if (row) row.style.opacity = '1';
+    showFlash('Could not remove: ' + err.message, 'error');
+  }
 }
 
 // ─── Admin invite modal ──────────────────────────────────────────────
