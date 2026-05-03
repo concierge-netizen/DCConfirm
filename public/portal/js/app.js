@@ -433,7 +433,7 @@ function invoicesSection(allRows) {
 
   const rows = filtered.length
     ? filtered.map(invoiceRow)
-    : [el('tr', {}, el('td', { colspan: '6', class: 'empty-row' }, emptyMessage))];
+    : [el('tr', {}, el('td', { colspan: '7', class: 'empty-row' }, emptyMessage))];
 
   return el('section', { class: 'ledger-section' },
     el('div', { class: 'section-head' },
@@ -453,6 +453,7 @@ function invoicesSection(allRows) {
         el('thead', {},
           el('tr', {},
             el('th', {}, 'PO'),
+            el('th', {}, 'Invoice #'),
             el('th', {}, 'Project'),
             el('th', {}, 'Date'),
             el('th', {}, 'Status'),
@@ -466,7 +467,7 @@ function invoicesSection(allRows) {
   );
 }
 
-// Match a row against a lowercase search string. Searches project + po_id + account.
+// Match a row against a lowercase search string. Searches project + po_id + account + invoice_number.
 function matchesSearch(row, q) {
   if (!q) return true;
   const haystack = [
@@ -474,6 +475,7 @@ function matchesSearch(row, q) {
     row.po_id || '',
     row.id || '',
     row.account || '',
+    row.invoice_number || '',
   ].join(' ').toLowerCase();
   return haystack.indexOf(q) !== -1;
 }
@@ -599,6 +601,7 @@ function invoiceRow(inv) {
 
   return el('tr', { 'data-po': inv.po_id || '', 'data-kind': kind },
     poCell,
+    el('td', { class: 'mono' }, inv.invoice_number || ''),
     el('td', {}, inv.project || '—'),
     el('td', { class: 'mono' }, fmtDate(dateValue)),
     el('td', {}, el('span', { class: 'status-pill status-' + statusKind }, statusLabel)),
@@ -797,6 +800,11 @@ function openInvoiceEditor(inv) {
   const form = el('form', { class: 'modal-form', onsubmit: (e) => onSubmitInvoiceEdit(e, inv) },
     el('div', { class: 'eyebrow' }, 'Admin · Edit Invoice'),
     el('h2', { class: 'section-title' }, 'PO ' + (inv.po_id || '—')),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Invoice Number'),
+      el('input', { type: 'text', name: 'invoiceNumber', value: inv.invoice_number || '', placeholder: 'e.g. INV-2026-001' }),
+    ),
 
     el('label', { class: 'field' },
       el('span', { class: 'card-label' }, 'Project Name'),
@@ -1096,8 +1104,10 @@ async function onSubmitInvoiceEdit(ev, inv) {
   const projectName = form.projectName.value.trim();
   const invoiceAmount = form.invoiceAmount.value;
   const billingStatus = form.billingStatus.value;
+  const invoiceNumber = form.invoiceNumber.value.trim();
 
   if (projectName !== (inv.project || '')) body.projectName = projectName;
+  if (invoiceNumber !== (inv.invoice_number || '')) body.invoiceNumber = invoiceNumber;
   const currentNum = Number(inv.invoice_amount || inv.amount || 0);
   if (invoiceAmount !== '' && Number(invoiceAmount) !== currentNum) {
     body.invoiceAmount = Number(invoiceAmount);
