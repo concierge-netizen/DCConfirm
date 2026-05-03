@@ -12,7 +12,7 @@
  *   adminPicker?: { clients: [{ clientId, name, summary }] }
  */
 
-const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all' };
+const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '' };
 
 // v0.8 — Cloudinary direct-upload constants. Both values are public
 // (cloud_name appears in every CDN URL; the unsigned preset is by
@@ -204,7 +204,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.8',
+    'HANDS Logistics · Las Vegas · Client Portal v0.9',
   );
 }
 
@@ -401,27 +401,35 @@ function paymentInfoSection(info) {
 
 // ─── Section: Activity (v0.6 — hybrid invoice + operational rows) ────
 function invoicesSection(allRows) {
-  // Compute counts for each filter
+  // v0.9: apply search FIRST, then chip filter. Chip counts reflect the
+  // search-narrowed dataset so users see "what's actually visible right now."
+  const search = (state.activitySearch || '').trim().toLowerCase();
+  const searched = search
+    ? allRows.filter(r => matchesSearch(r, search))
+    : allRows;
+
   const counts = {
-    all: allRows.length,
-    invoices: allRows.filter(r => r.kind === 'invoice').length,
-    operational: allRows.filter(r => r.kind === 'operational').length,
+    all: searched.length,
+    invoices: searched.filter(r => r.kind === 'invoice').length,
+    operational: searched.filter(r => r.kind === 'operational').length,
   };
 
-  // Apply current filter
+  // Apply current filter chip
   const filter = state.activityFilter || 'all';
-  const filtered = allRows.filter(r => {
+  const filtered = searched.filter(r => {
     if (filter === 'all') return true;
     if (filter === 'invoices') return r.kind === 'invoice';
     if (filter === 'operational') return r.kind === 'operational';
     return true;
   });
 
-  const emptyMessage = {
-    all: 'No activity yet.',
-    invoices: 'No invoices in the billing pipeline.',
-    operational: 'No operational items right now.',
-  }[filter];
+  const emptyMessage = search
+    ? 'No matches for "' + search + '".'
+    : ({
+        all: 'No activity yet.',
+        invoices: 'No invoices in the billing pipeline.',
+        operational: 'No operational items right now.',
+      }[filter]);
 
   const rows = filtered.length
     ? filtered.map(invoiceRow)
@@ -432,10 +440,13 @@ function invoicesSection(allRows) {
       el('div', { class: 'eyebrow' }, 'Activity'),
       el('h2', { class: 'section-title' }, 'Activity & Invoices'),
     ),
-    el('div', { class: 'filter-chips' },
-      filterChip('all', 'All', counts.all),
-      filterChip('invoices', 'Invoices', counts.invoices),
-      filterChip('operational', 'Operational', counts.operational),
+    el('div', { class: 'controls-row' },
+      el('div', { class: 'filter-chips' },
+        filterChip('all', 'All', counts.all),
+        filterChip('invoices', 'Invoices', counts.invoices),
+        filterChip('operational', 'Operational', counts.operational),
+      ),
+      searchInput(),
     ),
     el('div', { class: 'table-wrap' },
       el('table', { class: 'ledger-table' },
@@ -453,6 +464,59 @@ function invoicesSection(allRows) {
       ),
     ),
   );
+}
+
+// Match a row against a lowercase search string. Searches project + po_id + account.
+function matchesSearch(row, q) {
+  if (!q) return true;
+  const haystack = [
+    row.project || '',
+    row.po_id || '',
+    row.id || '',
+    row.account || '',
+  ].join(' ').toLowerCase();
+  return haystack.indexOf(q) !== -1;
+}
+
+function searchInput() {
+  const wrapper = el('div', { class: 'search-wrap' });
+  const input = el('input', {
+    type: 'text',
+    class: 'search-input',
+    placeholder: 'Search project, PO, account…',
+    value: state.activitySearch || '',
+    autocomplete: 'off',
+    spellcheck: 'false',
+    oninput: (ev) => {
+      state.activitySearch = ev.target.value;
+      // Re-render. Preserve focus/cursor by deferring to next tick.
+      const cursor = ev.target.selectionStart;
+      routeRender();
+      // After re-render, find the new input and restore focus + cursor
+      setTimeout(() => {
+        const next = document.querySelector('.search-input');
+        if (next) {
+          next.focus();
+          if (cursor != null) next.setSelectionRange(cursor, cursor);
+        }
+      }, 0);
+    },
+  });
+  wrapper.appendChild(input);
+
+  if (state.activitySearch) {
+    wrapper.appendChild(el('button', {
+      class: 'search-clear',
+      type: 'button',
+      title: 'Clear search',
+      onclick: () => {
+        state.activitySearch = '';
+        routeRender();
+      },
+    }, '×'));
+  }
+
+  return wrapper;
 }
 
 function filterChip(value, label, count) {
@@ -525,10 +589,18 @@ function invoiceRow(inv) {
     }, '📎 ' + docCount));
   }
 
+  // Date column (v0.9): if the project is complete, show completed_on.
+  // Otherwise show the deadline. No fallback to issued_date — encourages
+  // setting real deadlines on monday rather than papering over gaps.
+  const isComplete =
+    (kind === 'invoice' && billingRaw === 'FUNDED') ||
+    (kind === 'operational' && ['COMPLETE', 'DELIVERED', 'DONE'].includes(logisticsRaw));
+  const dateValue = isComplete ? (inv.completed_on || inv.due_date) : inv.due_date;
+
   return el('tr', { 'data-po': inv.po_id || '', 'data-kind': kind },
     poCell,
     el('td', {}, inv.project || '—'),
-    el('td', { class: 'mono' }, fmtDate(inv.issued_date || inv.due_date || inv.completed_on)),
+    el('td', { class: 'mono' }, fmtDate(dateValue)),
     el('td', {}, el('span', { class: 'status-pill status-' + statusKind }, statusLabel)),
     amountCell,
     actionCell,
