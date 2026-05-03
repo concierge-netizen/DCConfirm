@@ -68,6 +68,7 @@ const OPS_COL_DELIV_TIME    = 'text9';
 const OPS_COL_PAYPAL_ORDER  = 'text_mm2pgscy';
 const OPS_COL_PAYMENT_LINK  = 'link_mm2pe3b5';
 const OPS_COL_ESTIMATE_LINK = 'link_mm1wdh3';
+const OPS_COL_INVOICE_NUM   = 'text3';                                  // v0.9: "Invoice Number" column on Ops 2026
 // v0.8: Cloudinary docs metadata. Column created by ensure-column endpoint;
 // ID supplied via OPS_COL_DOCUMENTS env var. Empty string = feature off.
 const OPS_COL_DOCUMENTS     = process.env.OPS_COL_DOCUMENTS || '';
@@ -379,6 +380,7 @@ function projectPO(po, clientCode) {
     completed_on: completedOn,
     estimate_url: estimateUrl,
     payment_url:  paymentUrl,
+    invoice_number: txt(m, OPS_COL_INVOICE_NUM),
     documents:    parseDocumentsJson(m),
     monday_url:   'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + po.id
   };
@@ -774,7 +776,7 @@ async function updateInvoice(args) {
     query ($itemId: [ID!]) {
       items(ids: $itemId) {
         id
-        column_values(ids: ["${OPS_COL_INVOICE_AMT}", "${OPS_COL_BILLING}", "${OPS_COL_PROJECT}", "${OPS_COL_CLIENT_CODE}"]) {
+        column_values(ids: ["${OPS_COL_INVOICE_AMT}", "${OPS_COL_BILLING}", "${OPS_COL_PROJECT}", "${OPS_COL_CLIENT_CODE}", "${OPS_COL_INVOICE_NUM}"]) {
           id text value
         }
       }
@@ -787,6 +789,7 @@ async function updateInvoice(args) {
   const beforeAmount  = txt(before, OPS_COL_INVOICE_AMT);
   const beforeBilling = txt(before, OPS_COL_BILLING);
   const beforeProject = txt(before, OPS_COL_PROJECT);
+  const beforeInvNum  = txt(before, OPS_COL_INVOICE_NUM);
   const clientCode    = txt(before, OPS_COL_CLIENT_CODE);
 
   // Build a column_values blob with only the fields the admin actually set.
@@ -814,6 +817,12 @@ async function updateInvoice(args) {
     const pn = String(fields.projectName).trim();
     colVals[OPS_COL_PROJECT] = pn;
     changes.push({ field: 'Project Name', before: beforeProject || '(empty)', after: pn || '(cleared)' });
+  }
+
+  if (fields.invoiceNumber !== undefined && fields.invoiceNumber !== null) {
+    const inv = String(fields.invoiceNumber).trim();
+    colVals[OPS_COL_INVOICE_NUM] = inv;
+    changes.push({ field: 'Invoice Number', before: beforeInvNum || '(empty)', after: inv || '(cleared)' });
   }
 
   if (changes.length === 0) {
