@@ -1,7 +1,7 @@
 /**
  * POST /portal/api/admin/invoices — admin edits an invoice on a PO.
  *
- * Body: { poId, invoiceAmount?, billingStatus?, projectName? }
+ * Body: { poId, invoiceAmount?, billingStatus?, projectName?, invoiceNumber? }
  * Auth: admin only.
  *
  * Every change is logged as a monday update line with the admin's email
@@ -29,9 +29,10 @@ exports.handler = async (event) => {
     if (body.invoiceAmount !== undefined) fields.invoiceAmount = body.invoiceAmount;
     if (body.billingStatus !== undefined) fields.billingStatus = body.billingStatus;
     if (body.projectName   !== undefined) fields.projectName   = body.projectName;
+    if (body.invoiceNumber !== undefined) fields.invoiceNumber = body.invoiceNumber;
 
     if (Object.keys(fields).length === 0) {
-      return json(400, { error: 'No editable fields provided. Supply invoiceAmount, billingStatus, and/or projectName.' });
+      return json(400, { error: 'No editable fields provided. Supply invoiceAmount, billingStatus, projectName, and/or invoiceNumber.' });
     }
 
     const result = await ds.updateInvoice({
