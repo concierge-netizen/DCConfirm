@@ -1,15 +1,21 @@
-/* HANDS Client Portal — v0.3 (live data, schema-aligned)
+/* HANDS Client Portal — v0.10 (Level 3 Payments)
  * Renders the monday-backed payload from /portal/api/ledger.
  *
  * Schema (snake_case from datastore, passed through by portal-ledger.js):
  *   invoices[]: { id, po_id, project, account, billing_raw, status, amount,
  *                 invoice_amount, estimate_amount, due_date, issued_date,
- *                 completed_on, payment_url, monday_url, ... }
+ *                 completed_on, payment_url, monday_url,
+ *                 payments[]?, totalPaid?, balance?, ... }
  *   payments[]: { id, po_id, paid_date, method, amount, ... }
  *   actions[]:  { po_id, message, at, author?, ... }
  *   summary:    { outstandingBalance, pendingActions, totalBilled, ... }
  *   paymentInfo: { instructions: { remit_to, remit_email, ach, check, terms } }
  *   adminPicker?: { clients: [{ clientId, name, summary }] }
+ *
+ * v0.10: admins can record partial payments per invoice via the
+ * Record Payment modal. Posts to /portal/api/admin/record-payment which
+ * appends to monday column text_mm31avnx; webhook auto-flips BILLING
+ * STATUS to FUNDED when running total >= invoice amount (penny tolerance).
  */
 
 const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '' };
@@ -204,7 +210,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.9',
+    'HANDS Logistics · Las Vegas · Client Portal v0.10',
   );
 }
 
@@ -557,6 +563,13 @@ function invoiceRow(inv) {
     }, 'Pay Invoice'));
   }
   if (state.isAdmin) {
+    if (kind === 'invoice') {
+      actionCell.appendChild(el('button', {
+        class: 'btn-record-payment',
+        title: 'Record a payment against this invoice',
+        onclick: () => openRecordPaymentModal(inv),
+      }, 'Record Payment'));
+    }
     actionCell.appendChild(el('button', {
       class: 'btn-edit',
       onclick: () => openInvoiceEditor(inv),
@@ -844,6 +857,189 @@ function openInvoiceEditor(inv) {
 function closeInvoiceEditor() {
   const m = document.getElementById('invoice-editor-modal');
   if (m) m.remove();
+}
+
+// ─── Level 3 Payments (v0.10) ────────────────────────────────────────
+// Per-invoice payment list. Source order of preference:
+//   1. inv.payments[]               (if portal-ledger emits per-invoice)
+//   2. ledger.payments filtered     (fallback: shared list, filter by po_id)
+function paymentsForInvoice(inv) {
+  if (Array.isArray(inv.payments) && inv.payments.length) return inv.payments;
+  const all = (state.ledger && state.ledger.payments) || [];
+  const poId = inv.po_id || inv.id;
+  if (!poId) return [];
+  return all.filter(p => (p.po_id || p.applied_to || p.invoice_id) == poId);
+}
+
+function totalPaidForInvoice(inv) {
+  if (typeof inv.totalPaid === 'number') return inv.totalPaid;
+  return paymentsForInvoice(inv).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+}
+
+function openRecordPaymentModal(inv) {
+  const existing = document.getElementById('record-payment-modal');
+  if (existing) existing.remove();
+
+  const invoiceAmt = Number(inv.invoice_amount || inv.amount || 0);
+  const paid = totalPaidForInvoice(inv);
+  const balance = Math.max(0, invoiceAmt - paid);
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  const overlay = el('div', { class: 'modal-overlay', id: 'record-payment-modal',
+    onclick: (e) => { if (e.target === overlay) closeRecordPaymentModal(); },
+  });
+
+  const existingPayments = paymentsForInvoice(inv);
+  const historyRows = existingPayments.length
+    ? existingPayments.map(p => el('div', { class: 'pay-history-row' },
+        el('span', { class: 'mono' }, fmtDate(p.date || p.paid_date)),
+        el('span', {}, p.method || '—'),
+        el('span', { class: 'mono dim' }, p.ref || ''),
+        el('span', { class: 'num mono' }, fmtMoney(p.amount)),
+        p.id ? el('button', {
+          type: 'button',
+          class: 'btn-doc-delete',
+          title: 'Remove this payment',
+          onclick: () => onRemovePayment(inv, p),
+        }, '×') : null,
+      ))
+    : [el('div', { class: 'doc-empty' }, 'No payments recorded yet.')];
+
+  const form = el('form', { class: 'modal-form', onsubmit: (e) => onSubmitRecordPayment(e, inv) },
+    el('div', { class: 'eyebrow' }, 'Admin · Record Payment'),
+    el('h2', { class: 'section-title' }, 'PO ' + (inv.po_id || '—')),
+
+    el('div', { class: 'pay-summary' },
+      el('div', {},
+        el('div', { class: 'card-label' }, 'Invoice'),
+        el('div', { class: 'pay-summary-num' }, fmtMoney(invoiceAmt)),
+      ),
+      el('div', {},
+        el('div', { class: 'card-label' }, 'Paid'),
+        el('div', { class: 'pay-summary-num' }, fmtMoney(paid)),
+      ),
+      el('div', {},
+        el('div', { class: 'card-label' }, 'Balance'),
+        el('div', { class: 'pay-summary-num pay-summary-balance' + (balance <= 0.01 ? ' pay-summary-paid' : '') },
+          fmtMoney(balance)),
+      ),
+    ),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Amount ($)'),
+      el('input', { type: 'number', step: '0.01', min: '0.01', name: 'amount',
+        value: balance > 0 ? balance.toFixed(2) : '', required: true,
+        placeholder: '0.00' }),
+    ),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Method'),
+      el('select', { name: 'method', required: true },
+        ['PayPal', 'ACH', 'Check', 'Wire', 'Cash', 'Other']
+          .map(m => el('option', { value: m }, m)),
+      ),
+    ),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Date'),
+      el('input', { type: 'date', name: 'date', value: todayIso, required: true }),
+    ),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Reference (check #, confirmation #, etc.)'),
+      el('input', { type: 'text', name: 'ref', placeholder: 'optional' }),
+    ),
+
+    el('label', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Note'),
+      el('input', { type: 'text', name: 'note', placeholder: 'optional' }),
+    ),
+
+    el('div', { class: 'field' },
+      el('span', { class: 'card-label' }, 'Payment History'),
+      el('div', { class: 'pay-history' }, historyRows),
+    ),
+
+    el('div', { class: 'modal-prose-dim' },
+      'Recording a payment writes to the Payments column on monday. ',
+      'When the running total reaches the invoice amount, BILLING STATUS auto-flips to FUNDED.',
+    ),
+
+    el('div', { class: 'modal-actions' },
+      el('button', { type: 'button', class: 'btn-signout-light', onclick: () => closeRecordPaymentModal() }, 'Close'),
+      el('button', { type: 'submit', class: 'btn-primary' }, 'Record Payment'),
+    ),
+  );
+
+  overlay.appendChild(form);
+  document.body.appendChild(overlay);
+}
+
+function closeRecordPaymentModal() {
+  const m = document.getElementById('record-payment-modal');
+  if (m) m.remove();
+}
+
+async function onSubmitRecordPayment(ev, inv) {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const amount = parseFloat(form.amount.value);
+  const method = form.method.value;
+  const date = form.date.value;
+  const ref = form.ref.value.trim();
+  const note = form.note.value.trim();
+
+  if (!isFinite(amount) || amount <= 0) {
+    showFlash('Amount must be greater than 0', 'error');
+    return;
+  }
+  if (!date) {
+    showFlash('Date is required', 'error');
+    return;
+  }
+
+  const submitBtn = form.querySelector('button[type=submit]');
+  const original = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Saving…';
+
+  try {
+    const resp = await apiPost('/admin/record-payment', {
+      poId: inv.po_id || inv.id,
+      amount, method, date, ref, note,
+    });
+    closeRecordPaymentModal();
+    showFlash('Payment recorded — total paid: ' + fmtMoney(resp.totalPaid || 0), 'good');
+    // Refresh ledger. The webhook will have flipped status by the time the
+    // refresh hits monday (typically <1s); re-fetch picks it up.
+    await loadLedger();
+    routeRender();
+  } catch (err) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = original;
+    showFlash('Could not record payment: ' + err.message, 'error');
+  }
+}
+
+async function onRemovePayment(inv, p) {
+  if (!p.id) {
+    showFlash('This payment has no id and cannot be removed from the portal.', 'error');
+    return;
+  }
+  if (!confirm('Remove ' + fmtMoney(p.amount) + ' payment from ' + fmtDate(p.date || p.paid_date) + '?')) return;
+  try {
+    await apiPost('/admin/record-payment', {
+      poId: inv.po_id || inv.id,
+      action: 'remove',
+      removeId: p.id,
+    });
+    closeRecordPaymentModal();
+    showFlash('Payment removed', 'good');
+    await loadLedger();
+    routeRender();
+  } catch (err) {
+    showFlash('Could not remove: ' + err.message, 'error');
+  }
 }
 
 // ─── Documents (v0.8) ────────────────────────────────────────────────
