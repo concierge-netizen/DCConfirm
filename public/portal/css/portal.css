@@ -1179,24 +1179,26 @@ html, body {
 /* ─── Level 3 Payments (v0.10) ──────────────────────────────────────── */
 /* Marker: PORTAL_V010_PAYMENTS — used by deploy script for idempotency */
 
+/* v0.10c: Record Payment matches EDIT shape — rectangular, same height,
+   same typography. Filled green to give it primary-action visual weight. */
 .btn-record-payment {
   display: inline-block;
   padding: 0.4rem 0.85rem;
   margin-right: 0.5rem;
-  background: #1a1a1a;
-  color: #a0d6b4;
+  background: #a0d6b4;
+  color: #1a1a1a;
   border: 1px solid #1a1a1a;
-  border-radius: 999px;
+  border-radius: 0;                         /* rectangular, not pill */
   font-family: 'DM Mono', monospace;
   font-size: 0.78rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   cursor: pointer;
   text-transform: uppercase;
   transition: background 120ms ease, color 120ms ease;
 }
 .btn-record-payment:hover {
-  background: #a0d6b4;
+  background: #6dba96;
   color: #1a1a1a;
 }
 
@@ -1247,4 +1249,34 @@ html, body {
       "date method remove"
       "ref  ref    amount";
   }
+}
+
+/* ─── View-as-Client toggle (v0.10c) ─────────────────────────────────── */
+.btn-view-as {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  margin-left: 0.5rem;
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  border-radius: 999px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-view-as:hover {
+  background: #1a1a1a;
+  color: #a0d6b4;
+}
+.btn-view-as.is-active {
+  background: #a0d6b4;
+  color: #1a1a1a;
+  border-color: #1a1a1a;
+}
+.btn-view-as.is-active:hover {
+  background: #6dba96;
 }
