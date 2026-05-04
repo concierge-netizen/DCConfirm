@@ -18,7 +18,7 @@
  * STATUS to FUNDED when running total >= invoice amount (penny tolerance).
  */
 
-const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '', viewAsClient: false };
+const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '', activityTypeFilter: 'all', viewAsClient: false };
 
 // v0.8 — Cloudinary direct-upload constants. Both values are public
 // (cloud_name appears in every CDN URL; the unsigned preset is by
@@ -139,6 +139,7 @@ async function initApp() {
 
   state.clientId = getQueryParam('clientId');
   state.viewAsClient = (window.location.hash || '').indexOf('viewAs=client') !== -1;
+  state.activityTypeFilter = getQueryParam('type') || 'all';
 
   try {
     await loadLedger();
@@ -174,6 +175,7 @@ function onToggleViewAsClient() {
 window.addEventListener('popstate', () => {
   state.clientId = getQueryParam('clientId');
   state.viewAsClient = (window.location.hash || '').indexOf('viewAs=client') !== -1;
+  state.activityTypeFilter = getQueryParam('type') || 'all';
   loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
 });
 
@@ -250,7 +252,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.10e',
+    'HANDS Logistics · Las Vegas · Client Portal v0.10g',
   );
 }
 
@@ -447,7 +449,7 @@ function paymentInfoSection(info) {
 
 // ─── Section: Activity (v0.6 — hybrid invoice + operational rows) ────
 function invoicesSection(allRows) {
-  // v0.9: apply search FIRST, then chip filter. Chip counts reflect the
+  // v0.9: apply search FIRST, then chip filters. Chip counts reflect the
   // search-narrowed dataset so users see "what's actually visible right now."
   const search = (state.activitySearch || '').trim().toLowerCase();
   const searched = search
@@ -462,24 +464,47 @@ function invoicesSection(allRows) {
 
   // Apply current filter chip
   const filter = state.activityFilter || 'all';
-  const filtered = searched.filter(r => {
+  const kindFiltered = searched.filter(r => {
     if (filter === 'all') return true;
     if (filter === 'invoices') return r.kind === 'invoice';
     if (filter === 'operational') return r.kind === 'operational';
     return true;
   });
 
+  // v0.10g: Activity Type chips. Derived dynamically from the data —
+  // every distinct non-empty `activity` label across the kind-filtered
+  // set becomes a chip. Counts reflect the kind-filtered dataset.
+  const typeCounts = Object.create(null);
+  for (let i = 0; i < kindFiltered.length; i++) {
+    const t = (kindFiltered[i].activity || '').trim();
+    if (!t) continue;
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  }
+  const typeKeys = Object.keys(typeCounts).sort();
+  const typeFilter = state.activityTypeFilter || 'all';
+
+  const filtered = kindFiltered.filter(r => {
+    if (typeFilter === 'all') return true;
+    return (r.activity || '').trim() === typeFilter;
+  });
+
   const emptyMessage = search
     ? 'No matches for "' + search + '".'
-    : ({
-        all: 'No activity yet.',
-        invoices: 'No invoices in the billing pipeline.',
-        operational: 'No operational items right now.',
-      }[filter]);
+    : (typeFilter !== 'all'
+        ? 'No ' + typeFilter + ' activity in this view.'
+        : ({
+            all: 'No activity yet.',
+            invoices: 'No invoices in the billing pipeline.',
+            operational: 'No operational items right now.',
+          }[filter]));
 
   const rows = filtered.length
     ? filtered.map(invoiceRow)
-    : [el('tr', {}, el('td', { colspan: '7', class: 'empty-row' }, emptyMessage))];
+    : [el('tr', {}, el('td', { colspan: '8', class: 'empty-row' }, emptyMessage))];
+
+  // Type-filter chip row only renders when there's >1 distinct type;
+  // a single-type ledger doesn't benefit from chips.
+  const showTypeChips = typeKeys.length > 1;
 
   return el('section', { class: 'ledger-section' },
     el('div', { class: 'section-head' },
@@ -494,6 +519,13 @@ function invoicesSection(allRows) {
       ),
       searchInput(),
     ),
+    showTypeChips ? el('div', { class: 'controls-row controls-row-secondary' },
+      el('div', { class: 'filter-chips' },
+        [typeFilterChip('all', 'All Types', kindFiltered.length)].concat(
+          typeKeys.map(k => typeFilterChip(k, k, typeCounts[k]))
+        ),
+      ),
+    ) : null,
     el('div', { class: 'table-wrap' },
       el('table', { class: 'ledger-table' },
         el('thead', {},
@@ -501,6 +533,7 @@ function invoicesSection(allRows) {
             el('th', {}, 'PO'),
             el('th', {}, 'Invoice #'),
             el('th', {}, 'Project'),
+            el('th', {}, 'Type'),
             el('th', {}, 'Date'),
             el('th', {}, 'Status'),
             el('th', { class: 'num' }, 'Amount'),
@@ -574,6 +607,27 @@ function filterChip(value, label, count) {
     onclick: () => {
       state.activityFilter = value;
       // Re-render only the activity section. Easiest: re-render the whole ledger.
+      routeRender();
+    },
+  },
+    el('span', { class: 'filter-chip-label' }, label),
+    el('span', { class: 'filter-chip-count' }, String(count)),
+  );
+}
+
+// v0.10g: type filter chip — same look as filterChip but reads/writes
+// state.activityTypeFilter and persists to the URL ?type= param.
+function typeFilterChip(value, label, count) {
+  const isActive = (state.activityTypeFilter || 'all') === value;
+  return el('button', {
+    class: 'filter-chip filter-chip-type' + (isActive ? ' filter-chip-active' : ''),
+    onclick: () => {
+      state.activityTypeFilter = value;
+      // Persist in URL so the filtered view is shareable / refresh-safe.
+      const url = new URL(window.location.href);
+      if (value === 'all') url.searchParams.delete('type');
+      else url.searchParams.set('type', value);
+      history.replaceState(null, '', url.toString());
       routeRender();
     },
   },
@@ -669,6 +723,10 @@ function invoiceRow(inv) {
     poCell,
     el('td', { class: 'mono' }, inv.invoice_number || ''),
     el('td', {}, inv.project || '—'),
+    el('td', { class: 'mono' },
+      inv.activity
+        ? el('span', { class: 'type-badge' }, inv.activity)
+        : el('span', { class: 'dim' }, '—')),
     el('td', { class: 'mono' }, fmtDate(dateValue)),
     el('td', {}, el('span', { class: 'status-pill status-' + statusKind }, statusLabel)),
     amountCell,
