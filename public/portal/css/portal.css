@@ -1175,3 +1175,76 @@ html, body {
   .controls-row { flex-direction: column; align-items: stretch; }
   .search-input { width: 100%; }
 }
+
+/* ─── Level 3 Payments (v0.10) ──────────────────────────────────────── */
+/* Marker: PORTAL_V010_PAYMENTS — used by deploy script for idempotency */
+
+.btn-record-payment {
+  display: inline-block;
+  padding: 0.4rem 0.85rem;
+  margin-right: 0.5rem;
+  background: #1a1a1a;
+  color: #a0d6b4;
+  border: 1px solid #1a1a1a;
+  border-radius: 999px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-record-payment:hover {
+  background: #a0d6b4;
+  color: #1a1a1a;
+}
+
+.pay-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 0.85rem;
+  margin: 0.5rem 0 1rem;
+  background: #f5f7f5;
+  border: 1px solid #e2e7e2;
+  border-radius: 8px;
+}
+.pay-summary-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-top: 0.2rem;
+}
+.pay-summary-balance { color: #6dba96; }
+.pay-summary-paid    { color: #1a1a1a; }
+
+.pay-history {
+  margin-top: 0.4rem;
+  border: 1px solid #e2e7e2;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pay-history-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #eef0ee;
+  font-size: 0.88rem;
+}
+.pay-history-row:last-child { border-bottom: none; }
+.pay-history-row .num { text-align: right; font-weight: 500; }
+.pay-history-row .dim { opacity: 0.7; }
+
+@media (max-width: 600px) {
+  .pay-summary { grid-template-columns: 1fr; }
+  .pay-history-row {
+    grid-template-columns: 1fr 1fr auto;
+    grid-template-areas:
+      "date method remove"
+      "ref  ref    amount";
+  }
+}
