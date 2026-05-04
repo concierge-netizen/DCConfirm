@@ -1368,3 +1368,38 @@ html, body {
 .action-cell .btn-pay {
   border-radius: 0 !important;
 }
+
+/* ─── Activity Type column + secondary filter row (v0.10g) ───────────── */
+.controls-row-secondary {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e7e2;
+}
+.controls-row-secondary .filter-chips {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+/* Type chips are slightly more subdued than the primary kind chips so
+   the secondary row reads as secondary. */
+.filter-chip-type {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.65rem;
+}
+
+/* Inline cell badge for the new Type column. Clean, label-style — no
+   color coding (the activities are open-ended; no semantic meaning).
+   Just a subtle outlined pill so it visually separates from raw text. */
+.type-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  background: transparent;
+  border: 1px solid #c8d3c8;
+  border-radius: 999px;
+  white-space: nowrap;
+}
