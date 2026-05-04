@@ -1,4 +1,4 @@
-/* HANDS Client Portal — v0.10 (Level 3 Payments)
+/* HANDS Client Portal — v0.10c (Level 3 Payments + View-as-Client)
  * Renders the monday-backed payload from /portal/api/ledger.
  *
  * Schema (snake_case from datastore, passed through by portal-ledger.js):
@@ -18,7 +18,7 @@
  * STATUS to FUNDED when running total >= invoice amount (penny tolerance).
  */
 
-const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '' };
+const state = { token: null, user: null, isAdmin: false, ledger: null, clientId: null, activityFilter: 'all', activitySearch: '', viewAsClient: false };
 
 // v0.8 — Cloudinary direct-upload constants. Both values are public
 // (cloud_name appears in every CDN URL; the unsigned preset is by
@@ -103,9 +103,18 @@ async function apiPost(path, body) {
 
 async function loadLedger() {
   const cid = state.clientId;
-  const path = cid ? ('/ledger?clientId=' + encodeURIComponent(cid)) : '/ledger';
+  const params = [];
+  if (cid) params.push('clientId=' + encodeURIComponent(cid));
+  if (state.viewAsClient) params.push('asClient=1');
+  const path = '/ledger' + (params.length ? '?' + params.join('&') : '');
   state.ledger = await apiGet(path);
+  // When viewing as client, the API returns isAdmin:false (so admin chrome
+  // hides). Track the underlying admin status separately so we can still
+  // render the toggle itself.
   state.isAdmin = !!state.ledger.isAdmin;
+  if (!state.viewAsClient) {
+    state.isReallyAdmin = state.isAdmin;
+  }
 }
 
 // ─── Auth init (called by index.html after Clerk SDK loads) ─────────
@@ -129,6 +138,7 @@ async function initApp() {
   }, 50 * 1000);
 
   state.clientId = getQueryParam('clientId');
+  state.viewAsClient = (window.location.hash || '').indexOf('viewAs=client') !== -1;
 
   try {
     await loadLedger();
@@ -141,8 +151,29 @@ async function initApp() {
 
 window.initApp = initApp;
 
+// ─── View-as-Client toggle (v0.10c) ──────────────────────────────────
+function setViewAsHash(on) {
+  // Preserve any other hash fragments. Today there are none, but be polite.
+  const others = (window.location.hash || '').replace(/^#/, '').split('&').filter(s => s && !/^viewAs=/.test(s));
+  if (on) others.push('viewAs=client');
+  const newHash = others.length ? ('#' + others.join('&')) : '';
+  if (window.location.hash !== newHash) {
+    history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+  }
+}
+
+function clearViewAsHash() { setViewAsHash(false); }
+
+function onToggleViewAsClient() {
+  state.viewAsClient = !state.viewAsClient;
+  setViewAsHash(state.viewAsClient);
+  // Reload ledger with the new scope. UI re-renders.
+  loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
+}
+
 window.addEventListener('popstate', () => {
   state.clientId = getQueryParam('clientId');
+  state.viewAsClient = (window.location.hash || '').indexOf('viewAs=client') !== -1;
   loadLedger().then(routeRender).catch(err => renderRegistryError(err.message));
 });
 
@@ -184,11 +215,20 @@ function buildHeader(opts) {
   const email = (window.Clerk && window.Clerk.user && window.Clerk.user.primaryEmailAddress && window.Clerk.user.primaryEmailAddress.emailAddress) || '';
   const userChipChildren = [];
   if (email) userChipChildren.push(el('span', {}, email));
-  if (state.isAdmin) userChipChildren.push(el('span', { class: 'admin-pill' }, 'Admin'));
+  if (state.isAdmin || state.isReallyAdmin) userChipChildren.push(el('span', { class: 'admin-pill' }, 'Admin'));
+  // v0.10c: View-as-Client toggle. Only renders for real admins who are
+  // scoped to a specific client (no point on the picker page).
+  if ((state.isReallyAdmin || state.isAdmin) && state.clientId) {
+    userChipChildren.push(el('button', {
+      class: 'btn-view-as' + (state.viewAsClient ? ' is-active' : ''),
+      title: state.viewAsClient ? 'You are seeing what the client sees. Click to return to admin view.' : 'Switch to client view',
+      onclick: () => onToggleViewAsClient(),
+    }, state.viewAsClient ? '👁  Viewing as Client' : 'View as Client'));
+  }
   if (opts.showBackToPicker) {
     userChipChildren.push(el('button', {
       class: 'btn-signout',
-      onclick: () => { setClientIdInUrl(null); state.clientId = null; loadLedger().then(routeRender).catch(err => renderRegistryError(err.message)); },
+      onclick: () => { setClientIdInUrl(null); state.clientId = null; state.viewAsClient = false; clearViewAsHash(); loadLedger().then(routeRender).catch(err => renderRegistryError(err.message)); },
     }, 'All Clients'));
   }
   userChipChildren.push(el('button', {
@@ -210,7 +250,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.10',
+    'HANDS Logistics · Las Vegas · Client Portal v0.10c',
   );
 }
 
