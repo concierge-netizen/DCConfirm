@@ -1346,3 +1346,25 @@ html, body {
     gap: 0.4rem;
   }
 }
+
+/* ─── Unified action cell layout (v0.10f) ────────────────────────────── */
+/* All buttons inside .action-cell are now flex children with even gap.
+   Margin-rights on individual buttons are zeroed out so we don't end up
+   with double spacing. Every action button is rectangular for visual
+   consistency across the portal. */
+.action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+.action-cell > button {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+/* Pay Invoice keeps its filled-green visual weight (primary CTA), but
+   matches the rectangular profile of every other action button. */
+.action-cell .btn-pay {
+  border-radius: 0 !important;
+}
