@@ -69,6 +69,9 @@ const OPS_COL_PAYPAL_ORDER  = 'text_mm2pgscy';
 const OPS_COL_PAYMENT_LINK  = 'link_mm2pe3b5';
 const OPS_COL_ESTIMATE_LINK = 'link_mm1wdh3';
 const OPS_COL_INVOICE_NUM   = 'text3';                                  // v0.9: "Invoice Number" column on Ops 2026
+// v0.10: Level 3 Payments — JSON array of payment entries on each PO.
+// Written by portal-record-payment.js, parsed here in projectPO().
+const OPS_COL_PAYMENTS      = 'text_mm31avnx';
 // v0.8: Cloudinary docs metadata. Column created by ensure-column endpoint;
 // ID supplied via OPS_COL_DOCUMENTS env var. Empty string = feature off.
 const OPS_COL_DOCUMENTS     = process.env.OPS_COL_DOCUMENTS || '';
@@ -178,6 +181,20 @@ function jsonVal(map, id) {
 function parseDocumentsJson(map) {
   if (!OPS_COL_DOCUMENTS) return [];
   const raw = txt(map, OPS_COL_DOCUMENTS);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_e) {
+    return [];
+  }
+}
+
+// v0.10: parse the payments JSON stored in text_mm31avnx.
+// Empty column → []. Malformed → []. Always returns an array of payment
+// objects: { id, date, amount, method, ref, note, recordedAt, recordedBy }.
+function parsePaymentsJson(map) {
+  const raw = txt(map, OPS_COL_PAYMENTS);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -359,6 +376,13 @@ function projectPO(po, clientCode) {
   const isBillingRow = !!(billingText || invoiceAmt > 0 || estimateAmt > 0);
   const kind = isBillingRow ? 'invoice' : 'operational';
 
+  // v0.10: Real payments from the Level 3 Payments column. Each entry:
+  //   { id, date, amount, method, ref, note, recordedAt, recordedBy }
+  const realPayments = parsePaymentsJson(m);
+  const realTotalPaid = realPayments.reduce(function (s, p) {
+    return s + (Number(p.amount) || 0);
+  }, 0);
+
   const invoice = {
     id:           'INV-' + po.id,
     po_id:        po.id,
@@ -382,13 +406,36 @@ function projectPO(po, clientCode) {
     payment_url:  paymentUrl,
     invoice_number: txt(m, OPS_COL_INVOICE_NUM),
     documents:    parseDocumentsJson(m),
+    // v0.10: per-invoice payment data. The portal modal already reads
+    // these via paymentsForInvoice(inv) with a fallback. balance is
+    // computed against invoice_amount when present; falls back to amount.
+    payments:     realPayments.map(function (p) {
+      return Object.assign({}, p, {
+        po_id:      po.id,
+        client_id:  clientCode,
+        // Aliases so the existing payments-table render code lights up
+        // with no further changes:
+        invoice_id: 'INV-' + po.id,
+        paid_date:  p.date || p.paid_date || null
+      });
+    }),
+    total_paid:   realTotalPaid,
+    balance:      Math.max(0, (invoiceAmt > 0 ? invoiceAmt : amount) - realTotalPaid),
     monday_url:   'https://handslogistics.monday.com/boards/' + OPS_BOARD_ID + '/pulses/' + po.id
   };
 
-  // Payment: synth when FUNDED.
-  let payment = null;
-  if (billingText === 'FUNDED' && amount > 0) {
-    payment = {
+  // Payment(s) for the top-level ledger.payments[] array.
+  //
+  // Two sources, mutually exclusive:
+  //   1. Real recorded payments (v0.10 — text_mm31avnx) — preferred.
+  //   2. Synth-FUNDED payment (legacy) — only when no real payments exist
+  //      AND BILLING STATUS is FUNDED. This preserves history for invoices
+  //      paid before Level 3 shipped.
+  let paymentEntries = [];
+  if (realPayments.length > 0) {
+    paymentEntries = invoice.payments.slice();
+  } else if (billingText === 'FUNDED' && amount > 0) {
+    paymentEntries = [{
       id:        'PMT-' + po.id,
       invoice_id:'INV-' + po.id,
       po_id:     po.id,
@@ -396,8 +443,9 @@ function projectPO(po, clientCode) {
       amount:    amount,
       paid_date: completedOn || dueDate || null,
       method:    paymentUrl ? 'online' : 'recorded',
-      reference: txt(m, OPS_COL_PAYPAL_ORDER) || ('GHOST-' + po.id)
-    };
+      reference: txt(m, OPS_COL_PAYPAL_ORDER) || ('GHOST-' + po.id),
+      synthetic: true                                       // legacy synth, not a real recorded payment
+    }];
   }
 
   // Adjustments:
@@ -431,7 +479,7 @@ function projectPO(po, clientCode) {
     });
   }
 
-  return { invoice: invoice, payment: payment, adjustments: adjustments };
+  return { invoice: invoice, payments: paymentEntries, adjustments: adjustments };
 }
 
 // Client-action timeline = subitem comments + estimate-accept events
@@ -552,12 +600,27 @@ async function getClientSummary(clientId) {
     // kind === 'invoice' — the billing path
     invoiceCount += 1;
     totalBilled += p.invoice.amount;
+
+    // v0.10: payment math now comes from real recorded payments when
+    // present, falling back to the legacy "FUNDED → fully paid" rule.
+    const realPaid = Number(p.invoice.total_paid) || 0;
+
     if (p.invoice.status === 'paid') {
+      // FUNDED. If we have real payments, trust their sum; otherwise
+      // assume the full amount was paid (legacy synth behavior).
       paidCount += 1;
-      totalPaid += p.invoice.amount;
+      totalPaid += realPaid > 0 ? realPaid : p.invoice.amount;
+      // If real payments exceed amount (overpayment) or fall short
+      // (data drift), surface the leftover balance as outstanding.
+      const leftover = p.invoice.amount - (realPaid > 0 ? realPaid : p.invoice.amount);
+      if (leftover > 0.01) totalOutstanding += leftover;
     } else if (p.invoice.status === 'sent' || p.invoice.status === 'partial' || p.invoice.status === 'pending') {
       openCount += 1;
-      totalOutstanding += p.invoice.amount;
+      // Outstanding = amount minus whatever real partial payments have
+      // been recorded against this invoice.
+      const remaining = Math.max(0, p.invoice.amount - realPaid);
+      totalOutstanding += remaining;
+      totalPaid += realPaid;
     }
   }
 
@@ -601,7 +664,9 @@ async function getPayments(clientId) {
   const out = [];
   for (let i = 0; i < pos.length; i++) {
     const p = projectPO(pos[i], client.client_id);
-    if (p.payment) out.push(p.payment);
+    if (p.payments && p.payments.length) {
+      for (let j = 0; j < p.payments.length; j++) out.push(p.payments[j]);
+    }
   }
   out.sort(function (a, b) { return (b.paid_date || '').localeCompare(a.paid_date || ''); });
   return out;
