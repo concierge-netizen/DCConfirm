@@ -4,6 +4,10 @@
  *
  * Query params:
  *   ?clientId=GHOST   (admin only — for client-scoped admin views)
+ *   ?asClient=1       (admin only — render the response exactly as the
+ *                      client would see it: stripped of internal fields
+ *                      via toClientView(), with isAdmin: false so the
+ *                      frontend hides admin chrome)
  *
  * Accepts both `clientId` (camelCase) and `client_id` (snake_case) for
  * backward compat with anything still passing the old name.
@@ -17,6 +21,7 @@ exports.handler = async (event) => {
     const ctx = await requireAuth(event);
     const qs = event.queryStringParameters || {};
     const requestedClientId = qs.clientId || qs.client_id || null;
+    const asClient = (qs.asClient === '1' || qs.asClient === 'true');
     const client = await resolveTargetClient(ctx, requestedClientId);
 
     // Admins viewing PLACEHOLDER (no clientId picked yet) — return a thin
@@ -90,6 +95,14 @@ exports.handler = async (event) => {
       asOf:               summary.as_of
     } : null;
 
+    // v0.10c: when an admin requests asClient=1, render the response exactly
+    // as the client would see it — toClientView strips internal fields, and
+    // isAdmin is forced to false so the frontend hides admin chrome (Edit
+    // buttons, Record Payment, etc). Only real admins can request this; for
+    // a non-admin the flag is a no-op (data is already client-shaped).
+    const renderAsClient = ctx.isAdmin && asClient;
+    const invoicesPayload = (renderAsClient || !ctx.isAdmin) ? invoices.map(ds.toClientView) : invoices;
+
     return json(200, {
       shellMode: false,
       client: {
@@ -99,12 +112,12 @@ exports.handler = async (event) => {
         primaryContact: client.contact_name
       },
       summary: summaryUI,
-      invoices: ctx.isAdmin ? invoices : invoices.map(ds.toClientView),
+      invoices: invoicesPayload,
       payments,
       adjustments,
       actions,
       paymentInfo,
-      isAdmin: ctx.isAdmin,
+      isAdmin: renderAsClient ? false : ctx.isAdmin,
     });
   } catch (err) { return handleError(err); }
 };
