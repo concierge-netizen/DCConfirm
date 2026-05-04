@@ -1,4 +1,4 @@
-/* HANDS Client Portal — v0.10c (Level 3 Payments + View-as-Client)
+/* HANDS Client Portal — v0.10e (Level 3 Payments + View-as-Client + View Document)
  * Renders the monday-backed payload from /portal/api/ledger.
  *
  * Schema (snake_case from datastore, passed through by portal-ledger.js):
@@ -250,7 +250,7 @@ function buildHeader(opts) {
 
 function buildFooter() {
   return el('footer', { class: 'portal-footer' },
-    'HANDS Logistics · Las Vegas · Client Portal v0.10c',
+    'HANDS Logistics · Las Vegas · Client Portal v0.10e',
   );
 }
 
@@ -601,6 +601,19 @@ function invoiceRow(inv) {
       class: 'btn-pay',
       onclick: (ev) => onPayInvoice(ev, inv),
     }, 'Pay Invoice'));
+  }
+  // v0.10e: View Document button — visible to BOTH clients and admins.
+  // Renders only when the invoice has at least one attached document.
+  // Single doc → opens directly. Multiple → opens a picker modal.
+  const docs = Array.isArray(inv.documents) ? inv.documents : [];
+  if (docs.length > 0) {
+    actionCell.appendChild(el('button', {
+      class: 'btn-view-doc',
+      title: docs.length === 1
+        ? 'Open ' + (docs[0].filename || 'attached document')
+        : 'View ' + docs.length + ' attached documents',
+      onclick: () => onViewDocument(inv),
+    }, docs.length === 1 ? 'View Document' : 'View Documents (' + docs.length + ')'));
   }
   if (state.isAdmin) {
     if (kind === 'invoice') {
@@ -1080,6 +1093,71 @@ async function onRemovePayment(inv, p) {
   } catch (err) {
     showFlash('Could not remove: ' + err.message, 'error');
   }
+}
+
+// ─── View Document (v0.10e) ──────────────────────────────────────────
+// Visible to clients and admins. Single doc opens directly; multiple
+// docs open a picker modal listing each with a per-doc Open button.
+function onViewDocument(inv) {
+  const docs = Array.isArray(inv.documents) ? inv.documents : [];
+  if (docs.length === 0) return;
+
+  if (docs.length === 1) {
+    const url = docs[0].secure_url || docs[0].url;
+    if (!url) {
+      showFlash('Document URL is missing.', 'error');
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  openDocumentPickerModal(inv);
+}
+
+function openDocumentPickerModal(inv) {
+  const existing = document.getElementById('view-doc-modal');
+  if (existing) existing.remove();
+
+  const docs = Array.isArray(inv.documents) ? inv.documents : [];
+  const overlay = el('div', { class: 'modal-overlay', id: 'view-doc-modal',
+    onclick: (e) => { if (e.target === overlay) closeDocumentPickerModal(); },
+  });
+
+  const rows = docs.map((d) => {
+    const url = d.secure_url || d.url || '';
+    const fname = d.filename || d.original_filename || 'Document';
+    const uploadedAt = d.uploaded_at || d.created_at || '';
+    return el('div', { class: 'doc-picker-row' },
+      el('div', { class: 'doc-picker-name' }, fname),
+      el('div', { class: 'doc-picker-meta' }, uploadedAt ? fmtDate(uploadedAt) : ''),
+      el('button', {
+        type: 'button',
+        class: 'btn-view-doc',
+        disabled: !url,
+        onclick: () => {
+          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+        },
+      }, 'Open'),
+    );
+  });
+
+  const card = el('div', { class: 'modal-card' },
+    el('div', { class: 'eyebrow' }, 'Documents'),
+    el('h2', { class: 'section-title' }, 'PO ' + (inv.po_id || '—')),
+    el('div', { class: 'doc-picker-list' }, rows.length ? rows : [el('div', { class: 'doc-empty' }, 'No documents.')]),
+    el('div', { class: 'modal-actions' },
+      el('button', { type: 'button', class: 'btn-signout-light', onclick: () => closeDocumentPickerModal() }, 'Close'),
+    ),
+  );
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+}
+
+function closeDocumentPickerModal() {
+  const m = document.getElementById('view-doc-modal');
+  if (m) m.remove();
 }
 
 // ─── Documents (v0.8) ────────────────────────────────────────────────
