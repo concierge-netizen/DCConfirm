@@ -10,4 +10,5 @@
 /portal/api/admin/actions      /.netlify/functions/portal-admin-actions     200
 /portal/api/admin/invite       /.netlify/functions/portal-invite            200
 /portal/api/admin/documents    /.netlify/functions/portal-admin-documents   200
+/portal/api/admin/record-payment   /.netlify/functions/portal-record-payment   200
 /portal/*                      /portal/index.html                            200
