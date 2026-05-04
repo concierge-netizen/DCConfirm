@@ -1251,14 +1251,16 @@ html, body {
   }
 }
 
-/* ─── View-as-Client toggle (v0.10c) ─────────────────────────────────── */
+/* ─── View-as-Client toggle (v0.10c, recolored v0.10d) ────────────────── */
+/* Lives in the dark header bar — colors must match .btn-signout's pattern
+   of green-on-dark, NOT dark-on-light like the cream ledger area. */
 .btn-view-as {
   display: inline-block;
   padding: 0.35rem 0.75rem;
   margin-left: 0.5rem;
   background: transparent;
-  color: #1a1a1a;
-  border: 1px solid #1a1a1a;
+  color: #a0d6b4;
+  border: 1px solid #a0d6b4;
   border-radius: 999px;
   font-family: 'DM Mono', monospace;
   font-size: 0.7rem;
@@ -1269,14 +1271,15 @@ html, body {
   transition: background 120ms ease, color 120ms ease;
 }
 .btn-view-as:hover {
-  background: #1a1a1a;
-  color: #a0d6b4;
+  background: #a0d6b4;
+  color: #1a1a1a;
 }
 .btn-view-as.is-active {
   background: #a0d6b4;
   color: #1a1a1a;
-  border-color: #1a1a1a;
+  border-color: #a0d6b4;
 }
 .btn-view-as.is-active:hover {
   background: #6dba96;
+  color: #1a1a1a;
 }
