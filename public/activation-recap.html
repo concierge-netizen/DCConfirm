@@ -354,16 +354,26 @@
     document.getElementById("deckHeading").textContent = title;
     document.getElementById("deckOpen").href = url;
 
-    // For PDFs we can embed directly. For pptx (cloudinary delivers raw),
-    // we can't embed inline — so just show the open/download CTA.
-    const isPdf = /\.pdf(\?|$)/i.test(url);
     const frame = document.getElementById("deckFrame");
+    const isPdf  = /\.pdf(\?|$)/i.test(url);
+    const isPpt  = /\.(pptx|ppt|pps|ppsx)(\?|$)/i.test(url);
+    const isDoc  = /\.(docx|doc|xlsx|xls)(\?|$)/i.test(url);
+
     if (isPdf) {
+      // Native browser PDF render — best fidelity
       frame.src = url + '#view=FitH';
       frame.style.display = 'block';
+    } else if (isPpt || isDoc) {
+      // Microsoft Office Online viewer renders pptx/ppt/docx/xlsx inline.
+      // Requires the file to be publicly accessible (Cloudinary URLs are).
+      const encoded = encodeURIComponent(url);
+      frame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encoded}`;
+      frame.style.display = 'block';
     } else {
+      // Unknown format — fall back to download CTA only
       frame.style.display = 'none';
     }
+
     document.getElementById("deckSection").style.display = "block";
   }
 
