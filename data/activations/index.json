@@ -8,11 +8,11 @@
       "email": "",
       "proposalDate": "2026-05-01",
       "status": "recap_only",
-      "recapPublished": false,
+      "recapPublished": true,
       "recapExists": true,
       "recapOnly": true,
       "createdAt": "2026-05-01T15:05:08.028Z",
-      "updatedAt": "2026-05-05T23:37:41.197Z"
+      "updatedAt": "2026-05-05T23:37:46.478Z"
     },
     {
       "slug": "four-seasons-test",
@@ -29,5 +29,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-05T23:37:41.903Z"
+  "updatedAt": "2026-05-05T23:37:47.149Z"
 }
