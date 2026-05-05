@@ -15,7 +15,26 @@
   "status": "recap_only",
   "recapOnly": true,
   "slug": "lalo-tequila-raspado-at-the-pool",
-  "recap": null,
+  "recap": {
+    "published": false,
+    "heroPhotoUrl": "",
+    "summary": "",
+    "deckUrl": "https://res.cloudinary.com/dxkpbjicu/raw/upload/v1778024210/ctgkn5x7nqvgyu3xken3.pptx",
+    "deckTitle": "Lalo x Four Seasons",
+    "metrics": [
+      {
+        "label": "Guests",
+        "value": "51"
+      },
+      {
+        "label": "Drinks Served",
+        "value": "51"
+      }
+    ],
+    "gallery": [],
+    "updatedAt": "2026-05-05T23:37:12.289Z",
+    "publishedAt": null
+  },
   "createdAt": "2026-05-01T15:05:08.028Z",
-  "updatedAt": "2026-05-01T15:05:08.028Z"
+  "updatedAt": "2026-05-05T23:37:12.289Z"
 }
