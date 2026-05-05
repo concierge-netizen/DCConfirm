@@ -408,10 +408,16 @@ footer {
 }
 .deck-card-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; }
 .deck-frame {
-  width: 100%; min-height: 720px;
+  width: 100%;
+  min-height: 720px;
+  /* For slide decks (typically 16:9), the iframe height needs to scale with width */
+  aspect-ratio: 16 / 9;
   border: none;
   background: var(--off-white);
   display: block;
+}
+@media (min-width: 1100px) {
+  .deck-frame { min-height: 820px; }
 }
 
 /* Delivered checklist */
