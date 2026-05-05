@@ -12,3 +12,16 @@
 /portal/api/admin/documents    /.netlify/functions/portal-admin-documents   200
 /portal/api/admin/record-payment   /.netlify/functions/portal-record-payment   200
 /portal/*                      /portal/index.html                            200
+
+# ── Activations system ──
+# /share variants MUST come before the splat catch-alls (first-match-wins)
+/activation-proposal/*/share    /activation-proposal.html?slug=:splat&share=1    200
+/recap/*/share                  /activation-recap.html?slug=:splat&share=1       200
+
+/api/activation-proposals       /.netlify/functions/activation-proposals         200
+/api/send-activation-quote      /.netlify/functions/send-activation-quote        200
+/api/recover-activations        /.netlify/functions/recover-activations          200
+
+/activations                    /activations.html                                 200
+/activation-proposal/*          /activation-proposal.html?slug=:splat            200
+/recap/*                        /activation-recap.html?slug=:splat               200
