@@ -24,17 +24,17 @@
     "metrics": [
       {
         "label": "Guests",
-        "value": "51"
+        "value": "87"
       },
       {
         "label": "Drinks Served",
-        "value": "51"
+        "value": "87"
       }
     ],
     "gallery": [],
-    "updatedAt": "2026-05-05T23:57:25.444Z",
+    "updatedAt": "2026-05-06T18:01:59.693Z",
     "publishedAt": "2026-05-05T23:37:46.478Z"
   },
   "createdAt": "2026-05-01T15:05:08.028Z",
-  "updatedAt": "2026-05-05T23:57:25.444Z"
+  "updatedAt": "2026-05-06T18:01:59.693Z"
 }
