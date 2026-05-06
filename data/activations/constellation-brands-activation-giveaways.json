@@ -58,20 +58,24 @@
   ],
   "designSlides": [
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085222/aiqmks1eidl297ugngry.png",
-      "caption": "Model Golf Ball Render"
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085504/pglcjnvxvt1ypbcnzem0.png",
+      "caption": "Production Intro"
     },
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085241/yj0oegday6434jujfvtn.png",
-      "caption": "Mondavi Golf Ball Render"
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085537/xodm6qv4fl3b7ptvk2c3.png",
+      "caption": "Modelo - Golf Ball Render"
     },
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085296/kxulfwet3kcdi1hsz5pp.png",
-      "caption": ""
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085551/nmic9xp4sxl54jcjnlsn.png",
+      "caption": "Mondavi - Golf Ball Render"
     },
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085312/fupyxw3pnutp7fq098vk.png",
-      "caption": ""
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085566/t3xvhhgv2ogpsnreeamy.png",
+      "caption": "Box Design Renders "
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778085576/jng35hcqljftbfdgytvw.png",
+      "caption": "Box Design Renders "
     }
   ],
   "deliverables": [],
@@ -80,5 +84,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-06T16:35:35.884Z",
-  "updatedAt": "2026-05-06T16:35:35.884Z"
+  "updatedAt": "2026-05-06T16:40:26.511Z"
 }
