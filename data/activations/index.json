@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "campari-group-cookbook-launch",
+      "client": "Campari Group",
+      "projectName": "Cookbook Launch",
+      "contact": "Kinson Lau",
+      "email": "kinson.lau@campari.com",
+      "proposalDate": "2026-05-07",
+      "status": "sent",
+      "recapPublished": false,
+      "recapExists": false,
+      "recapOnly": false,
+      "createdAt": "2026-05-07T21:14:56.407Z",
+      "updatedAt": "2026-05-07T21:14:56.407Z"
+    },
+    {
       "slug": "constellation-brands-activation-giveaways",
       "client": "Constellation Brands",
       "projectName": "Activation Giveaways",
@@ -43,5 +57,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-07T20:20:35.351Z"
+  "updatedAt": "2026-05-07T21:14:57.591Z"
 }
