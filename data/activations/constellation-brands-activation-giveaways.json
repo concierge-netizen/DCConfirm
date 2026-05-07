@@ -52,9 +52,9 @@
   "includeTax": true,
   "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
   "customNotes": "",
-  "brandColor": "#FFF0DB",
+  "brandColor": "#ED2100",
   "brandColors": [
-    "#FFF0DB"
+    "#ED2100"
   ],
   "designSlides": [
     {
@@ -76,5 +76,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-06T16:35:35.884Z",
-  "updatedAt": "2026-05-07T20:18:51.471Z"
+  "updatedAt": "2026-05-07T20:20:34.156Z"
 }
