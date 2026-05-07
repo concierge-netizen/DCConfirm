@@ -18,7 +18,7 @@
     "strikeDate": "2026-05-13",
     "strikeTime": "12:00"
   },
-  "scopeOfWork": "HANDS Logistics will fabricate the custom build elements specified in this proposal at our Las Vegas facility. Scope includes design refinement from client-provided specs, sourcing of all materials, fabrication and finishing, in-house QA and photo documentation, and delivery to the activation venue at the scheduled load-in time.\n\nThe scope does not include on-site installation, on-site service, or strike — those are billed separately if needed. Once the build is delivered and accepted at the venue, HANDS's responsibility for the build elements ends unless installation is also contracted.\n\nAll builds are delivered in HANDS-branded transport, fully assembled or in field-assembly modules per the spec. Materials and finishes are itemized in the line-item breakdown. Final design approval is required 14 days before the build's delivery date to maintain the schedule.",
+  "scopeOfWork": "HANDS Logistics will fabricate the custom build elements specified in this proposal at our Las Vegas facility. Scope includes design refinement from client-provided specs, sourcing of all materials, fabrication and finishing, in-house QA and photo documentation, and delivery to the activation venue at the scheduled load-in time.",
   "lineItems": [
     {
       "category": "Materials",
@@ -62,5 +62,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-07T21:14:56.407Z",
-  "updatedAt": "2026-05-07T21:14:56.407Z"
+  "updatedAt": "2026-05-07T21:15:59.490Z"
 }
