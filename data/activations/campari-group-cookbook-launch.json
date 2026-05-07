@@ -1,0 +1,66 @@
+{
+  "slug": "campari-group-cookbook-launch",
+  "client": "Campari Group",
+  "contact": "Kinson Lau",
+  "email": "kinson.lau@campari.com",
+  "proposalDate": "2026-05-07",
+  "projectName": "Cookbook Launch",
+  "opsItemId": "",
+  "venueName": "Petite Boheme",
+  "venueAddress": "1407 S Main St, Las Vegas, NV 89104",
+  "schedule": {
+    "loadinDate": "2026-05-12",
+    "loadinTime": "15:00",
+    "eventStartDate": "2026-05-12",
+    "eventStartTime": "17:00",
+    "eventEndDate": "2026-05-13",
+    "eventEndTime": "11:00",
+    "strikeDate": "2026-05-13",
+    "strikeTime": "12:00"
+  },
+  "scopeOfWork": "HANDS Logistics will fabricate the custom build elements specified in this proposal at our Las Vegas facility. Scope includes design refinement from client-provided specs, sourcing of all materials, fabrication and finishing, in-house QA and photo documentation, and delivery to the activation venue at the scheduled load-in time.\n\nThe scope does not include on-site installation, on-site service, or strike — those are billed separately if needed. Once the build is delivered and accepted at the venue, HANDS's responsibility for the build elements ends unless installation is also contracted.\n\nAll builds are delivered in HANDS-branded transport, fully assembled or in field-assembly modules per the spec. Materials and finishes are itemized in the line-item breakdown. Final design approval is required 14 days before the build's delivery date to maintain the schedule.",
+  "lineItems": [
+    {
+      "category": "Materials",
+      "description": "SEG Fabric and Frame Rental",
+      "qty": 1,
+      "unit": "hr",
+      "unitPrice": 0
+    },
+    {
+      "category": "Labor",
+      "description": "Graphics",
+      "qty": 1,
+      "unit": "hr",
+      "unitPrice": 95
+    },
+    {
+      "category": "Labor",
+      "description": "Install and Strike - Two Staffers",
+      "qty": 4,
+      "unit": "hr",
+      "unitPrice": 80
+    }
+  ],
+  "includeTax": true,
+  "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
+  "customNotes": "",
+  "brandColor": "",
+  "brandColors": [],
+  "designSlides": [],
+  "deliverables": [
+    {
+      "title": "Step an Repeat",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778187070/oclfpbolj9fkgzlsd0a3.png",
+      "dimensions": "78.375\"w x 88.25\"h x 16.5\"d",
+      "notes": "SEG Fabric ",
+      "window": "Load-In"
+    }
+  ],
+  "sourcingItems": [],
+  "deckTemplate": "brand-event",
+  "status": "sent",
+  "recap": null,
+  "createdAt": "2026-05-07T21:14:56.407Z",
+  "updatedAt": "2026-05-07T21:14:56.407Z"
+}
