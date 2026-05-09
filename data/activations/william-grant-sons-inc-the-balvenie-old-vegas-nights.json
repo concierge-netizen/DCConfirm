@@ -1,0 +1,92 @@
+{
+  "slug": "william-grant-sons-inc-the-balvenie-old-vegas-nights",
+  "client": "William Grant & Sons, Inc. | The Balvenie",
+  "contact": "Dario Doimo",
+  "email": "Dario.doimo@wgrant.com",
+  "proposalDate": "2026-05-08",
+  "projectName": "Old Vegas Nights",
+  "opsItemId": "",
+  "venueName": "The Summit Club",
+  "venueAddress": "10775 Smt Clb Dr, Las Vegas, NV 89135",
+  "schedule": {
+    "loadinDate": "2026-05-21",
+    "loadinTime": "11:29",
+    "eventStartDate": "2026-05-21",
+    "eventStartTime": "17:00",
+    "eventEndDate": "2026-05-21",
+    "eventEndTime": "23:00",
+    "strikeDate": "2026-05-21",
+    "strikeTime": "00:30"
+  },
+  "scopeOfWork": "HANDS Logistics will execute this private VIP event with a discreet, hospitality-first approach. Our scope includes pre-event consultation on bar program and service flow, sourcing of premium glassware, ice program, and garnish prep, white-glove transportation of all materials to the venue, full bar build and service station setup, lead bartenders matched to the event's profile, and post-event strike with full materials reconciliation.\n\nThe activation prioritizes guest experience: bartenders work in muted black uniforms, materials are staged out of guest sightlines, and the strike process begins discretely as guest counts thin rather than after a hard event end. HANDS coordinates directly with the venue's catering team, guest services lead, and any third-party vendors to ensure seamless integration.\n\nNo branded elements unless explicitly specified in the line items — this scope assumes a clean, brand-neutral aesthetic appropriate to a VIP private setting. NDAs available on request.",
+  "lineItems": [
+    {
+      "category": "Labor",
+      "description": "",
+      "qty": 1,
+      "unit": "hr",
+      "unitPrice": 0
+    }
+  ],
+  "includeTax": false,
+  "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
+  "customNotes": "",
+  "brandColor": "#5E1914",
+  "brandColors": [
+    "#5E1914"
+  ],
+  "designSlides": [
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360153/zkrtoyvzzsd2ovzx55ba.png",
+      "caption": ""
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360161/fstoobcm7ur2riuxb5vl.png",
+      "caption": ""
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360168/eaqmnhidm6zkbxcv1ar6.png",
+      "caption": ""
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360226/knjlpxklb8wxtxr4hhid.png",
+      "caption": ""
+    }
+  ],
+  "deliverables": [
+    {
+      "title": "",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360191/xblov7pbyk9krzwkdzsq.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360198/koc3yepkdyn0hrrkv0kg.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360210/tbaikeqhya3tuascckb7.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360215/qs4act0wfjsiujvqcldd.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    }
+  ],
+  "sourcingItems": [],
+  "deckTemplate": "brand-event",
+  "status": "sent",
+  "recap": null,
+  "createdAt": "2026-05-09T20:57:18.070Z",
+  "updatedAt": "2026-05-09T20:57:18.070Z"
+}
