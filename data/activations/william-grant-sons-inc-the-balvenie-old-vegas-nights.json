@@ -62,21 +62,21 @@
       "window": "Load-In"
     },
     {
-      "title": "",
+      "title": "Service Area",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360198/koc3yepkdyn0hrrkv0kg.png",
       "dimensions": "",
       "notes": "",
       "window": "Load-In"
     },
     {
-      "title": "",
+      "title": "Floor Plan",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360210/tbaikeqhya3tuascckb7.png",
       "dimensions": "",
       "notes": "",
       "window": "Load-In"
     },
     {
-      "title": "",
+      "title": "Custom Cigars - Steeped in Caribbean Cask 14yo",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778360215/qs4act0wfjsiujvqcldd.png",
       "dimensions": "",
       "notes": "",
@@ -88,5 +88,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-09T20:57:18.070Z",
-  "updatedAt": "2026-05-09T21:00:36.436Z"
+  "updatedAt": "2026-05-09T21:04:36.315Z"
 }
