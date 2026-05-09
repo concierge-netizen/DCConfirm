@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "william-grant-sons-inc-the-balvenie-old-vegas-nights",
+      "client": "William Grant & Sons, Inc. | The Balvenie",
+      "projectName": "Old Vegas Nights",
+      "contact": "Dario Doimo",
+      "email": "Dario.doimo@wgrant.com",
+      "proposalDate": "2026-05-08",
+      "status": "sent",
+      "recapPublished": false,
+      "recapExists": false,
+      "recapOnly": false,
+      "createdAt": "2026-05-09T20:57:18.070Z",
+      "updatedAt": "2026-05-09T20:57:18.070Z"
+    },
+    {
       "slug": "campari-group-cookbook-launch",
       "client": "Campari Group",
       "projectName": "Cookbook Launch",
@@ -57,5 +71,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-07T21:16:00.353Z"
+  "updatedAt": "2026-05-09T20:57:19.033Z"
 }
