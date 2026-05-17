@@ -93,8 +93,9 @@ textarea{resize:vertical;min-height:72px;line-height:1.6;}
 <div id="lockScreen">
   <div class="lock-logo">H<span>A</span>NDS</div>
   <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#666;text-transform:uppercase;">Work Order Admin</div>
-  <input type="password" id="lockPw" placeholder="Admin password" onkeydown="if(event.key==='Enter')unlock()">
-  <button class="btn btn-green" onclick="unlock()">Unlock</button>
+  <div id="lockBody" style="display:flex;flex-direction:column;align-items:center;gap:14px;min-width:280px;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:#999;letter-spacing:0.1em;">Loading sign-in…</div>
+  </div>
   <div id="lockErr"></div>
 </div>
 
@@ -347,18 +348,79 @@ var currentWO=null;
 var quoteItems=[];
 var _sendType='installer';
 var _sendWoId=null;
-var ADMIN_PW='hands2026';
+// Auth: Clerk session + Portal Registry admin check (replaces password gate).
+// /api/portal-config returns { email, isAdmin, user } when called with a
+// Bearer token; mirrors the pattern in public/portal/.
+var CLERK_TOKEN=null;
 
-function unlock(){
-  if(document.getElementById('lockPw').value===ADMIN_PW){
-    document.getElementById('lockScreen').style.display='none';
-    init();
+window.initApp=async function initApp(){
+  try{ await window.Clerk.load(); }
+  catch(err){ return showLockMessage('Auth SDK failed: '+err.message, true); }
+
+  if(!window.Clerk.user) return renderSignIn();
+
+  var token;
+  try{ token=await window.Clerk.session.getToken(); }
+  catch(err){ return renderSignIn('Could not retrieve session. Please sign in again.'); }
+
+  var me;
+  try{
+    var resp=await fetch('/api/portal-config',{headers:{'Authorization':'Bearer '+token}});
+    me=await resp.json();
+    if(!resp.ok) throw new Error(me.error||('HTTP '+resp.status));
+  }catch(err){
+    return showLockMessage('Access denied: '+err.message, true);
+  }
+
+  if(!me.isAdmin){
+    return showLockMessage('Access denied. This admin tool is restricted to internal users.', true);
+  }
+
+  CLERK_TOKEN=token;
+  // Keep token fresh — Clerk session tokens are short-lived.
+  setInterval(async function(){ try{ CLERK_TOKEN=await window.Clerk.session.getToken(); }catch(_){} }, 50*1000);
+
+  document.getElementById('lockScreen').style.display='none';
+  init();
+};
+
+function renderSignIn(msg){
+  var body=document.getElementById('lockBody');
+  body.innerHTML='';
+  if(msg){
+    var note=document.createElement('div');
+    note.style.cssText='color:#c0392b;font-family:DM Mono,monospace;font-size:11px;letter-spacing:0.1em;text-align:center;max-width:340px;';
+    note.textContent=msg;
+    body.appendChild(note);
+  }
+  var mount=document.createElement('div');
+  mount.id='clerkMount';
+  body.appendChild(mount);
+  if(window.Clerk&&typeof window.Clerk.mountSignIn==='function'){
+    var wo=window.location.origin+'/workorders.html';
+    window.Clerk.mountSignIn(mount,{signInUrl:wo,signUpUrl:wo,afterSignInUrl:wo,afterSignUpUrl:wo,redirectUrl:wo,fallbackRedirectUrl:wo});
   }else{
-    document.getElementById('lockErr').textContent='Incorrect password';
-    document.getElementById('lockPw').value='';
+    body.innerHTML='<div style="color:#fff;font-family:DM Mono,monospace;font-size:11px;">Sign-in unavailable. Reload the page.</div>';
   }
 }
-document.getElementById('lockPw').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
+
+function showLockMessage(msg, isError){
+  var body=document.getElementById('lockBody');
+  if(!body) return;
+  body.innerHTML='';
+  var p=document.createElement('div');
+  p.style.cssText='color:'+(isError?'#ff6b6b':'#fff')+';font-family:DM Mono,monospace;font-size:12px;letter-spacing:0.06em;text-align:center;max-width:420px;line-height:1.7;';
+  p.textContent=msg;
+  body.appendChild(p);
+  if(isError&&window.Clerk&&window.Clerk.user){
+    var btn=document.createElement('button');
+    btn.className='btn btn-sm';
+    btn.style.cssText='margin-top:6px;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:#fff;';
+    btn.textContent='Sign out';
+    btn.onclick=function(){ window.Clerk.signOut().then(function(){ location.reload(); }); };
+    body.appendChild(btn);
+  }
+}
 
 async function init(){await Promise.all([loadCatalog(),loadWorkOrderList()]);}
 
@@ -400,7 +462,7 @@ function genWOId(){return 'WO-'+new Date().getFullYear()+'-'+String(Math.floor(M
 function newWorkOrder(){
   currentWO={id:genWOId(),tools:[],supplies:[]};
   populateBuilder();
-  currentWorkOrder=wo;showTab('builder');
+  showTab('builder');
 }
 
 async function editWorkOrder(id){
@@ -638,7 +700,7 @@ function toggleQuoteItem(catalogId){
 }
 function renderQuoteLines(){
   var card=document.getElementById('quoteLinesCard');
-  if(!quoteItems.length){card.style.display='none';return;}
+  if(!quoteItems.length){card.style.display='none';renderQuoteSummary();return;}
   card.style.display='block';
   var markup=parseFloat(document.getElementById('qMarkup').value)||0;
   var lines=document.getElementById('quoteLines');var base=0;
@@ -657,6 +719,7 @@ function renderQuoteLines(){
   document.getElementById('qMarkupPct').textContent=markup;
   document.getElementById('qMarkupAmt').textContent='$'+markupAmt.toFixed(2);
   document.getElementById('qTotal').textContent='$'+total.toFixed(2);
+  renderQuoteSummary();
 }
 function updateQuoteQty(i,val){quoteItems[i].qty=Math.max(1,parseInt(val)||1);renderQuoteLines();updateQuotePreview();}
 function updateQuotePreview(){
@@ -1074,8 +1137,8 @@ function loadQuoteFromWorkOrder(wo) {
   if (!wo || !wo.supplies || !wo.supplies.length) return;
 
   // Set client + reference from work order
-  var clientEl = document.getElementById('quoteClient');
-  var refEl    = document.getElementById('quoteRef');
+  var clientEl = document.getElementById('qClient');
+  var refEl    = document.getElementById('qRef');
   if (clientEl && !clientEl.value) clientEl.value = wo.account || wo.client || '';
   if (refEl    && !refEl.value)    refEl.value    = wo.name    || '';
 
@@ -1104,7 +1167,7 @@ function loadQuoteFromWorkOrder(wo) {
   });
 
   if (added > 0) {
-    renderQuote && renderQuote();
+    updateQuotePreview();
     setSaveStatus(added + ' supplies loaded into quote from work order');
   }
 }
@@ -1162,15 +1225,6 @@ function renderQuoteSummary() {
         '&#128065; External view — this is what your client sees. No cost breakdown visible.' +
       '</div>';
   }
-}
-
-// Patch renderQuote to also call renderQuoteSummary
-var _origRenderQuote = window.renderQuote;
-if (typeof _origRenderQuote === 'function') {
-  window.renderQuote = function() {
-    _origRenderQuote();
-    renderQuoteSummary();
-  };
 }
 
 // Patch showTab to render summary when switching to quote
@@ -1291,5 +1345,57 @@ if (typeof _origShowTabQ === 'function') {
     </div>
   </div>
 </div>
+
+<!-- Clerk bootloader. Loads the SDK using the publishable key from
+     /api/portal-config (unauthenticated path), then calls window.initApp
+     which verifies admin status via /api/portal-config with the Bearer
+     token before unlocking the page. -->
+<script>
+(async function bootClerk(){
+  try{
+    var resp=await fetch('/api/portal-config');
+    if(!resp.ok) throw new Error('config endpoint returned '+resp.status);
+    var cfg=await resp.json();
+    if(!cfg.clerkPublishableKey){
+      document.getElementById('lockBody').innerHTML='<div style="color:#ff6b6b;font-family:DM Mono,monospace;font-size:11px;text-align:center;">CLERK_PUBLISHABLE_KEY missing in Netlify env.</div>';
+      return;
+    }
+    var keyB64=cfg.clerkPublishableKey.replace(/^pk_(test|live)_/,'').replace(/\$$/,'');
+    var frontendApi='';
+    try{ frontendApi=atob(keyB64).replace(/\$$/,''); }
+    catch(e){
+      document.getElementById('lockBody').innerHTML='<div style="color:#ff6b6b;font-family:DM Mono,monospace;font-size:11px;">Invalid Clerk publishable key format.</div>';
+      return;
+    }
+    var s=document.createElement('script');
+    s.src='https://'+frontendApi+'/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+    s.setAttribute('data-clerk-publishable-key',cfg.clerkPublishableKey);
+    var here=window.location.origin+'/workorders.html';
+    s.setAttribute('data-clerk-sign-in-url',here);
+    s.setAttribute('data-clerk-sign-up-url',here);
+    s.setAttribute('data-clerk-after-sign-in-url',here);
+    s.setAttribute('data-clerk-after-sign-up-url',here);
+    s.crossOrigin='anonymous';
+    s.onload=function(){
+      if(typeof window.initApp==='function'){ window.initApp(); return; }
+      var tries=0;
+      var iv=setInterval(function(){
+        tries++;
+        if(typeof window.initApp==='function'){ clearInterval(iv); window.initApp(); }
+        else if(tries>100){
+          clearInterval(iv);
+          document.getElementById('lockBody').innerHTML='<div style="color:#ff6b6b;font-family:DM Mono,monospace;font-size:11px;">Auth script failed to bind. Refresh the page.</div>';
+        }
+      },50);
+    };
+    s.onerror=function(){
+      document.getElementById('lockBody').innerHTML='<div style="color:#ff6b6b;font-family:DM Mono,monospace;font-size:11px;">Failed to load authentication SDK.</div>';
+    };
+    document.head.appendChild(s);
+  }catch(err){
+    document.getElementById('lockBody').innerHTML='<div style="color:#ff6b6b;font-family:DM Mono,monospace;font-size:11px;">Could not load auth config: '+(err.message||err)+'</div>';
+  }
+})();
+</script>
 </body>
 </html>
