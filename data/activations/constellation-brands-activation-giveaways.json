@@ -19,36 +19,7 @@
     "strikeTime": ""
   },
   "scopeOfWork": "HANDS Logistics will fabricate the custom build elements specified in this proposal at our Las Vegas facility. Scope includes design refinement from client-provided specs, sourcing of all materials, fabrication and finishing, in-house QA and photo recap, and delivery.\n\nMaterials and finishes are itemized in the line-item breakdown. Final design approval is required 14 days before the build's delivery date to maintain the schedule.",
-  "lineItems": [
-    {
-      "category": "Materials",
-      "description": "Branded Golf Ball  (Final art pending) - Single Sided",
-      "qty": 240,
-      "unit": "each",
-      "unitPrice": 3.975
-    },
-    {
-      "category": "Custom",
-      "description": "Branded Golf Ball - Graphics and Agency ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 250
-    },
-    {
-      "category": "Materials",
-      "description": "Branded Golf Box (Final art pending) - Single Sided",
-      "qty": 250,
-      "unit": "each",
-      "unitPrice": 1.79
-    },
-    {
-      "category": "Labor",
-      "description": "Assembly - Final Kitting ",
-      "qty": 1,
-      "unit": "hr",
-      "unitPrice": 95
-    }
-  ],
+  "lineItems": [],
   "includeTax": true,
   "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
   "customNotes": "",
@@ -64,17 +35,21 @@
     {
       "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778184849/qk3wzbpczlrcwsc8g0jt.png",
       "caption": "Golf Ball Render"
-    },
-    {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1778185123/vikk7euz4oc5gg6g4dik.png",
-      "caption": "Box Design Renders "
     }
   ],
-  "deliverables": [],
+  "deliverables": [
+    {
+      "title": "Box Design V1",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779232866/grc2pxr9wghyzdvgnnxf.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    }
+  ],
   "sourcingItems": [],
   "deckTemplate": "brand-event",
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-06T16:35:35.884Z",
-  "updatedAt": "2026-05-07T20:20:34.156Z"
+  "updatedAt": "2026-05-19T23:21:38.132Z"
 }
