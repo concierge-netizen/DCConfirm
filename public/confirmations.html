@@ -128,6 +128,35 @@
 
     input.addEventListener('keydown', e => { if (e.key === 'Enter') send.click(); });
   });
+
+  // Pre-fill from URL query params: ?po=<monday-item-id>&kind=dc|pod.
+  // Used by hands-platform's order detail page (/orders/[id]) so HANDS
+  // staff can fire a DC/POD email without retyping the Monday ID. The
+  // ?kind param is optional — when present we focus + scroll its card
+  // and stamp the PO into that input only. When omitted we drop the PO
+  // into both inputs so either send is one click away.
+  (function prefillFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const po = (params.get('po') || '').trim();
+    if (!po) return;
+    const kind = (params.get('kind') || '').toLowerCase();
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      const cardKind = card.dataset.kind;
+      const input = card.querySelector('.po-input');
+      if (!kind || kind === cardKind) {
+        input.value = po;
+      }
+    });
+    if (kind === 'dc' || kind === 'pod') {
+      const target = document.querySelector('.card[data-kind="' + kind + '"]');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const focusInput = target.querySelector('.po-input');
+        if (focusInput) focusInput.focus();
+      }
+    }
+  })();
 </script>
 </body>
 </html>
