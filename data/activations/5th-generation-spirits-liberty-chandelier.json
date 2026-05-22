@@ -1,0 +1,103 @@
+{
+  "slug": "5th-generation-spirits-liberty-chandelier",
+  "client": "5th Generation Spirits",
+  "contact": "Dexter Hawkins",
+  "email": "Dexter@titosvodka.com",
+  "proposalDate": "2026-05-22",
+  "projectName": "Liberty Chandelier",
+  "opsItemId": "",
+  "venueName": "The Cosmopolitan",
+  "venueAddress": "3708 Las Vegas Blvd S, Las Vegas, NV 89109",
+  "schedule": {
+    "loadinDate": "2026-07-03",
+    "loadinTime": "05:00",
+    "eventStartDate": "2026-07-03",
+    "eventStartTime": "10:00",
+    "eventEndDate": "2026-07-05",
+    "eventEndTime": "22:00",
+    "strikeDate": "2026-07-06",
+    "strikeTime": "05:00"
+  },
+  "scopeOfWork": "HANDS Logistics will operate this multi-day brand experience as the on-site execution partner from initial load-in through final strike. Scope includes all pre-event sourcing and warehouse staging, rigging and installation of branded environment, daily activation operation including bar service and brand ambassador deployment, end-of-night reset and re-stocking, ongoing inventory tracking, and final strike with full materials accounting.\n\nDaily operations include morning prep and bar setup, scheduled service hours with full crew, end-of-day cleanup and inventory reconciliation, and security handoff to venue. HANDS provides crew rotation across days to maintain freshness and consistency. Mid-week deliveries from the warehouse are coordinated as needed for restocks and replenishment.\n\nThe scope includes a dedicated HANDS project manager on-site for the duration of the activation, daily client check-ins with photos and metrics, and a final post-event recap deck delivered within 5 business days of strike.",
+  "lineItems": [
+    {
+      "category": "Labor",
+      "description": "",
+      "qty": 1,
+      "unit": "hr",
+      "unitPrice": 0
+    },
+    {
+      "category": "Materials",
+      "description": "Framing, Mounting and Truss Frame",
+      "qty": 1,
+      "unit": "each",
+      "unitPrice": 5421.1
+    }
+  ],
+  "includeTax": false,
+  "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
+  "customNotes": "",
+  "brandColor": "",
+  "brandColors": [],
+  "designSlides": [
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779464625/zbf4ymfkh49xv9blfogo.png",
+      "caption": "Inspiration: Glamour, but make it July."
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462313/trifaoybvaabaeysxbb0.png",
+      "caption": ""
+    }
+  ],
+  "deliverables": [
+    {
+      "title": "Liberty Chandelier — full installation package",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462321/rfaj9acoctwclxj4axjx.png",
+      "dimensions": "14' W × 11' D × 11' H (overall footprint)",
+      "notes": "F34 truss rig, 5-tier Leyland-style acrylic chandelier (Ruby/Pearl/Sapphire), art deco foam facade (UV-printed PVC arch pattern), 13 layered acrylic star bursts, white snow-cone cart with Tito's wordmark, syrups + equipment, 4-person rigging crew. Production palette: #9B1B30 Ruby / #F5F1E8 Pearl / #1B3A6B Sapphire.",
+      "window": "Pre-event"
+    },
+    {
+      "title": "Liberty Chandelier — 5-tier acrylic prism chandelier (Leyland-style)",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462329/gonxncia7vefs2w39wql.png",
+      "dimensions": "48\" Ø × 39\" H overall Tier I (top, Ruby):    48\" W × 7.8\" H — 80 prisms Tier II (Ruby):        40\" Ø × 7.8\" H — 64 prisms Tier III (Pearl):      32\" Ø × 7.8\" H — 52 prisms Tier IV (Sapphire):    24\" Ø × 7.8\" H — 40 prisms Tier V (bottom):       16\" Ø × 7.8\" H — 28 prisms Total: 264 prisms Assembled weight: ~148 lbs",
+      "notes": "Inspired by Arhaus \"Leyland 56-Light Tiered Round Chandelier\". Central CNC aluminum armature with brushed brass finish; 5 ring caps stacked top-to-bottom (largest at top). Prisms: 1/8\" cast acrylic, CNC routed to 1\" × 7.8\" capsule profile, hand-finished.",
+      "window": "Pre-event"
+    },
+    {
+      "title": "F34 truss rig — goal-post configuration (6-day rental)",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462339/vys3wjtqlqgihugoqkuq.png",
+      "dimensions": "14' W × 11' H (168\" × 132\") Cross-section: 12\" × 12\" box truss Two vertical legs (118\" tall) + one horizontal top beam (168\" wide) Base plates: 24\" × 24\" steel, sandbagged Load rating: 250 lbs distributed",
+      "notes": "",
+      "window": "Pre-event"
+    },
+    {
+      "title": "Art Deco foam facade — UV-printed arch-pattern wrap",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462347/nxsqmgpnzuabboxsrqod.png",
+      "dimensions": "3 beam panels + 4 leg panels + 4 corner caps Beam panels: 56\" W × 14\" H each (3 sections × covering 168\" beam) Leg panels: 14\" W × 118\" H each (one outer + one inner per leg) Corner caps: 14\" × 14\" L-profile Material thickness: 4\" carved EPS foam + 1/8\" PVC face panel Total foam square footage: ~220 sq ft (full wrap, including side returns) — order 7 sheets of 4'×8' EPS",
+      "notes": "",
+      "window": "Pre-event"
+    },
+    {
+      "title": "Layered acrylic star bursts — 8-point cutouts",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462368/rxzscidvn4jvjesqwy43.png",
+      "dimensions": "16\" each 3–4 stacked layers per star (1/4\" cast acrylic each) Layer step: 20% smaller per layer, rotated 22.5° between layers 13 stars total — 4 on beam top edge, 3 on beam bottom edge, 2 on each outer leg edge, 1 on each inner leg edge",
+      "notes": "1/4\" cast acrylic (back layer biggest, front layer smallest). Layers bonded with edge-grade adhesive; magnetic mounting on rear plate. Stars mount so their centers sit ON the foam panel edge — half-overhanging the frame for sculptural shadow play. Asymmetric placement is intentional — palette/color rhythm distributed by hand, not gridded.",
+      "window": "Pre-event"
+    },
+    {
+      "title": "Tito's snow cone cart — custom branded service cart",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779462377/stt9eqorn0ygptruuqq7.png",
+      "dimensions": "28\" W × 36\" D × 50\" H (front face) Body height: 23\" — Leg/cross-bar: 11\" — Wheel: 14\" (single, left side)",
+      "notes": "",
+      "window": "Load-In"
+    }
+  ],
+  "sourcingItems": [],
+  "deckTemplate": "brand-event",
+  "status": "sent",
+  "recap": null,
+  "createdAt": "2026-05-22T15:44:31.863Z",
+  "updatedAt": "2026-05-22T15:44:31.863Z"
+}
