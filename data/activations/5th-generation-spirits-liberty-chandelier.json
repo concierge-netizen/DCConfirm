@@ -21,25 +21,27 @@
   "scopeOfWork": "HANDS Logistics will operate this multi-day brand experience as the on-site execution partner from initial load-in through final strike. Scope includes all pre-event sourcing and warehouse staging, rigging and installation of branded environment, daily activation operation including bar service and brand ambassador deployment, end-of-night reset and re-stocking, ongoing inventory tracking, and final strike with full materials accounting.\n\nDaily operations include morning prep and bar setup, scheduled service hours with full crew, end-of-day cleanup and inventory reconciliation, and security handoff to venue. HANDS provides crew rotation across days to maintain freshness and consistency. Mid-week deliveries from the warehouse are coordinated as needed for restocks and replenishment.\n\nThe scope includes a dedicated HANDS project manager on-site for the duration of the activation, daily client check-ins with photos and metrics, and a final post-event recap deck delivered within 5 business days of strike.",
   "lineItems": [
     {
-      "category": "Labor",
-      "description": "",
-      "qty": 1,
-      "unit": "hr",
-      "unitPrice": 0
-    },
-    {
-      "category": "Materials",
-      "description": "Framing, Mounting and Truss Frame",
+      "category": "Custom",
+      "description": "FULL PRODUCTION ESTIMATE - (BREAK OUT TO FOLLOW)",
       "qty": 1,
       "unit": "each",
-      "unitPrice": 5421.1
+      "unitPrice": 17225
+    },
+    {
+      "category": "Labor",
+      "description": "PRODUCTION INSTALLATION AND STRIKE - 4 STAFFERS  ",
+      "qty": 8,
+      "unit": "each",
+      "unitPrice": 600
     }
   ],
-  "includeTax": false,
+  "includeTax": true,
   "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
   "customNotes": "",
-  "brandColor": "",
-  "brandColors": [],
+  "brandColor": "#FF0000",
+  "brandColors": [
+    "#FF0000"
+  ],
   "designSlides": [
     {
       "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779464625/zbf4ymfkh49xv9blfogo.png",
@@ -99,5 +101,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-05-22T15:44:31.863Z"
+  "updatedAt": "2026-05-22T15:47:52.084Z"
 }
