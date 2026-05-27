@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "campari-group-back-bar-refresh-buddy-v-s",
+      "client": "Campari Group",
+      "projectName": "Back Bar Refresh - Buddy V's",
+      "contact": "Kinson Lau",
+      "email": "kinson.lau@campari.com",
+      "proposalDate": "2026-05-25",
+      "status": "sent",
+      "recapPublished": false,
+      "recapExists": false,
+      "recapOnly": false,
+      "createdAt": "2026-05-27T14:45:21.016Z",
+      "updatedAt": "2026-05-27T14:45:21.016Z"
+    },
+    {
       "slug": "5th-generation-spirits-liberty-chandelier",
       "client": "5th Generation Spirits",
       "projectName": "Liberty Chandelier",
@@ -85,5 +99,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-22T17:01:52.497Z"
+  "updatedAt": "2026-05-27T14:45:22.967Z"
 }
