@@ -1,0 +1,46 @@
+{
+  "slug": "campari-group-back-bar-refresh-buddy-v-s",
+  "client": "Campari Group",
+  "contact": "Kinson Lau",
+  "email": "kinson.lau@campari.com",
+  "proposalDate": "2026-05-25",
+  "projectName": "Back Bar Refresh - Buddy V's",
+  "opsItemId": "",
+  "venueName": "Buddy V's Ristorante",
+  "venueAddress": "3327 S Las Vegas Blvd, Las Vegas, NV 89109",
+  "schedule": {
+    "loadinDate": "",
+    "loadinTime": "",
+    "eventStartDate": "",
+    "eventStartTime": "",
+    "eventEndDate": "",
+    "eventEndTime": "",
+    "strikeDate": "",
+    "strikeTime": ""
+  },
+  "scopeOfWork": "HANDS Logistics will fabricate the custom build elements specified in this proposal at our Las Vegas facility. Scope includes design refinement from client-provided specs, sourcing of all materials, fabrication and finishing, in-house QA and photo documentation, and delivery to the activation venue at the scheduled load-in time.\n\nThe scope does not include on-site installation, on-site service, or strike — those are billed separately if needed. Once the build is delivered and accepted at the venue, HANDS's responsibility for the build elements ends unless installation is also contracted.\n\nAll builds are delivered in HANDS-branded transport, fully assembled or in field-assembly modules per the spec. Materials and finishes are itemized in the line-item breakdown. Final design approval is required 14 days before the build's delivery date to maintain the schedule.",
+  "lineItems": [
+    {
+      "category": "Labor",
+      "description": "",
+      "qty": 1,
+      "unit": "hr",
+      "unitPrice": 0
+    }
+  ],
+  "includeTax": false,
+  "paymentTerms": "50% deposit due on acceptance via PayPal invoice. Balance net 15 from event end date. Late balance subject to 1.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
+  "customNotes": "",
+  "brandColor": "#A0D6B4",
+  "brandColors": [
+    "#A0D6B4"
+  ],
+  "designSlides": [],
+  "deliverables": [],
+  "sourcingItems": [],
+  "deckTemplate": "brand-event",
+  "status": "sent",
+  "recap": null,
+  "createdAt": "2026-05-27T14:45:21.016Z",
+  "updatedAt": "2026-05-27T14:45:21.016Z"
+}
