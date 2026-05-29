@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "william-grant-sons-inc-the-balvenie-old-vegas-nights",
+      "client": "William Grant & Sons, Inc. | The Balvenie",
+      "projectName": "Old Vegas Nights",
+      "contact": "Dario Doimo",
+      "email": "Dario.doimo@wgrant.com",
+      "proposalDate": "2026-05-08",
+      "status": "sent",
+      "recapPublished": false,
+      "recapExists": true,
+      "recapOnly": false,
+      "createdAt": "2026-05-09T20:57:18.070Z",
+      "updatedAt": "2026-05-29T16:27:45.800Z"
+    },
+    {
       "slug": "campari-group-back-bar-refresh-buddy-v-s",
       "client": "Campari Group",
       "projectName": "Back Bar Refresh - Buddy V's",
@@ -41,20 +55,6 @@
       "recapOnly": false,
       "createdAt": "2026-05-06T16:35:35.884Z",
       "updatedAt": "2026-05-19T23:21:38.132Z"
-    },
-    {
-      "slug": "william-grant-sons-inc-the-balvenie-old-vegas-nights",
-      "client": "William Grant & Sons, Inc. | The Balvenie",
-      "projectName": "Old Vegas Nights",
-      "contact": "Dario Doimo",
-      "email": "Dario.doimo@wgrant.com",
-      "proposalDate": "2026-05-08",
-      "status": "sent",
-      "recapPublished": false,
-      "recapExists": false,
-      "recapOnly": false,
-      "createdAt": "2026-05-09T20:57:18.070Z",
-      "updatedAt": "2026-05-18T21:54:31.947Z"
     },
     {
       "slug": "campari-group-cookbook-launch",
@@ -99,5 +99,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-27T14:45:22.967Z"
+  "updatedAt": "2026-05-29T16:27:46.703Z"
 }
