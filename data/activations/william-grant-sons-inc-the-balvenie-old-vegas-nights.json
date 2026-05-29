@@ -149,7 +149,26 @@
   "sourcingItems": [],
   "deckTemplate": "brand-event",
   "status": "sent",
-  "recap": null,
+  "recap": {
+    "published": false,
+    "heroPhotoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780071313/erjews57nizv2pmypleg.jpg",
+    "summary": "",
+    "deckUrl": "https://63e0a37b-55f3-4e48-9890-44eef9db48a9.claudeusercontent.com/v1/design/projects/63e0a37b-55f3-4e48-9890-44eef9db48a9/serve/The%20Brass%20Room%20-%20Event%20Recap.pdf?t=ff35e59cda69a5a1e81dc0d6a4a194d54cae3a8340bc3036b851ce87ae934db8.01aaa826-6c07-478f-9f51-dfff03bf11cc.454e74bf-a5b7-47c5-b9da-d9174c0b930e.1780075554.fp&direct=1",
+    "deckTitle": "The Summit - Brass Room",
+    "metrics": [
+      {
+        "label": "Guests",
+        "value": "121"
+      },
+      {
+        "label": "Drinks Served",
+        "value": "94"
+      }
+    ],
+    "gallery": [],
+    "updatedAt": "2026-05-29T16:27:45.800Z",
+    "publishedAt": null
+  },
   "createdAt": "2026-05-09T20:57:18.070Z",
-  "updatedAt": "2026-05-18T21:54:31.947Z"
+  "updatedAt": "2026-05-29T16:27:45.800Z"
 }
