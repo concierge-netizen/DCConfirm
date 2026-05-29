@@ -8,11 +8,11 @@
       "email": "Dario.doimo@wgrant.com",
       "proposalDate": "2026-05-08",
       "status": "sent",
-      "recapPublished": false,
+      "recapPublished": true,
       "recapExists": true,
       "recapOnly": false,
       "createdAt": "2026-05-09T20:57:18.070Z",
-      "updatedAt": "2026-05-29T16:27:45.800Z"
+      "updatedAt": "2026-05-29T16:27:48.974Z"
     },
     {
       "slug": "campari-group-back-bar-refresh-buddy-v-s",
@@ -99,5 +99,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-05-29T16:27:46.703Z"
+  "updatedAt": "2026-05-29T16:27:49.864Z"
 }
