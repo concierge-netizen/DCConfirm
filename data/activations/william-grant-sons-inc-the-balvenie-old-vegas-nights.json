@@ -165,10 +165,15 @@
         "value": "94"
       }
     ],
-    "gallery": [],
-    "updatedAt": "2026-05-29T16:27:48.974Z",
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780072085/qvk4nzmm7xn0i1e72wlq.jpg",
+        "caption": "Personalized Cigars"
+      }
+    ],
+    "updatedAt": "2026-05-29T16:28:30.096Z",
     "publishedAt": "2026-05-29T16:27:48.974Z"
   },
   "createdAt": "2026-05-09T20:57:18.070Z",
-  "updatedAt": "2026-05-29T16:27:48.974Z"
+  "updatedAt": "2026-05-29T16:28:30.096Z"
 }
