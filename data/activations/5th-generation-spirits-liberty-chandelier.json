@@ -36,7 +36,7 @@
     },
     {
       "category": "Materials",
-      "description": "10x8' SEG Fabric - Tito's Branded - ",
+      "description": "10x8' SEG Fabric - Tito's Branded - Client Owned",
       "qty": 1,
       "unit": "each",
       "unitPrice": 674.59
@@ -64,7 +64,7 @@
     },
     {
       "category": "Custom",
-      "description": "Firework Acrylics - 2 sets of 3 ",
+      "description": "Firework Acrylics - 2 sets of 3 - Client Owned ",
       "qty": 2,
       "unit": "flat",
       "unitPrice": 1170.12
@@ -99,5 +99,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-06-01T23:38:13.146Z"
+  "updatedAt": "2026-06-01T23:48:50.858Z"
 }
