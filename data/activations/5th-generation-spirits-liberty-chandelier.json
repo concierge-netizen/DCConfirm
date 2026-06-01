@@ -18,21 +18,56 @@
     "strikeDate": "2026-07-06",
     "strikeTime": "05:00"
   },
-  "scopeOfWork": "TENTATIVE SCOPE OF WORK\nLiberty Chandelier — Independence Day Weekend Co-Activation\nLALO Tequila + Tito's Handmade Vodka\nPrepared by: HANDS Logistics LLC\nDate: May 22, 2026\nStatus: Tentative — pricing and final scope subject to venue confirmation, fabrication bids, and brand approvals\nVenue: The Cosmopolitan of Las Vegas — Boulevard Pool\nActivation dates: Friday, July 3 – Sunday, July 5, 2026\n\n1. PROJECT OVERVIEW\nHANDS Logistics LLC (\"HANDS\") will design, produce, manage, and execute a three-day co-branded brand activation (\"Liberty Chandelier\") at The Cosmopolitan of Las Vegas — Boulevard Pool — on behalf of LALO Tequila (\"LALO\") and Tito's Handmade Vodka (\"Tito's\"), collectively the \"Brands.\"\nThe activation consists of a unified pool-deck takeover anchored by a custom crystal chandelier installation, with two dedicated branded bar homes — the Ruby Bar (Tito's) and the Sapphire Bar (LALO) — plus full operational, creative, content, and staffing scope as outlined below.\nThis SOW is tentative. Pricing is subject to venue contract execution, vendor bids, and final scope lock. Both Brands' written approval is required before HANDS commits to any non-refundable spend.\n\n2. TERM\n\nEffective date: upon countersignature by both Brands\nActivation window: Friday, July 3, 2026 (12:00 PM PT) – Sunday, July 5, 2026 (10:00 PM PT)\nFull engagement term: countersignature through July 10, 2026 (covering pre-production, activation, and load-out)\n\n\n3. VENUE\n\nLocation: The Cosmopolitan of Las Vegas, Boulevard Pool, 4th Floor, 3708 Las Vegas Blvd S, Las Vegas, NV 89109\nFootprint: Full Boulevard Pool deck (approximately 65 ft wide, Strip-facing)\nCapacity target: 500+ guests per day at peak\nVenue contract: Currently in negotiation. HANDS will lead venue negotiation, execute the venue agreement, and pass through actual venue costs to the Brands. Any change to venue, capacity, or footprint will trigger a scope amendment.\n\n\n4. DELIVERABLES — DESIGN & FABRICATION\n4.1 Liberty Chandelier Hero Installation\n\nQuantity: 1\nDiameter: 12–15 ft\nThree-zone cascading crystal strand construction: clear/white (top), ruby red (one half), sapphire blue (other half)\nInternal programmable LED system with daytime (ambient) and nighttime (fireworks-synced) modes\nSuspended rigging engineered to Cosmopolitan venue load specifications\nIncludes: design renderings, structural engineering sign-off, fabrication, rigging hardware, on-site install, programming, daily checks, and strike\nRiggers required: 4 certified riggers, full install day and strike \nLighting tech required: 1 LD on call for activation duration",
+  "scopeOfWork": "TENTATIVE SCOPE OF WORK\nLiberty Chandelier — Independence Day Weekend Co-Activation\nLALO Tequila + Tito's Handmade Vodka\nPrepared by: HANDS Logistics LLC\nDate: May 22, 2026\nStatus: Tentative — pricing and final scope subject to venue confirmation, fabrication bids, and brand approvals\nVenue: The Cosmopolitan of Las Vegas — Boulevard Pool\nActivation dates: Friday, July 3 – Sunday, July 5, 2026",
   "lineItems": [
     {
-      "category": "Custom",
-      "description": "FULL PRODUCTION ESTIMATE - (BREAK OUT TO FOLLOW)",
+      "category": "Materials",
+      "description": "40 x 60' Artificial Turf - Client Owned ",
       "qty": 1,
-      "unit": "each",
-      "unitPrice": 17225
+      "unit": "flat",
+      "unitPrice": 2292.46
     },
     {
       "category": "Labor",
-      "description": "PRODUCTION INSTALLATION AND STRIKE - 4 STAFFERS  ",
-      "qty": 8,
+      "description": "Installation of Turf | +/- 1200 LBS | 4 Staffers - Manual move from dock, lay, seam alignment, gaff. ",
+      "qty": 1,
+      "unit": "flat",
+      "unitPrice": 2470
+    },
+    {
+      "category": "Materials",
+      "description": "10x8' SEG Fabric - Tito's Branded - ",
+      "qty": 1,
       "unit": "each",
-      "unitPrice": 600
+      "unitPrice": 674.59
+    },
+    {
+      "category": "Equipment",
+      "description": "White Fluted Bar - HANDS Owned ",
+      "qty": 3,
+      "unit": "day",
+      "unitPrice": 100
+    },
+    {
+      "category": "Materials",
+      "description": "Snow Cone Syrups - Red & Blue Syrups - 10Q/Red, 10QBlue - Tax and Shipping ",
+      "qty": 1,
+      "unit": "flat",
+      "unitPrice": 239.23
+    },
+    {
+      "category": "Materials",
+      "description": "Green Gaff - Non Residue - 305 ft ",
+      "qty": 1,
+      "unit": "flat",
+      "unitPrice": 251.14
+    },
+    {
+      "category": "Custom",
+      "description": "Firework Acrylics - 2 sets of 3 ",
+      "qty": 2,
+      "unit": "flat",
+      "unitPrice": 1170.12
     }
   ],
   "includeTax": true,
@@ -42,45 +77,8 @@
   "brandColors": [
     "#FF0000"
   ],
-  "designSlides": [
-    {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779464625/zbf4ymfkh49xv9blfogo.png",
-      "caption": "Inspiration: Glamour, but make it July."
-    },
-    {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469273/tlvkvqgp4vzkvfulvzhb.png",
-      "caption": ""
-    }
-  ],
+  "designSlides": [],
   "deliverables": [
-    {
-      "title": "Liberty Chandelier — full installation package",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469283/bkmifgt6rrbst96qizau.png",
-      "dimensions": "14' W × 11' D × 11' H (overall footprint)",
-      "notes": "F34 truss rig, 5-tier Leyland-style acrylic chandelier (Ruby/Pearl/Sapphire), art deco foam facade (UV-printed PVC arch pattern), 13 layered acrylic star bursts, white snow-cone cart with Tito's wordmark, syrups + equipment, 4-person rigging crew. Production palette: #9B1B30 Ruby / #F5F1E8 Pearl / #1B3A6B Sapphire.",
-      "window": "Pre-event"
-    },
-    {
-      "title": "Liberty Chandelier — 5-tier acrylic prism chandelier (Leyland-style)",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469287/eg9wtdmf58nkq0yyhmd6.png",
-      "dimensions": "48\" Ø × 39\" H overall Tier I (top, Ruby):    48\" W × 7.8\" H — 80 prisms Tier II (Ruby):        40\" Ø × 7.8\" H — 64 prisms Tier III (Pearl):      32\" Ø × 7.8\" H — 52 prisms Tier IV (Sapphire):    24\" Ø × 7.8\" H — 40 prisms Tier V (bottom):       16\" Ø × 7.8\" H — 28 prisms Total: 264 prisms Assembled weight: ~148 lbs",
-      "notes": "Inspired by Arhaus \"Leyland 56-Light Tiered Round Chandelier\". Central CNC aluminum armature with brushed brass finish; 5 ring caps stacked top-to-bottom (largest at top). Prisms: 1/8\" cast acrylic, CNC routed to 1\" × 7.8\" capsule profile, hand-finished.",
-      "window": "Pre-event"
-    },
-    {
-      "title": "F34 truss rig — goal-post configuration (6-day rental)",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469292/ej4ppnrffo1xy1h4lu3z.png",
-      "dimensions": "14' W × 11' H (168\" × 132\") Cross-section: 12\" × 12\" box truss Two vertical legs (118\" tall) + one horizontal top beam (168\" wide) Base plates: 24\" × 24\" steel, sandbagged Load rating: 250 lbs distributed",
-      "notes": "",
-      "window": "Pre-event"
-    },
-    {
-      "title": "Art Deco foam facade — UV-printed arch-pattern wrap",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469297/z77hlcnraivi8qgdijty.png",
-      "dimensions": "3 beam panels + 4 leg panels + 4 corner caps Beam panels: 56\" W × 14\" H each (3 sections × covering 168\" beam) Leg panels: 14\" W × 118\" H each (one outer + one inner per leg) Corner caps: 14\" × 14\" L-profile Material thickness: 4\" carved EPS foam + 1/8\" PVC face panel Total foam square footage: ~220 sq ft (full wrap, including side returns) — order 7 sheets of 4'×8' EPS",
-      "notes": "",
-      "window": "Pre-event"
-    },
     {
       "title": "Layered acrylic star bursts — 8-point cutouts",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469302/s5zgdsrk2g1hb7u6z0ns.png",
@@ -89,9 +87,9 @@
       "window": "Pre-event"
     },
     {
-      "title": "Tito's snow cone cart — custom branded service cart",
+      "title": "Fluted Bar — non-branded service bar",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469307/ht5044fnm1sogtycfqot.png",
-      "dimensions": "28\" W × 36\" D × 50\" H (front face) Body height: 23\" — Leg/cross-bar: 11\" — Wheel: 14\" (single, left side)",
+      "dimensions": "60\" W × 28\" D ",
       "notes": "",
       "window": "Load-In"
     }
@@ -101,5 +99,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-05-22T17:01:51.200Z"
+  "updatedAt": "2026-06-01T23:38:13.146Z"
 }
