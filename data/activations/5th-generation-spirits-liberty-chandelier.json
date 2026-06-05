@@ -54,6 +54,13 @@
       "qty": 1,
       "unit": "each",
       "unitPrice": 489.23
+    },
+    {
+      "category": "Labor",
+      "description": "Install Labor and Strike Labor - Three Staffers - Backdrop set up, bar, Sampling execution/ice prep, acrylics install, ",
+      "qty": 12,
+      "unit": "hr",
+      "unitPrice": 95
     }
   ],
   "includeTax": true,
@@ -66,13 +73,6 @@
   "designSlides": [],
   "deliverables": [
     {
-      "title": "Unbranded - Fluted Bar",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780679771/skwz0wt2uz2b71zvx3av.jpg",
-      "dimensions": "72\" x 38\" x 26\"",
-      "notes": "",
-      "window": "Load-In"
-    },
-    {
       "title": "Starburst Assembly ",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780682485/obh5je336utzjb6m5t9g.png",
       "dimensions": "16\"x16\"",
@@ -82,6 +82,13 @@
     {
       "title": "Starburst Pillar Acrylic Assembly ",
       "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780690755/hbkbp9ng8tehu9ofoebu.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "Unbranded - Fluted Bar & Tito's Back Drop",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780692272/vhb5pkfaqy6htqr17bya.png",
       "dimensions": "",
       "notes": "",
       "window": "Load-In"
@@ -109,5 +116,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-06-05T20:20:15.396Z"
+  "updatedAt": "2026-06-05T20:45:02.391Z"
 }
