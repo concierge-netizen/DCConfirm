@@ -9,31 +9,17 @@
   "venueName": "The Cosmopolitan",
   "venueAddress": "3708 Las Vegas Blvd S, Las Vegas, NV 89109",
   "schedule": {
-    "loadinDate": "2026-07-03",
+    "loadinDate": "2026-07-04",
     "loadinTime": "05:00",
-    "eventStartDate": "2026-07-03",
+    "eventStartDate": "2026-07-04",
     "eventStartTime": "10:00",
     "eventEndDate": "2026-07-05",
-    "eventEndTime": "22:00",
+    "eventEndTime": "18:00",
     "strikeDate": "2026-07-06",
     "strikeTime": "05:00"
   },
   "scopeOfWork": "TENTATIVE SCOPE OF WORK\nLiberty Chandelier — Independence Day Weekend Co-Activation\nLALO Tequila + Tito's Handmade Vodka\nPrepared by: HANDS Logistics LLC\nDate: May 22, 2026\nStatus: Tentative — pricing and final scope subject to venue confirmation, fabrication bids, and brand approvals\nVenue: The Cosmopolitan of Las Vegas — Boulevard Pool\nActivation dates: Friday, July 3 – Sunday, July 5, 2026",
   "lineItems": [
-    {
-      "category": "Materials",
-      "description": "40 x 60' Artificial Turf - Client Owned ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 2292.46
-    },
-    {
-      "category": "Labor",
-      "description": "Installation of Turf | +/- 1200 LBS | 4 Staffers - Manual move from dock, lay, seam alignment, gaff. ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 2470
-    },
     {
       "category": "Materials",
       "description": "10x8' SEG Fabric - Tito's Branded - Client Owned",
@@ -56,18 +42,18 @@
       "unitPrice": 239.23
     },
     {
-      "category": "Materials",
-      "description": "Green Gaff - Non Residue - 305 ft ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 251.14
-    },
-    {
       "category": "Custom",
       "description": "Firework Acrylics - 2 sets of 3 - Client Owned ",
       "qty": 2,
       "unit": "flat",
       "unitPrice": 1170.12
+    },
+    {
+      "category": "Materials",
+      "description": "Acrylic Risers - Bar Top Decor - 4pcs",
+      "qty": 1,
+      "unit": "each",
+      "unitPrice": 489.23
     }
   ],
   "includeTax": true,
@@ -80,24 +66,48 @@
   "designSlides": [],
   "deliverables": [
     {
-      "title": "Layered acrylic star bursts — 8-point cutouts",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469302/s5zgdsrk2g1hb7u6z0ns.png",
-      "dimensions": "16\" each 3–4 stacked layers per star (1/4\" cast acrylic each) Layer step: 20% smaller per layer, rotated 22.5° between layers 13 stars total — 4 on beam top edge, 3 on beam bottom edge, 2 on each outer leg edge, 1 on each inner leg edge",
-      "notes": "1/4\" cast acrylic (back layer biggest, front layer smallest). Layers bonded with edge-grade adhesive; magnetic mounting on rear plate. Stars mount so their centers sit ON the foam panel edge — half-overhanging the frame for sculptural shadow play. Asymmetric placement is intentional — palette/color rhythm distributed by hand, not gridded.",
-      "window": "Pre-event"
+      "title": "Unbranded - Fluted Bar",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780679771/skwz0wt2uz2b71zvx3av.jpg",
+      "dimensions": "72\" x 38\" x 26\"",
+      "notes": "",
+      "window": "Load-In"
     },
     {
-      "title": "Fluted Bar — non-branded service bar",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1779469307/ht5044fnm1sogtycfqot.png",
-      "dimensions": "60\" W × 28\" D ",
+      "title": "Starburst Assembly ",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780682485/obh5je336utzjb6m5t9g.png",
+      "dimensions": "16\"x16\"",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "Starburst Pillar Acrylic Assembly ",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780690755/hbkbp9ng8tehu9ofoebu.png",
+      "dimensions": "",
       "notes": "",
       "window": "Load-In"
     }
   ],
-  "sourcingItems": [],
+  "sourcingItems": [
+    {
+      "name": "Tito's Tent ",
+      "vendor": "BBG",
+      "photoUrl": "",
+      "qty": 1,
+      "leadTime": "1 day",
+      "notes": "10x10'"
+    },
+    {
+      "name": "Shaved Ice Machine ",
+      "vendor": "HANDS",
+      "photoUrl": "",
+      "qty": 1,
+      "leadTime": "0",
+      "notes": ""
+    }
+  ],
   "deckTemplate": "brand-event",
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-06-01T23:48:50.858Z"
+  "updatedAt": "2026-06-05T20:20:15.396Z"
 }
