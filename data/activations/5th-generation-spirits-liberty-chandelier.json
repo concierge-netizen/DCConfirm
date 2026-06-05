@@ -92,6 +92,13 @@
       "dimensions": "",
       "notes": "",
       "window": "Load-In"
+    },
+    {
+      "title": "Acrylic Bottle Risers",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1780692862/ifwohfg1duke5z69jjkl.png",
+      "dimensions": "",
+      "notes": "",
+      "window": "Load-In"
     }
   ],
   "sourcingItems": [
@@ -116,5 +123,5 @@
   "status": "sent",
   "recap": null,
   "createdAt": "2026-05-22T15:44:31.863Z",
-  "updatedAt": "2026-06-05T20:45:02.391Z"
+  "updatedAt": "2026-06-05T20:54:27.431Z"
 }
