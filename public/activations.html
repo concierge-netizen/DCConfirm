@@ -1263,6 +1263,27 @@
           </div>
         </div>
 
+        <!-- Step 06 — Custom HTML Embed -->
+        <div class="card">
+          <div class="section-eyebrow">Step 06 — Custom HTML Embed</div>
+          <h3 class="section-title" style="font-size: 22px;">Embed a custom HTML module</h3>
+          <p class="section-sub">Optional. Paste a self-contained HTML document. It renders in a sandboxed iframe (scripts allowed, no access to this admin/recap page) at the position you choose, and auto-resizes to fit its content.</p>
+          <div class="field" style="margin-top: 16px; max-width: 360px;">
+            <label for="recapCustomEmbedPosition">Position</label>
+            <select id="recapCustomEmbedPosition">
+              <option value="above-summary">Above summary (leads the recap)</option>
+              <option value="above-gallery" selected>Above gallery</option>
+              <option value="above-deck">Above deck</option>
+              <option value="above-delivered">Above “What HANDS Delivered”</option>
+              <option value="before-cta">Before closing CTA</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top: 16px;">
+            <label for="recapCustomEmbedHtml">HTML markup</label>
+            <textarea id="recapCustomEmbedHtml" rows="14" spellcheck="false" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;…&lt;/html&gt;" style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5; white-space: pre; tab-size: 2;"></textarea>
+          </div>
+        </div>
+
         <!-- ACTIONS -->
         <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px;">
           <button class="btn-primary" onclick="saveRecap(true)">Save & Publish</button>
@@ -2777,6 +2798,8 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       document.getElementById("recapSummary").value = r.summary || '';
       document.getElementById("recapDeckUrl").value = r.deckUrl || '';
       document.getElementById("recapDeckTitle").value = r.deckTitle || '';
+      document.getElementById("recapCustomEmbedHtml").value = r.customEmbedHtml || '';
+      document.getElementById("recapCustomEmbedPosition").value = r.customEmbedPosition || 'above-gallery';
 
       recapMetrics = (r.metrics || []).map(m => ({
         id: Date.now() + Math.random(),
@@ -3070,6 +3093,8 @@ Las Vegas, NV  |  concierge@handslogistics.com`;
       summary: document.getElementById("recapSummary").value.trim(),
       deckUrl: document.getElementById("recapDeckUrl").value.trim(),
       deckTitle: document.getElementById("recapDeckTitle").value.trim(),
+      customEmbedHtml: document.getElementById("recapCustomEmbedHtml").value.trim(),
+      customEmbedPosition: document.getElementById("recapCustomEmbedPosition").value,
       metrics: recapMetrics
         .filter(m => m.label && m.value)
         .map(m => ({ label: m.label, value: m.value })),
