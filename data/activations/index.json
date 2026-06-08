@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "slug": "ghost-bikini-bash-2026",
+      "client": "GHOST",
+      "projectName": "Bikini Bash - 2026",
+      "contact": "",
+      "email": "",
+      "proposalDate": "2026-06-08",
+      "status": "recap_only",
+      "recapPublished": false,
+      "recapExists": false,
+      "recapOnly": true,
+      "createdAt": "2026-06-08T15:29:18.481Z",
+      "updatedAt": "2026-06-08T15:29:18.481Z"
+    },
+    {
       "slug": "5th-generation-spirits-liberty-chandelier",
       "client": "5th Generation Spirits",
       "projectName": "Liberty Chandelier",
@@ -99,5 +113,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-06-05T20:54:28.615Z"
+  "updatedAt": "2026-06-08T15:29:19.585Z"
 }
