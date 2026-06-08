@@ -8,11 +8,11 @@
       "email": "",
       "proposalDate": "2026-06-08",
       "status": "recap_only",
-      "recapPublished": false,
-      "recapExists": false,
+      "recapPublished": true,
+      "recapExists": true,
       "recapOnly": true,
       "createdAt": "2026-06-08T15:29:18.481Z",
-      "updatedAt": "2026-06-08T15:29:18.481Z"
+      "updatedAt": "2026-06-08T15:33:02.789Z"
     },
     {
       "slug": "5th-generation-spirits-liberty-chandelier",
@@ -113,5 +113,5 @@
       "updatedAt": "2026-05-01T13:52:49.666Z"
     }
   ],
-  "updatedAt": "2026-06-08T15:29:19.585Z"
+  "updatedAt": "2026-06-08T15:33:03.568Z"
 }
