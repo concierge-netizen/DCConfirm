@@ -196,7 +196,7 @@
   </section>
 
   <!-- THANK YOU / NEXT -->
-  <section class="recap-section">
+  <section class="recap-section" id="ctaSection">
     <div class="recap-inner">
       <div class="final-card">
         <div class="eyebrow">Thank You</div>
@@ -317,6 +317,9 @@
     // Delivered
     renderDelivered();
 
+    // Custom HTML embed (optional, any recap)
+    renderCustomEmbed();
+
     document.getElementById("loadingView").style.display = "none";
     document.getElementById("recapView").style.display = "block";
   }
@@ -423,6 +426,59 @@
 
     document.getElementById("deliveredSection").style.display = "block";
   }
+
+  // Custom HTML embed — renders raw HTML in a sandboxed iframe at a chosen
+  // position. Sandbox is "allow-scripts" only (NO allow-same-origin), so the
+  // embed runs scripts in an opaque origin and cannot touch this page's
+  // cookies, storage, or DOM. Renders in both standard and /share views.
+  function renderCustomEmbed() {
+    const html = recap.customEmbedHtml;
+    if (!html || !html.trim()) return;
+
+    const anchorMap = {
+      'above-summary':   'summarySection',
+      'above-gallery':   'gallerySection',
+      'above-deck':      'deckSection',
+      'above-delivered': 'deliveredSection',
+      'before-cta':      'ctaSection'
+    };
+    const pos = recap.customEmbedPosition || 'above-gallery';
+
+    const section = document.createElement('section');
+    section.className = 'recap-section custom-embed-section';
+    section.id = 'customEmbedSection';
+    const inner = document.createElement('div');
+    inner.className = 'recap-inner';
+    const frame = document.createElement('iframe');
+    frame.className = 'custom-embed-frame';
+    frame.title = 'Custom embed';
+    frame.setAttribute('sandbox', 'allow-scripts');
+    frame.setAttribute('loading', 'lazy');
+    frame.srcdoc = html;
+    inner.appendChild(frame);
+    section.appendChild(inner);
+
+    const recapView = document.getElementById('recapView');
+    const anchor = document.getElementById(anchorMap[pos] || 'gallerySection');
+    if (anchor && anchor.parentNode === recapView) {
+      recapView.insertBefore(section, anchor);
+    } else {
+      recapView.appendChild(section);
+    }
+  }
+
+  // Auto-resize the embed iframe to its content. The embed posts
+  // { type: 'resize', height: N } to the parent; match by source window so
+  // only the sending iframe is resized.
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.type !== 'resize' || typeof d.height !== 'number') return;
+    document.querySelectorAll('.custom-embed-frame').forEach(f => {
+      if (f.contentWindow === e.source) {
+        f.style.height = Math.max(0, Math.round(d.height)) + 'px';
+      }
+    });
+  });
 
   // Lightbox
   function openLightbox(url, caption) {
