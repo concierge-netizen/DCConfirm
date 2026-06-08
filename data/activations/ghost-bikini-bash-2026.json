@@ -15,7 +15,26 @@
   "status": "recap_only",
   "recapOnly": true,
   "slug": "ghost-bikini-bash-2026",
-  "recap": null,
+  "recap": {
+    "published": true,
+    "heroPhotoUrl": "",
+    "summary": "",
+    "deckUrl": "",
+    "deckTitle": "",
+    "metrics": [
+      {
+        "label": "Guests",
+        "value": "~250"
+      },
+      {
+        "label": "Drinks Served",
+        "value": "851"
+      }
+    ],
+    "gallery": [],
+    "updatedAt": "2026-06-08T15:33:02.789Z",
+    "publishedAt": "2026-06-08T15:33:02.789Z"
+  },
   "createdAt": "2026-06-08T15:29:18.481Z",
-  "updatedAt": "2026-06-08T15:29:18.481Z"
+  "updatedAt": "2026-06-08T15:33:02.789Z"
 }
