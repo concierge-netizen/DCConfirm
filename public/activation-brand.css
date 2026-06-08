@@ -507,3 +507,13 @@ footer {
 @media (max-width: 640px) {
   .custom-embed-frame { min-height: 480px; }
 }
+
+/* ── Full-bleed embed (recap.embedUrl) ─────────────────────
+   Renders a same-origin page (e.g. a deck) filling the viewport
+   under the sticky 72px nav. Height is set inline by JS. */
+.fullbleed-embed-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #0d0d0d;
+}

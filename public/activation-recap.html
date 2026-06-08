@@ -286,6 +286,17 @@
   function renderRecap() {
     document.title = `${proposal.client || 'HANDS'} — ${proposal.projectName || 'Event'} Recap`;
 
+    // Full-bleed embed mode: when recap.embedUrl is set, the recap link renders a
+    // single same-origin page (e.g. a deck) filling the viewport under the nav and
+    // skips the standard shell. Uses a plain same-origin iframe (no sandbox) so the
+    // embedded page keeps localStorage, fullscreen, and autoplay.
+    if (recap.embedUrl) {
+      renderFullBleedEmbed();
+      document.getElementById("loadingView").style.display = "none";
+      document.getElementById("recapView").style.display = "block";
+      return;
+    }
+
     // Hero
     document.getElementById("heroEyebrow").textContent = `${proposal.client || 'Event'} · Recap`;
     document.getElementById("heroHeadline").innerHTML = escapeHtml(proposal.projectName || 'Activation');
@@ -425,6 +436,27 @@
     `).join('');
 
     document.getElementById("deliveredSection").style.display = "block";
+  }
+
+  // Full-bleed embed — renders a same-origin page (e.g. a standalone deck) as a
+  // single iframe filling the viewport below the nav. Trusted same-origin content,
+  // so NO sandbox: the embedded page keeps localStorage/fullscreen/autoplay.
+  function renderFullBleedEmbed() {
+    const recapView = document.getElementById('recapView');
+    Array.prototype.forEach.call(recapView.children, el => { el.style.display = 'none'; });
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'none';
+
+    const nav = document.querySelector('nav');
+    const navH = nav ? nav.offsetHeight : 72;
+
+    const frame = document.createElement('iframe');
+    frame.className = 'fullbleed-embed-frame';
+    frame.src = recap.embedUrl;
+    frame.title = `${proposal.projectName || 'Event'} Recap`;
+    frame.setAttribute('allow', 'fullscreen; autoplay; encrypted-media');
+    frame.style.height = `calc(100vh - ${navH}px)`;
+    recapView.appendChild(frame);
   }
 
   // Custom HTML embed — renders raw HTML in a sandboxed iframe at a chosen
