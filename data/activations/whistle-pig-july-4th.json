@@ -1,0 +1,113 @@
+{
+  "slug": "whistle-pig-july-4th",
+  "client": "Whistle Pig",
+  "contact": "Shane Hudson",
+  "email": "shudson@whistlepigrye.com",
+  "proposalDate": "2026-06-30",
+  "projectName": "July 4th",
+  "opsItemId": "",
+  "venueName": "Legacy Club",
+  "venueAddress": "8 Fremont St, Las Vegas, NV 89101",
+  "schedule": {
+    "loadinDate": "2026-07-04",
+    "loadinTime": "12:30",
+    "eventStartDate": "2026-07-04",
+    "eventStartTime": "14:00",
+    "eventEndDate": "2026-07-04",
+    "eventEndTime": "16:00",
+    "strikeDate": "2026-07-04",
+    "strikeTime": "23:30"
+  },
+  "scopeOfWork": "HANDS Logistics will execute a single-night brand activation including pre-event coordination, day-of installation, live event execution, and overnight strike. Our scope covers load-in of all branded elements, bar build and beverage service setup, on-site talent management for the event window, and complete teardown with materials returned to HANDS warehouse.\n\nCrew will arrive at the venue at the scheduled load-in time with all installation tools, transportation equipment, and branded materials already staged. During the event window, HANDS provides the lead bartender, bar-backs, and floor crew as scoped in line items. Strike begins at event end and continues until all branded elements are removed and the venue is restored to its pre-event condition.\n\nIncludes general liability coverage.",
+  "lineItems": [
+    {
+      "category": "Materials",
+      "description": "Fluted Bar Rental ",
+      "qty": 1,
+      "unit": "flat",
+      "unitPrice": 595
+    },
+    {
+      "category": "Materials",
+      "description": "Bar Decor - Quills, Parchment, Florals  ",
+      "qty": 1,
+      "unit": "flat",
+      "unitPrice": 462.41
+    },
+    {
+      "category": "Custom",
+      "description": "SEG Rental ",
+      "qty": 1,
+      "unit": "each",
+      "unitPrice": 175
+    },
+    {
+      "category": "Custom",
+      "description": "SEG Printing - 78.125 x 88.625 - Rush",
+      "qty": 1,
+      "unit": "each",
+      "unitPrice": 486.61
+    },
+    {
+      "category": "Labor",
+      "description": "Install and Breakdown - Two Staffers ",
+      "qty": 8,
+      "unit": "hr",
+      "unitPrice": 95
+    }
+  ],
+  "includeTax": true,
+  "paymentTerms": "50% deposit due on acceptance via PayPal invoice, unless event is in less than 7 days, then the full balance is due. \n\nBalance net 15 from event end date. Late balance subject to 4.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
+  "customNotes": "",
+  "brandColor": "",
+  "brandColors": [],
+  "designSlides": [
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782835459/ltdgj3nlmqbnarxpwbuj.png",
+      "caption": ""
+    },
+    {
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782835531/kv94igspbqrvrlzthz3k.png",
+      "caption": ""
+    }
+  ],
+  "deliverables": [
+    {
+      "title": "SEG Fabric Back Drop",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834674/bz7sxjw8cmfaozo5tyep.png",
+      "dimensions": "8x8",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "Fluted Bar",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834704/d3dgwjjjztxkz0uimtbr.png",
+      "dimensions": "72″W x 42″H x 24″D",
+      "notes": "",
+      "window": "Load-In"
+    }
+  ],
+  "sourcingItems": [
+    {
+      "name": "Bar Top Decor - Quills ",
+      "vendor": "AMZ",
+      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834022/fhfxhpa8lmzklhbdoefv.png",
+      "qty": 1,
+      "leadTime": "2days",
+      "notes": ""
+    },
+    {
+      "name": "Bar Top Decor - Scrolls ",
+      "vendor": "AMZ",
+      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834831/ytc7ozjqvrqb26bfzmnp.png",
+      "qty": 1,
+      "leadTime": "2days",
+      "notes": ""
+    }
+  ],
+  "deckTemplate": "brand-event",
+  "status": "sent",
+  "recap": null,
+  "createdAt": "2026-06-30T16:06:05.065Z",
+  "updatedAt": "2026-06-30T16:06:05.065Z"
+}
