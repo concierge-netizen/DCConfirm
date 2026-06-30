@@ -25,7 +25,7 @@
       "description": "Fluted Bar Rental ",
       "qty": 1,
       "unit": "flat",
-      "unitPrice": 595
+      "unitPrice": 556
     },
     {
       "category": "Materials",
@@ -46,7 +46,7 @@
       "description": "SEG Printing - 78.125 x 88.625 - Rush",
       "qty": 1,
       "unit": "each",
-      "unitPrice": 486.61
+      "unitPrice": 686.61
     },
     {
       "category": "Labor",
@@ -63,26 +63,33 @@
   "brandColors": [],
   "designSlides": [
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782835459/ltdgj3nlmqbnarxpwbuj.png",
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782835531/kv94igspbqrvrlzthz3k.png",
       "caption": ""
     },
     {
-      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782835531/kv94igspbqrvrlzthz3k.png",
+      "imageUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782844165/r0skun22zptqokxy2rvk.png",
       "caption": ""
     }
   ],
   "deliverables": [
     {
       "title": "SEG Fabric Back Drop",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834674/bz7sxjw8cmfaozo5tyep.png",
-      "dimensions": "8x8",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782843720/adb4yqmq5onr9wxj0zgo.png",
+      "dimensions": "78.375”W x 88.25”H x 16.5”D",
       "notes": "",
       "window": "Load-In"
     },
     {
-      "title": "Fluted Bar",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782834704/d3dgwjjjztxkz0uimtbr.png",
+      "title": "Consitution Bar",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782843440/xqraxbjjli2xh11jy0ja.png",
       "dimensions": "72″W x 42″H x 24″D",
+      "notes": "",
+      "window": "Load-In"
+    },
+    {
+      "title": "THE Whistle Pig ",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782844021/pzinttwsdhf9wey5xhqa.png",
+      "dimensions": "24\" x 36\" est.",
       "notes": "",
       "window": "Load-In"
     }
@@ -103,11 +110,19 @@
       "qty": 1,
       "leadTime": "2days",
       "notes": ""
+    },
+    {
+      "name": "Bar Top Decor - Top Hat ",
+      "vendor": "AMZ",
+      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782843622/wahqjsnapfmatjzq8xny.png",
+      "qty": 1,
+      "leadTime": "2days",
+      "notes": ""
     }
   ],
   "deckTemplate": "brand-event",
   "status": "sent",
   "recap": null,
   "createdAt": "2026-06-30T16:06:05.065Z",
-  "updatedAt": "2026-06-30T16:06:05.065Z"
+  "updatedAt": "2026-06-30T18:29:35.987Z"
 }
