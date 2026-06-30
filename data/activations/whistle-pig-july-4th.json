@@ -19,43 +19,7 @@
     "strikeTime": "23:30"
   },
   "scopeOfWork": "HANDS Logistics will execute a single-night brand activation including pre-event coordination, day-of installation, live event execution, and overnight strike. Our scope covers load-in of all branded elements, bar build and beverage service setup, on-site talent management for the event window, and complete teardown with materials returned to HANDS warehouse.\n\nCrew will arrive at the venue at the scheduled load-in time with all installation tools, transportation equipment, and branded materials already staged. During the event window, HANDS provides the lead bartender, bar-backs, and floor crew as scoped in line items. Strike begins at event end and continues until all branded elements are removed and the venue is restored to its pre-event condition.\n\nIncludes general liability coverage.",
-  "lineItems": [
-    {
-      "category": "Materials",
-      "description": "Fluted Bar Rental ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 556
-    },
-    {
-      "category": "Materials",
-      "description": "Bar Decor - Quills, Parchment, Florals  ",
-      "qty": 1,
-      "unit": "flat",
-      "unitPrice": 462.41
-    },
-    {
-      "category": "Custom",
-      "description": "SEG Rental ",
-      "qty": 1,
-      "unit": "each",
-      "unitPrice": 175
-    },
-    {
-      "category": "Custom",
-      "description": "SEG Printing - 78.125 x 88.625 - Rush",
-      "qty": 1,
-      "unit": "each",
-      "unitPrice": 686.61
-    },
-    {
-      "category": "Labor",
-      "description": "Install and Breakdown - Two Staffers ",
-      "qty": 8,
-      "unit": "hr",
-      "unitPrice": 95
-    }
-  ],
+  "lineItems": [],
   "includeTax": true,
   "paymentTerms": "50% deposit due on acceptance via PayPal invoice, unless event is in less than 7 days, then the full balance is due. \n\nBalance net 15 from event end date. Late balance subject to 4.5%/mo finance charge. Cancellations within 7 days of event subject to 50% retention of total.",
   "customNotes": "",
@@ -88,7 +52,7 @@
     },
     {
       "title": "THE Whistle Pig ",
-      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782844021/pzinttwsdhf9wey5xhqa.png",
+      "schematicUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782846157/fljazctc1dsil8htassl.png",
       "dimensions": "24\" x 36\" est.",
       "notes": "",
       "window": "Load-In"
@@ -114,15 +78,23 @@
     {
       "name": "Bar Top Decor - Top Hat ",
       "vendor": "AMZ",
-      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782843622/wahqjsnapfmatjzq8xny.png",
+      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782846023/bwqwffkb1gatn4tpt79h.png",
       "qty": 1,
       "leadTime": "2days",
       "notes": ""
+    },
+    {
+      "name": "Plastic Sampling Cups",
+      "vendor": "amz",
+      "photoUrl": "https://res.cloudinary.com/dxkpbjicu/image/upload/v1782856162/euqbsfinehmgxvbayjjt.png",
+      "qty": 2,
+      "leadTime": "2days",
+      "notes": "5oz"
     }
   ],
   "deckTemplate": "brand-event",
   "status": "sent",
   "recap": null,
   "createdAt": "2026-06-30T16:06:05.065Z",
-  "updatedAt": "2026-06-30T18:29:35.987Z"
+  "updatedAt": "2026-06-30T21:49:39.881Z"
 }
